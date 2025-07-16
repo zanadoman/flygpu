@@ -1,0 +1,9 @@
+-ansi
+-ffast-math
+-lSDL3
+-O3
+-Werror
+-Weverything
+-Wno-c99-extensions
+-Wno-padded
+-Wno-unsafe-buffer-usage
