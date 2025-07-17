@@ -17,7 +17,7 @@ typedef struct {
 typedef struct Renderer Renderer;
 
 static Renderer * create_renderer(SDL_Window *window);
-static bool       render_quads(Renderer *renderer, Quad *begin, Quad *end);
+static bool       render_quads(Renderer *renderer, const Quad *begin, const Quad *end);
 static void       destroy_renderer(Renderer *renderer);
 
 Sint32 main(void)
@@ -94,9 +94,7 @@ static SDL_GPUGraphicsPipeline * create_quad_pipeline(SDL_GPUDevice *device, SDL
 typedef float Matrix4[4 * 4];
 
 static bool set_projection(SDL_Window *window, Matrix4 projection);
-static void set_translation(float x, float y, float z, Matrix4 translation);
-static void set_rotation(float z, Matrix4 rotation);
-static void set_scaling(float x, float y, Matrix4 scaling);
+static void set_transformation(const Quad* quad, Matrix4 transformation);
 static void multiply_matrices(Matrix4 a, Matrix4 b, Matrix4 c);
 
 Renderer * create_renderer(SDL_Window *window)
@@ -131,16 +129,15 @@ Renderer * create_renderer(SDL_Window *window)
     return renderer;
 }
 
-bool render_quads(Renderer *renderer, Quad *begin, Quad *end)
+bool render_quads(Renderer *renderer, const Quad *begin, const Quad *end)
 {
     Matrix4                 projection;
     SDL_GPUCommandBuffer   *command_buffer = NULL;
     SDL_GPUColorTargetInfo  target;
     SDL_GPURenderPass      *render_pass    = NULL;
-    Quad                   *quad           = NULL;
-    Matrix4                 mvp_stage1;
-    Matrix4                 mvp_stage2;
-    Matrix4                 mvp_stage3;
+    const Quad             *quad           = NULL;
+    Matrix4                 transformation;
+    Matrix4                 mvp;
 
     if (!set_projection(renderer->window, projection)) return false;
     SDL_memset(&target, 0, sizeof(target));
@@ -161,13 +158,9 @@ bool render_quads(Renderer *renderer, Quad *begin, Quad *end)
         render_pass = SDL_BeginGPURenderPass(command_buffer, &target, 1, NULL);
         SDL_BindGPUGraphicsPipeline(render_pass, renderer->quad_pipeline);
         for (quad = begin; quad != end; ++quad) {
-            set_translation(quad->x, quad->y, quad->z, mvp_stage1);
-            multiply_matrices(projection, mvp_stage1, mvp_stage2);
-            set_rotation(quad->angle, mvp_stage3);
-            multiply_matrices(mvp_stage2, mvp_stage3, mvp_stage1);
-            set_scaling(quad->width, quad->height, mvp_stage2);
-            multiply_matrices(mvp_stage1, mvp_stage2, mvp_stage3),
-            SDL_PushGPUVertexUniformData(command_buffer, 0, &mvp_stage3, sizeof(mvp_stage3));
+            set_transformation(quad, transformation);
+            multiply_matrices(projection, transformation, mvp),
+            SDL_PushGPUVertexUniformData(command_buffer, 0, &mvp, sizeof(mvp));
             SDL_DrawGPUPrimitives(render_pass, 6, 1, 0, 0);
         }
         SDL_EndGPURenderPass(render_pass);
@@ -259,66 +252,26 @@ bool set_projection(SDL_Window *window, Matrix4 projection)
     return true;
 }
 
-void set_translation(float x, float y, float z, Matrix4 translation)
+void set_transformation(const Quad *quad, Matrix4 transformation)
 {
-    translation[0]  = 1.0f;
-    translation[1]  = 0.0f;
-    translation[2]  = 0.0f;
-    translation[3]  = 0.0f;
-    translation[4]  = 0.0f;
-    translation[5]  = 1.0f;
-    translation[6]  = 0.0f;
-    translation[7]  = 0.0f;
-    translation[8]  = 0.0f;
-    translation[9]  = 0.0f;
-    translation[10] = 1.0f;
-    translation[11] = 0.0f;
-    translation[12] = x;
-    translation[13] = y;
-    translation[14] = z;
-    translation[15] = 1.0f;
-}
-
-void set_rotation(float z, Matrix4 rotation)
-{
-    float cosine = SDL_cosf(z);
-    float sine   = SDL_sinf(z);
-    rotation[0]  =  cosine;
-    rotation[1]  =  sine;
-    rotation[2]  =  0.0f;
-    rotation[3]  =  0.0f;
-    rotation[4]  = -sine;
-    rotation[5]  =  cosine;
-    rotation[6]  =  0.0f;
-    rotation[7]  =  0.0f;
-    rotation[8]  =  0.0f;
-    rotation[9]  =  0.0f;
-    rotation[10] =  1.0f;
-    rotation[11] =  0.0f;
-    rotation[12] =  0.0f;
-    rotation[13] =  0.0f;
-    rotation[14] =  0.0f;
-    rotation[15] =  1.0f;
-}
-
-void set_scaling(float x, float y, Matrix4 scaling)
-{
-    scaling[0]  = x;
-    scaling[1]  = 0.0f;
-    scaling[2]  = 0.0f;
-    scaling[3]  = 0.0f;
-    scaling[4]  = 0.0f;
-    scaling[5]  = y;
-    scaling[6]  = 0.0f;
-    scaling[7]  = 0.0f;
-    scaling[8]  = 0.0f;
-    scaling[9]  = 0.0f;
-    scaling[10] = 1.0f;
-    scaling[11] = 0.0f;
-    scaling[12] = 0.0f;
-    scaling[13] = 0.0f;
-    scaling[14] = 0.0f;
-    scaling[15] = 1.0f;
+    float cosine       =  SDL_cosf(quad->angle);
+    float sine         =  SDL_sinf(quad->angle);
+    transformation[0]  =  cosine * quad->width;
+    transformation[1]  =  sine * quad->width;
+    transformation[2]  =  0.0f;
+    transformation[3]  =  0.0f;
+    transformation[4]  = -sine * quad->height;
+    transformation[5]  =  cosine * quad->height;
+    transformation[6]  =  0.0f;
+    transformation[7]  =  0.0f;
+    transformation[8]  =  0.0f;
+    transformation[9]  =  0.0f;
+    transformation[10] =  1.0f;
+    transformation[11] =  0.0f;
+    transformation[12] =  quad->x;
+    transformation[13] =  quad->y;
+    transformation[14] =  quad->z;
+    transformation[15] =  1.0f;
 }
 
 void multiply_matrices(Matrix4 a, Matrix4 b, Matrix4 c)

@@ -7,3 +7,4 @@
 -Wno-c99-extensions
 -Wno-padded
 -Wno-unsafe-buffer-usage
+-Wno-c23-extensions
