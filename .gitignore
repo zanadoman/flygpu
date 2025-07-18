@@ -1,6 +1,7 @@
 .cache
+flygpu*
 .idea
-*.out
+*.s
 *.spv
 *.vim
 .vscode
