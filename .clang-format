@@ -9,4 +9,3 @@ ColumnLimit: 0
 IndentWidth: 4
 QualifierAlignment: Custom
 QualifierOrder: [static, inline, constexpr, const, volatile, type, restrict]
-ReflowComments: Never
