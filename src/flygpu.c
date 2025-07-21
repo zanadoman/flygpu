@@ -26,7 +26,6 @@
 #include "../include/flygpu/linalg.h"
 #include "quad3pline.h"
 
-#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>

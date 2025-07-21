@@ -36,10 +36,13 @@ struct FG_Quad3Pline
     SDL_GPUDevice                   *device;
     SDL_GPUGraphicsPipeline         *pipeline;
     SDL_GPUBufferCreateInfo          vertbuf_info;
+    Uint32                           padding0;
     SDL_GPUBufferBinding             vertbuf_bind;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
+    Uint32                           padding1;
     SDL_GPUTransferBuffer           *transbuf;
     Uint32                           instances;
+    Uint32                           padding2;
 };
 
 FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
