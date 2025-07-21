@@ -1,11 +1,13 @@
+---
 AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveDeclarations: AcrossComments
 AlignConsecutiveMacros: AcrossComments
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
-BasedOnStyle: LLVM
+BasedOnStyle: Google
+BinPackParameters: OnePerLine
 BreakBeforeBraces: Mozilla
 BreakStringLiterals: false
-ColumnLimit: 0
 IndentWidth: 4
+KeepEmptyLines:
+  AtStartOfFile: false
 QualifierAlignment: Custom
 QualifierOrder: [static, inline, constexpr, const, volatile, type, restrict]

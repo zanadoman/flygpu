@@ -9,7 +9,7 @@ insert_final_newline = true
 spelling_language = en-US
 trim_trailing_whitespace = true
 
-[.clang-tidy]
+[{.clang-format,.clang-tidy}]
 indent_size = 2
 
 [{Makefile,*.mk}]
