@@ -6,6 +6,7 @@ BasedOnStyle: Google
 BinPackParameters: OnePerLine
 BreakBeforeBraces: Mozilla
 BreakStringLiterals: false
+IndentExternBlock: NoIndent
 IndentWidth: 4
 KeepEmptyLines:
   AtStartOfFile: false
