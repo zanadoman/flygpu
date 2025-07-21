@@ -1,6 +1,5 @@
 /build/
 .cache
 .idea
-*.spv
 *.vim
 .vscode
