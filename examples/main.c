@@ -33,7 +33,7 @@ Sint32 main(void)
         [1] = {.transform = {.t.x = 0.5F,
                              .t.y = 0.5F,
                              .t.z = -5.0F,
-                             .r   = -45.0F / 180.0F * 3.14F,
+                             .rotation   = -45.0F / 180.0F * 3.14F,
                              .s.x = 1.2F,
                              .s.y = 1.0F}}};
 

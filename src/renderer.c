@@ -98,13 +98,16 @@ bool FG_RendererDraw(FG_Renderer    *renderer,
     }
 
     if (renderer->target.texture) {
-        SDL_GPURenderPass *rpass =
-            SDL_BeginGPURenderPass(cmdbuf, &renderer->target, 1, NULL);
-        FG_Mat4 projmat;
+        SDL_GPUCopyPass *cpass = SDL_BeginGPUCopyPass(cmdbuf);
+        FG_Mat4          projmat;
         FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height,
                        &projmat);
-        FG_Quad3PlineDraw(renderer->quad3pline, cmdbuf, rpass, &projmat, begin,
-                          end);
+        FG_Quad3PlineCopy(renderer->quad3pline, renderer->device, cpass,
+                          &projmat, begin, end);
+        SDL_EndGPUCopyPass(cpass);
+        SDL_GPURenderPass *rpass =
+            SDL_BeginGPURenderPass(cmdbuf, &renderer->target, 1, NULL);
+        FG_Quad3PlineDraw(renderer->quad3pline, rpass, (Uint32)(end - begin));
         SDL_EndGPURenderPass(rpass);
     }
 
