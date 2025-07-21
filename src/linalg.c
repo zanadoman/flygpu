@@ -78,12 +78,11 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
     Sint32 j = 0;
     Sint32 k = 0;
 
-    for (i = 0; i != FG_LINALG_DIMS_VEC4; ++i) {
-        for (j = 0; j != FG_LINALG_DIMS_VEC4; ++j) {
+    for (i = 0; i != FG_DIMS_VEC4; ++i) {
+        for (j = 0; j != FG_DIMS_VEC4; ++j) {
             out->data[j * 4 + i] = 0.0F;
-            for (k = 0; k != FG_LINALG_DIMS_VEC4; ++k) {
-                out->data[j * 4 + i] += lhs->data[k * 4 + i]
-                                      * rhs->data[j * 4 + k];
+            for (k = 0; k != FG_DIMS_VEC4; ++k) {
+                out->data[j * 4 + i] += lhs->data[k * 4 + i] * rhs->data[j * 4 + k];
             }
         }
     }

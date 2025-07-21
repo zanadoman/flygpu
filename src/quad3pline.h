@@ -1,3 +1,5 @@
+/* clang-format off */
+
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -31,17 +33,14 @@ typedef struct FG_Quad3Pline FG_Quad3Pline;
 
 FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window);
 
-bool FG_Quad3PlineCopy(FG_Quad3Pline   *quad3pline,
-                       SDL_GPUDevice   *device,
-                       SDL_GPUCopyPass *cpass,
+bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
+                       SDL_GPUCopyPass *copy_pass,
                        const FG_Mat4   *projmat,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end);
 
-void FG_Quad3PlineDraw(FG_Quad3Pline        *quad3pline,
-                       SDL_GPURenderPass    *rpass,
-                       Uint32                instances);
+void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *render_pass);
 
-void FG_ReleaseQuad3Pline(SDL_GPUDevice *device, FG_Quad3Pline *quad3pline);
+void FG_ReleaseQuad3Pline(FG_Quad3Pline *self);
 
-#endif
+#endif /* FLYGPU_QUAD3PLINE_H */
