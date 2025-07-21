@@ -1,3 +1,5 @@
+/* clang-format off */
+
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -25,9 +27,8 @@
 #include <SDL3/SDL_stdinc.h>
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif
+extern "C" {
+#endif /* __cplusplus */
 
 #define FG_FAR  100.0F
 #define FG_NEAR 0.1F
@@ -65,26 +66,26 @@ typedef enum
     FG_LINALG_DIMS_MAT4 = FG_LINALG_DIMS_VEC4 * FG_LINALG_DIMS_VEC4
 } FG_LinalgDims;
 
-typedef union
+typedef struct
 {
-    float m[FG_LINALG_DIMS_MAT4];
+    float data[FG_LINALG_DIMS_MAT4];
 } FG_Mat4;
 
 typedef struct
 {
-    FG_Vec3 t;
-    float   r;
-    FG_Vec2 s;
+    FG_Vec3 translation;
+    float   rotation;
+    FG_Vec2 scale;
 } FG_Transform3;
 
-void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *out);
+void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat);
 
-void FG_SetTransMat4(const FG_Transform3 *src, FG_Mat4 *out);
+void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat);
 
 void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif
+#endif /* FLYGPU_LINALG_H */
