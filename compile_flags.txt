@@ -1,8 +1,6 @@
--ansi
 -ffast-math
 -O3
+-save-temps
+-std=c99
 -Werror
 -Weverything
--Wno-c99-extensions
--Wno-padded
--Wno-unsafe-buffer-usage

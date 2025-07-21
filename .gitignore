@@ -1,7 +1,6 @@
+/build/
 .cache
-flygpu*
 .idea
-*.s
 *.spv
 *.vim
 .vscode
