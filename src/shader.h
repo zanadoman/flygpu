@@ -1,3 +1,5 @@
+/* clang-format off */
+
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -25,9 +27,8 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice     *device,
-                             const char        *path,
-                             SDL_GPUShaderStage stage,
-                             Uint16             ubos);
+SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
+                             const char         *path,
+                             SDL_GPUShaderStage  stage);
 
-#endif
+#endif /* FLYGPU_SHADER_H */

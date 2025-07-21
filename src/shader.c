@@ -1,3 +1,5 @@
+/* clang-format off */
+
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -25,20 +27,22 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice     *device,
-                             const char        *path,
-                             SDL_GPUShaderStage stage,
-                             Uint16             ubos)
+SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
+                             const char         *path,
+                             SDL_GPUShaderStage  stage)
 {
-    SDL_GPUShaderCreateInfo info = {.format = SDL_GPU_SHADERFORMAT_SPIRV,
-                                    .stage  = stage,
-                                    .num_uniform_buffers = ubos};
+    SDL_GPUShaderCreateInfo  info   = {
+        .format = SDL_GPU_SHADERFORMAT_SPIRV,
+        .stage  = stage,
+    };
+    void                    *code   = SDL_LoadFile(path, &info.code_size);
+    SDL_GPUShader           *shader = NULL;
 
-    void *code = SDL_LoadFile(path, &info.code_size);
     if (!code) return NULL;
+
     info.code = code;
 
-    SDL_GPUShader *shader = SDL_CreateGPUShader(device, &info);
+    shader = SDL_CreateGPUShader(device, &info);
 
     SDL_free(code);
     return shader;

@@ -27,7 +27,8 @@
 
 void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat)
 {
-    float focal       = 1.0F / SDL_tanf(fov / 2.0F);
+    float focal = 1.0F / SDL_tanf(fov / 2.0F);
+
     projmat->data[0]  = focal / aspect;
     projmat->data[1]  = 0.0F;
     projmat->data[2]  = 0.0F;
@@ -48,8 +49,9 @@ void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat)
 
 void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat)
 {
-    float cos          = SDL_cosf(transform3->rotation);
-    float sin          = SDL_sinf(transform3->rotation);
+    float cos = SDL_cosf(transform3->rotation);
+    float sin = SDL_sinf(transform3->rotation);
+
     transmat->data[0]  = cos * transform3->scale.x;
     transmat->data[1]  = sin * transform3->scale.x;
     transmat->data[2]  = 0.0F;
