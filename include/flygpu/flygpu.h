@@ -1,3 +1,5 @@
+/* clang-format off */
+
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -22,14 +24,13 @@
 #ifndef FLYGPU_FLYGPU_H
 #define FLYGPU_FLYGPU_H
 
-#include <SDL3/SDL_video.h>
-
 #include "linalg.h"
 
+#include <SDL3/SDL_video.h>
+
 #ifdef __cplusplus
-extern "C"
-{
-#endif
+extern "C" {
+#endif /* __cplusplus */
 
 typedef struct
 {
@@ -40,14 +41,12 @@ typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
 
-bool FG_RendererDraw(FG_Renderer    *renderer,
-                     const FG_Quad3 *begin,
-                     const FG_Quad3 *end);
+bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *end);
 
-void FG_DestroyRenderer(FG_Renderer *renderer);
+void FG_DestroyRenderer(FG_Renderer *self);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif
+#endif /* FLYGPU_FLYGPU_H */

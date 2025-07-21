@@ -73,13 +73,15 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
 
     self->device = device;
 
-    info.vertex_shader = FG_LoadShader(self->device, "./shaders/quad.vert3.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+    info.vertex_shader = FG_LoadShader(
+        self->device, "./shaders/quad.vert3.spv", SDL_GPU_SHADERSTAGE_VERTEX);
     if (!info.vertex_shader) {
         FG_ReleaseQuad3Pline(self);
         return NULL;
     }
 
-    info.fragment_shader = FG_LoadShader(self->device, "./shaders/quad.frag3.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+    info.fragment_shader = FG_LoadShader(
+        self->device, "./shaders/quad.frag3.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
     if (!info.fragment_shader) {
         FG_ReleaseQuad3Pline(self);
         return NULL;
