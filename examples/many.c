@@ -62,6 +62,11 @@ Sint32 main(void)
         return 1;
     }
 
+    if (!FG_RendererDraw(renderer, NULL, NULL)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+
     quad3s = SDL_calloc(QUAD3S_SIZE, sizeof(*quad3s));
     if (!quad3s) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());

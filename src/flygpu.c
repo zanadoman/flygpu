@@ -125,7 +125,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     }
 
     if (self->cmdbuf_fence) {
-        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) false;
+        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     }
     self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);

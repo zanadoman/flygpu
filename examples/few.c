@@ -109,6 +109,11 @@ Sint32 main(void)
         return 1;
     }
 
+    if (!FG_RendererDraw(renderer, NULL, NULL)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+
     tick = SDL_GetTicks();
 
     while (running) {

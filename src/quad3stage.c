@@ -34,15 +34,13 @@
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                   *device;
-    SDL_GPUGraphicsPipeline         *pipeline;
+    Uint32                           instances;
     SDL_GPUBufferCreateInfo          vertbuf_info;
-    Uint32                           padding0;
     SDL_GPUBufferBinding             vertbuf_bind;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
-    Uint32                           padding1;
+    Uint32                           padding0;
     SDL_GPUTransferBuffer           *transbuf;
-    Uint32                           instances;
-    Uint32                           padding2;
+    SDL_GPUGraphicsPipeline         *pipeline;
 };
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
@@ -88,21 +86,6 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
     self->device = device;
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-    self->vertbuf_info.size  = 10000 * info.vertex_input_state.vertex_buffer_descriptions->pitch;
-
-    self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
-    if (!self->vertbuf_bind.buffer) {
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
-
-    self->transbuf_info.size = self->vertbuf_info.size;
-
-    self->transbuf = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
-    if (!self->transbuf) {
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
 
     info.vertex_shader = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
@@ -136,12 +119,29 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end)
 {
-    FG_Mat4 *vertbuf  = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
+    Uint32   size     = 0;
+    FG_Mat4 *vertbuf  = NULL;
     FG_Mat4  transmat;
 
+    self->instances = (Uint32)(end - begin);
+    if (!self->instances) return true;
+
+    size = self->instances * (2 * sizeof(FG_Mat4));
+    if (self->vertbuf_info.size < size) {
+        SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
+        self->vertbuf_info.size   = size;
+        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
+        if (!self->vertbuf_bind.buffer) return false;
+
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        self->transbuf_info.size = size;
+        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
+        if (!self->transbuf) return false;
+    }
+
+    vertbuf = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
     if (!vertbuf) return false;
 
-    self->instances = (Uint32)(end - begin);
     for (; begin != end; ++begin, vertbuf += 2) {
         FG_SetTransMat4(&begin->transform, &transmat);
         FG_MulMat4s(projmat, &transmat, vertbuf);
@@ -169,6 +169,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
 
 void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
+    if (!self->instances) return;
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_DrawGPUPrimitives(rndrpass, 6, self->instances, 0, 0);
