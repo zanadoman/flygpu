@@ -101,9 +101,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     if (!cmdbuf) return false;
 
     if (!SDL_WaitAndAcquireGPUSwapchainTexture(
-            cmdbuf, self->window, &self->colortarg_info.texture, &width, &height))
-    {
-        return SDL_CancelGPUCommandBuffer(cmdbuf);
+            cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
+        return false;
     }
 
     if (width && height && (self->depthtex_info.width != width || self->depthtex_info.height != height))
@@ -112,12 +111,13 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
         self->depthtex_info.width    = width;
         self->depthtex_info.height   = height;
         self->depthtarg_info.texture = SDL_CreateGPUTexture(self->device, &self->depthtex_info);
+        if (!self->depthtarg_info.texture) return false;
     }
 
     if (self->colortarg_info.texture && self->depthtarg_info.texture) {
         cpypass = SDL_BeginGPUCopyPass(cmdbuf);
         FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
-        FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, begin, end);
+        if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, begin, end)) return false;
         SDL_EndGPUCopyPass(cpypass);
         rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
         FG_Quad3StageDraw(self->quad3stage, rndrpass);
@@ -125,7 +125,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     }
 
     if (self->cmdbuf_fence) {
-        SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1);
+        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) false;
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     }
     self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);

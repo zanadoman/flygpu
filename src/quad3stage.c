@@ -87,20 +87,6 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 
     self->device = device;
 
-    info.vertex_shader = FG_LoadShader(
-        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
-    if (!info.vertex_shader) {
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
-
-    info.fragment_shader = FG_LoadShader(
-        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
-    if (!info.fragment_shader) {
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
-
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
     self->vertbuf_info.size  = 10000 * info.vertex_input_state.vertex_buffer_descriptions->pitch;
 
@@ -114,6 +100,21 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 
     self->transbuf = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
     if (!self->transbuf) {
+        FG_ReleaseQuad3Stage(self);
+        return NULL;
+    }
+
+    info.vertex_shader = FG_LoadShader(
+        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+    if (!info.vertex_shader) {
+        FG_ReleaseQuad3Stage(self);
+        return NULL;
+    }
+
+    info.fragment_shader = FG_LoadShader(
+        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+    if (!info.fragment_shader) {
+        SDL_ReleaseGPUShader(self->device, info.vertex_shader);
         FG_ReleaseQuad3Stage(self);
         return NULL;
     }
