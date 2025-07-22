@@ -24,7 +24,7 @@
 #ifndef FLYGPU_FLYGPU_H
 #define FLYGPU_FLYGPU_H
 
-#include "linalg.h"
+#include "linalg.h" /* IWYU pragma: export */
 
 #include <SDL3/SDL_video.h>
 

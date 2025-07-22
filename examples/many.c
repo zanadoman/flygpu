@@ -22,7 +22,6 @@
 */
 
 #include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -70,12 +69,12 @@ Sint32 main(void)
     }
 
     for (i = 0; i != QUAD3S_SIZE; ++i) {
-        quad3s[i].transform.translation.x = NextRand(-FG_PI, FG_PI);
-        quad3s[i].transform.translation.y = NextRand(-FG_PI, FG_PI);
-        quad3s[i].transform.translation.z = NextRand(-1.0F + -2.0F * FG_PI, -1.0F);
+        quad3s[i].transform.translation.x = NextRand(-2.0F, 2.0F);
+        quad3s[i].transform.translation.y = NextRand(-2.0F, 2.0F);
+        quad3s[i].transform.translation.z = NextRand(-1.0F, -3.0F);
         quad3s[i].transform.rotation      = NextRand(-FG_PI, FG_PI);
-        quad3s[i].transform.scale.x       = NextRand(1.0F, FG_PI);
-        quad3s[i].transform.scale.y       = NextRand(1.0F, FG_PI);
+        quad3s[i].transform.scale.x       = NextRand(0.5F, 2.5F);
+        quad3s[i].transform.scale.y       = NextRand(0.5F, 2.5F);
     }
 
     tick = SDL_GetTicks();

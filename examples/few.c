@@ -55,7 +55,7 @@ Sint32 main(void)
                     .y = 0.5F,
                     .z = -5.0F
                 },
-                .rotation = -45.0F / 180.0F * 3.14F,
+                .rotation = FG_DegToRad(-45.0F),
                 .scale = {
                     .x = 1.2F,
                     .y = 1.0F
