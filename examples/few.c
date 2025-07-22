@@ -38,7 +38,7 @@ Sint32 main(void)
     Uint64       tick     = 0;
     bool         running  = true;
     SDL_Event    event;
-    FG_Quad3     quads[2] = {
+    FG_Quad3     quad3s[2] = {
         [0] = {
             .transform = {
                 .translation.z = -1.0F,
@@ -88,7 +88,7 @@ Sint32 main(void)
             if ((event.type) == SDL_EVENT_QUIT) running = false;
         }
 
-        if (!FG_RendererDraw(renderer, quads, quads + sizeof(quads) / sizeof(*quads))) {
+        if (!FG_RendererDraw(renderer, quad3s, quad3s + sizeof(quad3s) / sizeof(*quad3s))) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
             return 1;
         }
@@ -102,3 +102,4 @@ Sint32 main(void)
     SDL_Quit();
     return 0;
 }
+
