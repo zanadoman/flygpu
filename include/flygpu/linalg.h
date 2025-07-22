@@ -60,16 +60,16 @@ typedef struct
 
 typedef enum
 {
-    FG_DIMS_VEC2 = sizeof(FG_Vec2) / sizeof(float),
-    FG_DIMS_VEC3 = sizeof(FG_Vec3) / sizeof(float),
-    FG_DIMS_VEC4 = sizeof(FG_Vec4) / sizeof(float),
-    FG_DIMS_MAT4 = FG_DIMS_VEC4 * FG_DIMS_VEC4
-} FG_Dims;
+    FG_LINALG_DIMS_VEC2 = sizeof(FG_Vec2) / sizeof(float),
+    FG_LINALG_DIMS_VEC3 = sizeof(FG_Vec3) / sizeof(float),
+    FG_LINALG_DIMS_VEC4 = sizeof(FG_Vec4) / sizeof(float),
+    FG_LINALG_DIMS_MAT4 = FG_LINALG_DIMS_VEC4 * FG_LINALG_DIMS_VEC4
+} FG_LinalgDims;
 
 typedef union
 {
-    FG_Vec4 cols[FG_DIMS_VEC4];
-    float   data[FG_DIMS_MAT4];
+    FG_Vec4 cols[FG_LINALG_DIMS_VEC4];
+    float   data[FG_LINALG_DIMS_MAT4];
 } FG_Mat4;
 
 typedef struct
