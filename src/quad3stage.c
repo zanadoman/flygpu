@@ -21,7 +21,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "quad3pline.h"
+#include "quad3stage.h"
 
 #include "../include/flygpu/flygpu.h"
 #include "../include/flygpu/linalg.h"
@@ -31,7 +31,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
-struct FG_Quad3Pline
+struct FG_Quad3Stage
 {
     SDL_GPUDevice                   *device;
     SDL_GPUGraphicsPipeline         *pipeline;
@@ -45,9 +45,9 @@ struct FG_Quad3Pline
     Uint32                           padding2;
 };
 
-FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 {
-    FG_Quad3Pline                     *self                     = SDL_calloc(1, sizeof(*self));
+    FG_Quad3Stage                     *self                                              = SDL_calloc(1, sizeof(*self));
     SDL_GPUVertexAttribute             vert_attrs[2 * sizeof(FG_Mat4) / sizeof(FG_Vec4)] = {
         { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 0 * sizeof(FG_Vec4) },
         { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 1 * sizeof(FG_Vec4) },
@@ -58,7 +58,7 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
         { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 6 * sizeof(FG_Vec4) },
         { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 7 * sizeof(FG_Vec4) }
     };
-    SDL_GPUGraphicsPipelineCreateInfo  info                     = {
+    SDL_GPUGraphicsPipelineCreateInfo  info                                              = {
         .vertex_input_state = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
                 .pitch      = sizeof(vert_attrs) / sizeof(*vert_attrs) * sizeof(FG_Vec4),
@@ -90,14 +90,14 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
     info.vertex_shader = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
     if (!info.vertex_shader) {
-        FG_ReleaseQuad3Pline(self);
+        FG_ReleaseQuad3Stage(self);
         return NULL;
     }
 
     info.fragment_shader = FG_LoadShader(
         self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
     if (!info.fragment_shader) {
-        FG_ReleaseQuad3Pline(self);
+        FG_ReleaseQuad3Stage(self);
         return NULL;
     }
 
@@ -106,7 +106,7 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
 
     self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
     if (!self->vertbuf_bind.buffer) {
-        FG_ReleaseQuad3Pline(self);
+        FG_ReleaseQuad3Stage(self);
         return NULL;
     }
 
@@ -114,7 +114,7 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
 
     self->transbuf = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
     if (!self->transbuf) {
-        FG_ReleaseQuad3Pline(self);
+        FG_ReleaseQuad3Stage(self);
         return NULL;
     }
 
@@ -122,14 +122,14 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
     SDL_ReleaseGPUShader(self->device, info.fragment_shader);
     SDL_ReleaseGPUShader(self->device, info.vertex_shader);
     if (!self->pipeline) {
-        FG_ReleaseQuad3Pline(self);
+        FG_ReleaseQuad3Stage(self);
         return NULL;
     }
 
     return self;
 }
 
-bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
+bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
                        SDL_GPUCopyPass *cpypass,
                        const FG_Mat4   *projmat,
                        const FG_Quad3  *begin,
@@ -166,14 +166,14 @@ bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
     return true;
 }
 
-void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *rndrpass)
+void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_DrawGPUPrimitives(rndrpass, 6, self->instances, 0, 0);
 }
 
-void FG_ReleaseQuad3Pline(FG_Quad3Pline *self)
+void FG_ReleaseQuad3Stage(FG_Quad3Stage *self)
 {
     if (!self) return;
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);

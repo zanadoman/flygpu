@@ -24,7 +24,7 @@
 #include "../include/flygpu/flygpu.h"
 
 #include "../include/flygpu/linalg.h"
-#include "quad3pline.h"
+#include "quad3stage.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
@@ -38,7 +38,7 @@ struct FG_Renderer
     SDL_GPUTextureCreateInfo       depthtex_info;
     Uint32                         padding0;
     SDL_GPUDepthStencilTargetInfo  depthtarg_info;
-    FG_Quad3Pline                 *quad3pline;
+    FG_Quad3Stage                 *quad3stage;
     SDL_GPUFence                  *cmdbuf_fence;
 };
 
@@ -80,8 +80,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
     self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3pline = FG_CreateQuad3Pline(self->device, self->window);
-    if (!self->quad3pline) {
+    self->quad3stage = FG_CreateQuad3Stage(self->device, self->window);
+    if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -117,10 +117,10 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     if (self->colortarg_info.texture && self->depthtarg_info.texture) {
         cpypass = SDL_BeginGPUCopyPass(cmdbuf);
         FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
-        FG_Quad3PlineCopy(self->quad3pline, cpypass, &projmat, begin, end);
+        FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, begin, end);
         SDL_EndGPUCopyPass(cpypass);
         rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
-        FG_Quad3PlineDraw(self->quad3pline, rndrpass);
+        FG_Quad3StageDraw(self->quad3stage, rndrpass);
         SDL_EndGPURenderPass(rndrpass);
     }
 
@@ -138,7 +138,7 @@ void FG_DestroyRenderer(FG_Renderer *self)
     if (!self) return;
     SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-    FG_ReleaseQuad3Pline(self->quad3pline);
+    FG_ReleaseQuad3Stage(self->quad3stage);
     SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
     SDL_DestroyGPUDevice(self->device);
     SDL_free(self);

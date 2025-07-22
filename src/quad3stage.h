@@ -29,18 +29,18 @@
 #include "../include/flygpu/flygpu.h"
 #include "../include/flygpu/linalg.h"
 
-typedef struct FG_Quad3Pline FG_Quad3Pline;
+typedef struct FG_Quad3Stage FG_Quad3Stage;
 
-FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window);
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window);
 
-bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
+bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
                        SDL_GPUCopyPass *copy_pass,
                        const FG_Mat4   *projmat,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end);
 
-void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *rndrpass);
+void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
 
-void FG_ReleaseQuad3Pline(FG_Quad3Pline *self);
+void FG_ReleaseQuad3Stage(FG_Quad3Stage *self);
 
 #endif /* FLYGPU_QUAD3PLINE_H */
