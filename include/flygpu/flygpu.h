@@ -34,7 +34,16 @@ extern "C" {
 
 typedef struct
 {
+    FG_Vec4 bl;
+    FG_Vec4 br;
+    FG_Vec4 tr;
+    FG_Vec4 tl;
+} FG_QuadColor;
+
+typedef struct
+{
     FG_Transform3 transform;
+    FG_QuadColor  color;
 } FG_Quad3;
 
 typedef struct FG_Renderer FG_Renderer;

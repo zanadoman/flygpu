@@ -66,9 +66,10 @@ typedef enum
     FG_DIMS_MAT4 = FG_DIMS_VEC4 * FG_DIMS_VEC4
 } FG_Dims;
 
-typedef struct
+typedef union
 {
-    float data[FG_DIMS_MAT4];
+    FG_Vec4 cols[FG_DIMS_VEC4];
+    float   data[FG_DIMS_MAT4];
 } FG_Mat4;
 
 typedef struct

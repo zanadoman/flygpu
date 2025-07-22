@@ -29,22 +29,15 @@ void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat)
 {
     float focal = 1.0F / SDL_tanf(fov / 2.0F);
 
-    projmat->data[0]  = focal / aspect;
-    projmat->data[1]  = 0.0F;
-    projmat->data[2]  = 0.0F;
-    projmat->data[3]  = 0.0F;
-    projmat->data[4]  = 0.0F;
-    projmat->data[5]  = focal;
-    projmat->data[6]  = 0.0F;
-    projmat->data[7]  = 0.0F;
-    projmat->data[8]  = 0.0F;
-    projmat->data[9]  = 0.0F;
-    projmat->data[10] = (FG_FAR + FG_NEAR) / (FG_NEAR - FG_FAR);
-    projmat->data[11] = -1.0F;
-    projmat->data[12] = 0.0F;
-    projmat->data[13] = 0.0F;
-    projmat->data[14] = 2.0F * FG_FAR * FG_NEAR / (FG_NEAR - FG_FAR);
-    projmat->data[15] = 0.0F;
+    *projmat = (FG_Mat4){
+        .cols[0].x = focal / aspect,
+        .cols[1].y = focal,
+        .cols[2]   = {
+            .z = (FG_FAR + FG_NEAR) / (FG_NEAR - FG_FAR),
+            .w = -1.0F
+        },
+        .cols[3].z = 2.0F * FG_FAR * FG_NEAR / (FG_NEAR - FG_FAR)
+    };
 }
 
 void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat)
@@ -52,22 +45,23 @@ void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat)
     float cos = SDL_cosf(transform3->rotation);
     float sin = SDL_sinf(transform3->rotation);
 
-    transmat->data[0]  = cos * transform3->scale.x;
-    transmat->data[1]  = sin * transform3->scale.x;
-    transmat->data[2]  = 0.0F;
-    transmat->data[3]  = 0.0F;
-    transmat->data[4]  = -sin * transform3->scale.y;
-    transmat->data[5]  = cos * transform3->scale.y;
-    transmat->data[6]  = 0.0F;
-    transmat->data[7]  = 0.0F;
-    transmat->data[8]  = 0.0F;
-    transmat->data[9]  = 0.0F;
-    transmat->data[10] = 1.0F;
-    transmat->data[11] = 0.0F;
-    transmat->data[12] = transform3->translation.x;
-    transmat->data[13] = transform3->translation.y;
-    transmat->data[14] = transform3->translation.z;
-    transmat->data[15] = 1.0F;
+    *transmat = (FG_Mat4){
+        .cols[0]   = {
+            .x = cos * transform3->scale.x,
+            .y = sin * transform3->scale.x
+        },
+        .cols[1]   = {
+            .x = -sin * transform3->scale.y,
+            .y = cos * transform3->scale.y
+        },
+        .cols[2].z = 1.0F,
+        .cols[3]   = {
+            .x = transform3->translation.x,
+            .y = transform3->translation.y,
+            .z = transform3->translation.z,
+            .w = 1.0F
+        }
+    };
 }
 
 void FG_MulMat4s(const FG_Mat4 *restrict lhs,

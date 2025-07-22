@@ -48,16 +48,20 @@ struct FG_Quad3Pline
 FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
 {
     FG_Quad3Pline                     *self                     = SDL_calloc(1, sizeof(*self));
-    SDL_GPUVertexAttribute             vert_attrs[FG_DIMS_VEC4] = {
+    SDL_GPUVertexAttribute             vert_attrs[2 * sizeof(FG_Mat4) / sizeof(FG_Vec4)] = {
         { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 0 * sizeof(FG_Vec4) },
         { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 1 * sizeof(FG_Vec4) },
         { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 2 * sizeof(FG_Vec4) },
-        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 3 * sizeof(FG_Vec4) }
+        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 3 * sizeof(FG_Vec4) },
+        { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 4 * sizeof(FG_Vec4) },
+        { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 5 * sizeof(FG_Vec4) },
+        { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 6 * sizeof(FG_Vec4) },
+        { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 7 * sizeof(FG_Vec4) }
     };
     SDL_GPUGraphicsPipelineCreateInfo  info                     = {
         .vertex_input_state = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
-                .pitch      = sizeof(FG_Mat4),
+                .pitch      = sizeof(vert_attrs) / sizeof(*vert_attrs) * sizeof(FG_Vec4),
                 .input_rate = SDL_GPU_VERTEXINPUTRATE_INSTANCE
             },
             .num_vertex_buffers    = 1,
@@ -98,7 +102,7 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
     }
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-    self->vertbuf_info.size  = 10000 * sizeof(FG_Mat4);
+    self->vertbuf_info.size  = 10000 * info.vertex_input_state.vertex_buffer_descriptions->pitch;
 
     self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
     if (!self->vertbuf_bind.buffer) {
@@ -137,9 +141,13 @@ bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
     if (!vertbuf) return false;
 
     self->instances = (Uint32)(end - begin);
-    for (; begin != end; ++begin, ++vertbuf) {
+    for (; begin != end; ++begin, vertbuf += 2) {
         FG_SetTransMat4(&begin->transform, &transmat);
         FG_MulMat4s(projmat, &transmat, vertbuf);
+        vertbuf[1].cols[0] = begin->color.bl;
+        vertbuf[1].cols[1] = begin->color.br;
+        vertbuf[1].cols[2] = begin->color.tr;
+        vertbuf[1].cols[3] = begin->color.tl;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
