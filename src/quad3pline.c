@@ -64,11 +64,18 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
             .vertex_attributes     = vert_attrs,
             .num_vertex_attributes = sizeof(vert_attrs) / sizeof(*vert_attrs)
         },
+        .depth_stencil_state = {
+            .compare_op         = SDL_GPU_COMPAREOP_LESS,
+            .enable_depth_test  = true,
+            .enable_depth_write = true
+        },
         .target_info = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
                 .format = SDL_GetGPUSwapchainTextureFormat(device, window)
             },
-            .num_color_targets = 1
+            .num_color_targets        = 1,
+            .depth_stencil_format     = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
+            .has_depth_stencil_target = true
         }
     };
 
