@@ -119,7 +119,7 @@ FG_Quad3Pline *FG_CreateQuad3Pline(SDL_GPUDevice *device, SDL_Window *window)
 }
 
 bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
-                       SDL_GPUCopyPass *copy_pass,
+                       SDL_GPUCopyPass *cpypass,
                        const FG_Mat4   *projmat,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end)
@@ -137,7 +137,7 @@ bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
     SDL_UploadToGPUBuffer(
-        copy_pass,
+        cpypass,
         &(SDL_GPUTransferBufferLocation){
             .transfer_buffer = self->transbuf
         },
@@ -151,11 +151,11 @@ bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
     return true;
 }
 
-void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *render_pass)
+void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *rndrpass)
 {
-    SDL_BindGPUGraphicsPipeline(render_pass, self->pipeline);
-    SDL_BindGPUVertexBuffers(render_pass, 0, &self->vertbuf_bind, 1);
-    SDL_DrawGPUPrimitives(render_pass, 6, self->instances, 0, 0);
+    SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
+    SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
+    SDL_DrawGPUPrimitives(rndrpass, 6, self->instances, 0, 0);
 }
 
 void FG_ReleaseQuad3Pline(FG_Quad3Pline *self)

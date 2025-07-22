@@ -36,6 +36,7 @@ struct FG_Renderer
     SDL_GPUDevice          *device;
     SDL_GPUColorTargetInfo  target;
     FG_Quad3Pline          *quad3pline;
+    SDL_GPUFence           *cmdbuf_fence;
 };
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
@@ -78,12 +79,12 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *end)
 {
-    SDL_GPUCommandBuffer *cmdbuf      = SDL_AcquireGPUCommandBuffer(self->device);
-    Uint32 width                      = 0;
-    Uint32 height                     = 0;
-    SDL_GPUCopyPass      *copy_pass   = NULL;
+    SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
+    Uint32 width                   = 0;
+    Uint32 height                  = 0;
+    SDL_GPUCopyPass      *cpypass  = NULL;
     FG_Mat4               projmat;
-    SDL_GPURenderPass    *render_pass = NULL;
+    SDL_GPURenderPass    *rndrpass = NULL;
 
     if (!cmdbuf) return false;
 
@@ -93,21 +94,28 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     }
 
     if (self->target.texture) {
-        copy_pass = SDL_BeginGPUCopyPass(cmdbuf);
+        cpypass = SDL_BeginGPUCopyPass(cmdbuf);
         FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
-        FG_Quad3PlineCopy(self->quad3pline, copy_pass, &projmat, begin, end);
-        SDL_EndGPUCopyPass(copy_pass);
-        render_pass = SDL_BeginGPURenderPass(cmdbuf, &self->target, 1, NULL);
-        FG_Quad3PlineDraw(self->quad3pline, render_pass);
-        SDL_EndGPURenderPass(render_pass);
+        FG_Quad3PlineCopy(self->quad3pline, cpypass, &projmat, begin, end);
+        SDL_EndGPUCopyPass(cpypass);
+        rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->target, 1, NULL);
+        FG_Quad3PlineDraw(self->quad3pline, rndrpass);
+        SDL_EndGPURenderPass(rndrpass);
     }
 
-    return SDL_SubmitGPUCommandBuffer(cmdbuf);
+    if (self->cmdbuf_fence) {
+        SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1);
+        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
+    }
+    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
+
+    return self->cmdbuf_fence;
 }
 
 void FG_DestroyRenderer(FG_Renderer *self)
 {
     if (!self) return;
+    SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     FG_ReleaseQuad3Pline(self->quad3pline);
     SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
     SDL_DestroyGPUDevice(self->device);

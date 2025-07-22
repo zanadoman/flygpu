@@ -39,7 +39,7 @@ bool FG_Quad3PlineCopy(FG_Quad3Pline   *self,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end);
 
-void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *render_pass);
+void FG_Quad3PlineDraw(FG_Quad3Pline *self, SDL_GPURenderPass *rndrpass);
 
 void FG_ReleaseQuad3Pline(FG_Quad3Pline *self);
 
