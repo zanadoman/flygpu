@@ -69,12 +69,46 @@ Sint32 main(void)
     }
 
     for (i = 0; i != QUAD3S_SIZE; ++i) {
-        quad3s[i].transform.translation.x = NextRand(-2.0F, 2.0F);
-        quad3s[i].transform.translation.y = NextRand(-2.0F, 2.0F);
-        quad3s[i].transform.translation.z = NextRand(-1.0F, -3.0F);
-        quad3s[i].transform.rotation      = NextRand(-FG_PI, FG_PI);
-        quad3s[i].transform.scale.x       = NextRand(0.5F, 2.5F);
-        quad3s[i].transform.scale.y       = NextRand(0.5F, 2.5F);
+        quad3s[i] = (FG_Quad3){
+            .transform = {
+                .translation = {
+                    .x = NextRand(-2.0F, 2.0F),
+                    .y = NextRand(-2.0F, 2.0F),
+                    .z = NextRand(-1.0F, -3.0F)
+                },
+                .rotation    = NextRand(-FG_PI, FG_PI),
+                .scale       = {
+                    .x = NextRand(0.5F, 2.5F),
+                    .y = NextRand(0.5F, 2.5F)
+                }
+            },
+            .color     = {
+                .bl = {
+                    .x = NextRand(0.0F, 1.0F),
+                    .y = NextRand(0.0F, 1.0F),
+                    .z = NextRand(0.0F, 1.0F),
+                    .w = NextRand(0.0F, 1.0F)
+                },
+                .br = {
+                    .x = NextRand(0.0F, 1.0F),
+                    .y = NextRand(0.0F, 1.0F),
+                    .z = NextRand(0.0F, 1.0F),
+                    .w = NextRand(0.0F, 1.0F)
+                },
+                .tr = {
+                    .x = NextRand(0.0F, 1.0F),
+                    .y = NextRand(0.0F, 1.0F),
+                    .z = NextRand(0.0F, 1.0F),
+                    .w = NextRand(0.0F, 1.0F)
+                },
+                .tl = {
+                    .x = NextRand(0.0F, 1.0F),
+                    .y = NextRand(0.0F, 1.0F),
+                    .z = NextRand(0.0F, 1.0F),
+                    .w = NextRand(0.0F, 1.0F)
+                }
+            }
+        };
     }
 
     tick = SDL_GetTicks();

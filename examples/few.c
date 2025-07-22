@@ -42,9 +42,19 @@ Sint32 main(void)
         [0] = {
             .transform = {
                 .translation.z = -1.0F,
-                .scale = {
+                .scale         = {
                     .x = 0.1F,
                     .y = 0.1F
+                }
+            },
+            .color     = {
+                .bl.x = 1.0F,
+                .br.y = 1.0F,
+                .tr.z = 1.0F,
+                .tl   = {
+                    .x = 1.0F,
+                    .y = 1.0F,
+                    .z = 1.0F
                 }
             }
         },
@@ -55,10 +65,28 @@ Sint32 main(void)
                     .y = 0.5F,
                     .z = -5.0F
                 },
-                .rotation = FG_DegToRad(-45.0F),
-                .scale = {
+                .rotation    = FG_DegToRad(-45.0F),
+                .scale       = {
                     .x = 1.2F,
                     .y = 1.0F
+                }
+            },
+            .color     = {
+                .bl = {
+                    .y = 1.0F,
+                    .z = 1.0F
+                },
+                .br = {
+                    .y = 1.0F,
+                    .z = 1.0F
+                },
+                .tr = {
+                    .y = 1.0F,
+                    .z = 1.0F
+                },
+                .tl = {
+                    .y = 1.0F,
+                    .z = 1.0F
                 }
             }
         }
