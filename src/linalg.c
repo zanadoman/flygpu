@@ -40,7 +40,8 @@ void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat)
     };
 }
 
-void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat)
+void FG_SetTransMat4(const FG_Transform3 *restrict transform3,
+                     FG_Mat4 *restrict             transmat)
 {
     float cos = SDL_cosf(transform3->rotation);
     float sin = SDL_sinf(transform3->rotation);
@@ -68,15 +69,15 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
                  const FG_Mat4 *restrict rhs,
                  FG_Mat4 *restrict       out)
 {
-    Sint32 i = 0;
-    Sint32 j = 0;
-    Sint32 k = 0;
+    Uint32 i = 0;
+    Uint32 j = 0;
+    Uint32 k = 0;
 
     for (i = 0; i != FG_LINALG_DIMS_VEC4; ++i) {
         for (j = 0; j != FG_LINALG_DIMS_VEC4; ++j) {
-            out->data[j * 4 + i] = 0.0F;
+            out->data[4 * j + i] = 0.0F;
             for (k = 0; k != FG_LINALG_DIMS_VEC4; ++k) {
-                out->data[j * 4 + i] += lhs->data[k * 4 + i] * rhs->data[j * 4 + k];
+                out->data[4 * j + i] += lhs->data[4 * k + i] * rhs->data[4 * j + k];
             }
         }
     }

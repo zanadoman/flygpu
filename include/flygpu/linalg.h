@@ -34,8 +34,8 @@ extern "C" {
 #define FG_NEAR 0.1F
 #define FG_PI   3.14159F
 
-#define FG_DegToRad(d) ((d) / 180.F * FG_PI)
-#define FG_RadToDeg(r) ((r) * 180.F / FG_PI)
+#define FG_DegToRad(d) ((d) / 180.0F * FG_PI)
+#define FG_RadToDeg(r) ((r) * 180.0F / FG_PI)
 
 typedef struct
 {
