@@ -31,6 +31,10 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
+#define VERTBUF_MAT4S 2
+#define VERTBUF_PITCH (VERTBUF_MAT4S * sizeof(FG_Mat4))
+#define VERTBUF_ATTRS (VERTBUF_PITCH / sizeof(FG_Vec4))
+
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                   *device;
@@ -45,26 +49,25 @@ struct FG_Quad3Stage
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 {
-    FG_Quad3Stage                     *self                                              = SDL_calloc(1, sizeof(*self));
-    SDL_GPUVertexAttribute             vert_attrs[2 * sizeof(FG_Mat4) / sizeof(FG_Vec4)] = {
-        { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 0 * sizeof(FG_Vec4) },
-        { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 1 * sizeof(FG_Vec4) },
-        { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 2 * sizeof(FG_Vec4) },
-        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 3 * sizeof(FG_Vec4) },
-        { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 4 * sizeof(FG_Vec4) },
-        { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 5 * sizeof(FG_Vec4) },
-        { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 6 * sizeof(FG_Vec4) },
-        { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 7 * sizeof(FG_Vec4) }
-    };
-    SDL_GPUGraphicsPipelineCreateInfo  info                                              = {
+    FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
+    SDL_GPUGraphicsPipelineCreateInfo  info = {
         .vertex_input_state = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
-                .pitch      = sizeof(vert_attrs) / sizeof(*vert_attrs) * sizeof(FG_Vec4),
+                .pitch      = VERTBUF_PITCH,
                 .input_rate = SDL_GPU_VERTEXINPUTRATE_INSTANCE
             },
-            .num_vertex_buffers    = 1,
-            .vertex_attributes     = vert_attrs,
-            .num_vertex_attributes = sizeof(vert_attrs) / sizeof(*vert_attrs)
+            .num_vertex_buffers         = 1,
+            .vertex_attributes          = (SDL_GPUVertexAttribute[VERTBUF_ATTRS]){
+                { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 0 * sizeof(FG_Vec4) },
+                { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 1 * sizeof(FG_Vec4) },
+                { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 2 * sizeof(FG_Vec4) },
+                { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 3 * sizeof(FG_Vec4) },
+                { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 4 * sizeof(FG_Vec4) },
+                { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 5 * sizeof(FG_Vec4) },
+                { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 6 * sizeof(FG_Vec4) },
+                { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 7 * sizeof(FG_Vec4) }
+            },
+            .num_vertex_attributes      = VERTBUF_ATTRS
         },
         .depth_stencil_state = {
             .compare_op         = SDL_GPU_COMPAREOP_LESS,
@@ -126,7 +129,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
     self->instances = (Uint32)(end - begin);
     if (!self->instances) return true;
 
-    size = self->instances * (2 * sizeof(FG_Mat4));
+    size = self->instances * VERTBUF_PITCH;
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
@@ -142,7 +145,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
     vertbuf = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
     if (!vertbuf) return false;
 
-    for (; begin != end; ++begin, vertbuf += 2) {
+    for (; begin != end; ++begin, vertbuf += VERTBUF_MAT4S) {
         FG_SetTransMat4(&begin->transform, &transmat);
         FG_MulMat4s(projmat, &transmat, vertbuf);
         vertbuf[1].cols[0] = begin->color.bl;
