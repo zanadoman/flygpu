@@ -33,7 +33,7 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
 {
     SDL_GPUShaderCreateInfo  info   = {
         .format = SDL_GPU_SHADERFORMAT_SPIRV,
-        .stage  = stage,
+        .stage  = stage
     };
     void                    *code   = SDL_LoadFile(path, &info.code_size);
     SDL_GPUShader           *shader = NULL;
