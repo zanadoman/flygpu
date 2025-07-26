@@ -26,6 +26,7 @@
 
 #include "linalg.h" /* IWYU pragma: export */
 
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
 
 #ifdef __cplusplus
@@ -61,6 +62,8 @@ typedef struct
 typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
+
+SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *surface);
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 
