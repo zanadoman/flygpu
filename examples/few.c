@@ -33,12 +33,12 @@
 
 Sint32 main(void)
 {
-    SDL_Window  *window   = NULL;
-    FG_Renderer *renderer = NULL;
-    Uint64       tick     = 0;
-    bool         running  = true;
+    SDL_Window  *window      = NULL;
+    FG_Renderer *renderer    = NULL;
+    Uint64       tick        = 0;
+    bool         running     = true;
     SDL_Event    event;
-    FG_Quad3     quad3s[2] = {
+    FG_Quad3     quad3s[2]   = {
         [0] = {
             .transform = {
                 .translation.z = -1.0F,
@@ -91,6 +91,12 @@ Sint32 main(void)
             }
         }
     };
+    FG_RendererDrawInfo info = {
+        .quad3s_info = {
+            .insts = quad3s,
+            .count = SDL_arraysize(quad3s)
+        }
+    };
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -109,11 +115,6 @@ Sint32 main(void)
         return 1;
     }
 
-    if (!FG_RendererDraw(renderer, NULL, NULL)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
-        return 1;
-    }
-
     tick = SDL_GetTicks();
 
     while (running) {
@@ -121,7 +122,7 @@ Sint32 main(void)
             if ((event.type) == SDL_EVENT_QUIT) running = false;
         }
 
-        if (!FG_RendererDraw(renderer, quad3s, quad3s + sizeof(quad3s) / sizeof(*quad3s))) {
+        if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
             return 1;
         }

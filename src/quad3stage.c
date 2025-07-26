@@ -159,9 +159,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
     SDL_UploadToGPUBuffer(
         cpypass,
-        &(SDL_GPUTransferBufferLocation){
-            .transfer_buffer = self->transbuf
-        },
+        &(SDL_GPUTransferBufferLocation){ .transfer_buffer = self->transbuf },
         &(SDL_GPUBufferRegion){
             .buffer = self->vertbuf_bind.buffer,
             .size   = self->vertbuf_info.size

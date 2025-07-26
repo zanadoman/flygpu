@@ -48,9 +48,9 @@ typedef struct
 
 typedef struct
 {
-    FG_Quad3 *insts;
-    Uint32    count;
-    Uint32    padding0;
+    const FG_Quad3 *insts;
+    Uint32          count;
+    Uint32          padding0;
 } FG_RendererQuad3sDrawInfo;
 
 typedef struct

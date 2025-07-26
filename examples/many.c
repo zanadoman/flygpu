@@ -37,13 +37,14 @@
 
 Sint32 main(void)
 {
-    SDL_Window  *window   = NULL;
-    FG_Renderer *renderer = NULL;
-    FG_Quad3    *quad3s   = NULL;
-    Sint32       i        = 0;
-    Uint64       tick     = 0;
-    bool         running  = true;
-    SDL_Event    event;
+    SDL_Window          *window   = NULL;
+    FG_Renderer         *renderer = NULL;
+    FG_Quad3            *quad3s   = NULL;
+    Sint32               i        = 0;
+    Uint64               tick     = 0;
+    bool                 running  = true;
+    SDL_Event            event;
+    FG_RendererDrawInfo  info     = { .quad3s_info.count = QUAD3S_SIZE };
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -62,12 +63,8 @@ Sint32 main(void)
         return 1;
     }
 
-    if (!FG_RendererDraw(renderer, NULL, NULL)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
-        return 1;
-    }
-
     quad3s = SDL_calloc(QUAD3S_SIZE, sizeof(*quad3s));
+    info.quad3s_info.insts = quad3s;
     if (!quad3s) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
@@ -123,7 +120,7 @@ Sint32 main(void)
             if ((event.type) == SDL_EVENT_QUIT) running = false;
         }
 
-        if (!FG_RendererDraw(renderer, quad3s, quad3s + QUAD3S_SIZE)) {
+        if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
             return 1;
         }
