@@ -142,12 +142,14 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     if (!self->inst_count) return true;
 
     size = self->inst_count * VERTBUF_PITCH;
+
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
         self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(
             self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
+
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = size;
         self->transbuf           = SDL_CreateGPUTransferBuffer(
