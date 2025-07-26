@@ -95,12 +95,12 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     Uint32 width                   = 0;
     Uint32 height                  = 0;
     SDL_GPUCopyPass      *cpypass  = NULL;
-    FG_Mat4               projmat;
+    FG_Mat4               projmat  = { .data = { 0.0F } };
     SDL_GPURenderPass    *rndrpass = NULL;
 
     if (!cmdbuf) return false;
 
-    if (!SDL_WaitAndAcquireGPUSwapchainTexture(
+    if (!SDL_AcquireGPUSwapchainTexture(
             cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
         return false;
     }
@@ -137,8 +137,8 @@ void FG_DestroyRenderer(FG_Renderer *self)
 {
     if (!self) return;
     SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
-    SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
     FG_ReleaseQuad3Stage(self->quad3stage);
+    SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
     SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
     SDL_DestroyGPUDevice(self->device);
     SDL_free(self);
