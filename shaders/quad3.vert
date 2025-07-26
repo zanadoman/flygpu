@@ -31,6 +31,8 @@ layout(location = 6) in  vec4 color2;
 layout(location = 7) in  vec4 color3;
 layout(location = 0) out vec4 fragColor;
 
+mat4 mvp = mat4(mvp0, mvp1, mvp2, mvp3);
+
 vec2 positions[4] = vec2[](
     vec2(-0.5, -0.5),
     vec2(0.5, -0.5),
@@ -48,7 +50,6 @@ vec4 colors[4] = vec4[](
 uint indices[6] = uint[](0, 1, 2, 2, 3, 0);
 
 void main() {
-    gl_Position = mat4(mvp0, mvp1, mvp2, mvp3)
-                * vec4(positions[indices[gl_VertexIndex]], 0.0, 1.0);
+    gl_Position = mvp * vec4(positions[indices[gl_VertexIndex]], 0.0, 1.0);
     fragColor   = colors[indices[gl_VertexIndex]];
 }
