@@ -45,12 +45,14 @@ struct FG_Quad3Stage
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint32                           padding1;
     SDL_GPUTransferBuffer           *transbuf;
+    SDL_GPUTextureSamplerBinding     texsampl_bind;
     SDL_GPUGraphicsPipeline         *pipeline;
     Uint32                           inst_count;
     Uint32                           padding2;
 };
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
+                                   SDL_GPUTextureFormat  colortarg_fmt)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
@@ -92,20 +94,27 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat c
     self->device = device;
 
     self->vertspv = FG_LoadShader(
-        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
     if (!self->vertspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
     self->fragspv = FG_LoadShader(
-        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
     if (!self->fragspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+
+    self->texsampl_bind.sampler = SDL_CreateGPUSampler(
+        self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
+    if (!self->texsampl_bind.sampler) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
+    }
 
     info.vertex_shader   = self->vertspv;
     info.fragment_shader = self->fragspv;
@@ -136,11 +145,13 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
-        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
+        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(
+            self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
+        self->transbuf           = SDL_CreateGPUTransferBuffer(
+            self->device, &self->transbuf_info);
         if (!self->transbuf) return false;
     }
 
@@ -170,18 +181,31 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     return true;
 }
 
-void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
+bool FG_Quad3StageDraw(FG_Quad3Stage                   *self,
+                       SDL_GPURenderPass               *rndrpass,
+                       const FG_RendererQuad3sDrawInfo *info)
 {
-    if (!self->inst_count) return;
+    Uint32 i = 0;
+
+    if (!self->inst_count)              return true;
+    if (self->inst_count < info->count) return false;
+
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
-    SDL_DrawGPUPrimitives(rndrpass, 6, self->inst_count, 0, 0);
+    for (i = 0; i != self->inst_count; ++i) {
+        self->texsampl_bind.texture = info->insts[i].texture;
+        SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
+        SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, i);
+    }
+
+    return true;
 }
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
 {
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
+    SDL_ReleaseGPUSampler(self->device, self->texsampl_bind.sampler);
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
