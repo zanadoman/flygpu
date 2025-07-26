@@ -38,20 +38,24 @@
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                   *device;
-    Uint32                           instances;
+    SDL_GPUShader                   *vertspv;
+    SDL_GPUShader                   *fragspv;
     SDL_GPUBufferCreateInfo          vertbuf_info;
+    Uint32                           padding0;
     SDL_GPUBufferBinding             vertbuf_bind;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
-    Uint32                           padding0;
+    Uint32                           padding1;
     SDL_GPUTransferBuffer           *transbuf;
     SDL_GPUGraphicsPipeline         *pipeline;
+    Uint32                           instances;
+    Uint32                           padding2;
 };
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
-        .vertex_input_state = {
+        .vertex_input_state  = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
                 .pitch      = VERTBUF_PITCH,
                 .input_rate = SDL_GPU_VERTEXINPUTRATE_INSTANCE
@@ -74,13 +78,13 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
             .enable_depth_test  = true,
             .enable_depth_write = true
         },
-        .target_info = {
+        .target_info         = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
                 .format = SDL_GetGPUSwapchainTextureFormat(device, window)
             },
-            .num_color_targets        = 1,
-            .depth_stencil_format     = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
-            .has_depth_stencil_target = true
+            .num_color_targets         = 1,
+            .depth_stencil_format      = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
+            .has_depth_stencil_target  = true
         }
     };
 
@@ -88,26 +92,26 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 
     self->device = device;
 
+    self->vertspv = FG_LoadShader(
+        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
+    if (!self->vertspv) {
+        FG_ReleaseQuad3Stage(self);
+        return NULL;
+    }
+
+    self->fragspv = FG_LoadShader(
+        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
+    if (!self->fragspv) {
+        FG_ReleaseQuad3Stage(self);
+        return NULL;
+    }
+
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    info.vertex_shader = FG_LoadShader(
-        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
-    if (!info.vertex_shader) {
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
-
-    info.fragment_shader = FG_LoadShader(
-        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
-    if (!info.fragment_shader) {
-        SDL_ReleaseGPUShader(self->device, info.vertex_shader);
-        FG_ReleaseQuad3Stage(self);
-        return NULL;
-    }
+    info.vertex_shader   = self->vertspv;
+    info.fragment_shader = self->fragspv;
 
     self->pipeline = SDL_CreateGPUGraphicsPipeline(self->device, &info);
-    SDL_ReleaseGPUShader(self->device, info.fragment_shader);
-    SDL_ReleaseGPUShader(self->device, info.vertex_shader);
     if (!self->pipeline) {
         FG_ReleaseQuad3Stage(self);
         return NULL;
@@ -124,7 +128,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
 {
     Uint32   size     = 0;
     FG_Mat4 *vertbuf  = NULL;
-    FG_Mat4  transmat;
+    FG_Mat4  transmat = { .data = { 0.0F } };
 
     self->instances = (Uint32)(end - begin);
     if (!self->instances) return true;
@@ -135,7 +139,6 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
         self->vertbuf_info.size   = size;
         self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
-
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = size;
         self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
@@ -181,8 +184,10 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 void FG_ReleaseQuad3Stage(FG_Quad3Stage *self)
 {
     if (!self) return;
+    SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
-    SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
+    SDL_ReleaseGPUShader(self->device, self->fragspv);
+    SDL_ReleaseGPUShader(self->device, self->vertspv);
     SDL_free(self);
 }

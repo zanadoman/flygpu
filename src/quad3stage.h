@@ -21,8 +21,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_QUAD3PLINE_H
-#define FLYGPU_QUAD3PLINE_H
+#ifndef FLYGPU_QUAD3STAGE_H
+#define FLYGPU_QUAD3STAGE_H
 
 #include <SDL3/SDL_gpu.h>
 
@@ -34,7 +34,7 @@ typedef struct FG_Quad3Stage FG_Quad3Stage;
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window);
 
 bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
-                       SDL_GPUCopyPass *copy_pass,
+                       SDL_GPUCopyPass *cpypass,
                        const FG_Mat4   *projmat,
                        const FG_Quad3  *begin,
                        const FG_Quad3  *end);
@@ -43,4 +43,4 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
 
 void FG_ReleaseQuad3Stage(FG_Quad3Stage *self);
 
-#endif /* FLYGPU_QUAD3PLINE_H */
+#endif /* FLYGPU_QUAD3STAGE_H */
