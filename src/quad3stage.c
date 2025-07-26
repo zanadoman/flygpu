@@ -51,7 +51,7 @@ struct FG_Quad3Stage
     Uint32                           padding2;
 };
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
@@ -80,7 +80,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
         },
         .target_info         = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
-                .format = SDL_GetGPUSwapchainTextureFormat(device, window)
+                .format = colortarg_fmt
             },
             .num_color_targets         = 1,
             .depth_stencil_format      = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
@@ -95,14 +95,14 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
     self->vertspv = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX);
     if (!self->vertspv) {
-        FG_ReleaseQuad3Stage(self);
+        FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
     self->fragspv = FG_LoadShader(
         self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT);
     if (!self->fragspv) {
-        FG_ReleaseQuad3Stage(self);
+        FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
@@ -113,7 +113,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window)
 
     self->pipeline = SDL_CreateGPUGraphicsPipeline(self->device, &info);
     if (!self->pipeline) {
-        FG_ReleaseQuad3Stage(self);
+        FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
@@ -181,7 +181,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     SDL_DrawGPUPrimitives(rndrpass, 6, self->instances, 0, 0);
 }
 
-void FG_ReleaseQuad3Stage(FG_Quad3Stage *self)
+void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
 {
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);

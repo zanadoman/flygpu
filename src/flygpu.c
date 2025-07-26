@@ -80,7 +80,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
     self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3stage = FG_CreateQuad3Stage(self->device, self->window);
+    self->quad3stage = FG_CreateQuad3Stage(
+        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -137,7 +138,7 @@ void FG_DestroyRenderer(FG_Renderer *self)
 {
     if (!self) return;
     SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
-    FG_ReleaseQuad3Stage(self->quad3stage);
+    FG_DestroyQuad3Stage(self->quad3stage);
     SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
     SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
     SDL_DestroyGPUDevice(self->device);

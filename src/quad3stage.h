@@ -31,7 +31,7 @@
 
 typedef struct FG_Quad3Stage FG_Quad3Stage;
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_Window *window);
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt);
 
 bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
                        SDL_GPUCopyPass *cpypass,
@@ -41,6 +41,6 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
 
 void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
 
-void FG_ReleaseQuad3Stage(FG_Quad3Stage *self);
+void FG_DestroyQuad3Stage(FG_Quad3Stage *self);
 
 #endif /* FLYGPU_QUAD3STAGE_H */
