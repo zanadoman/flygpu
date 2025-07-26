@@ -46,11 +46,23 @@ typedef struct
     FG_QuadColor  color;
 } FG_Quad3;
 
+typedef struct
+{
+    FG_Quad3 *insts;
+    Uint32    count;
+    Uint32    padding0;
+} FG_RendererQuad3sDrawInfo;
+
+typedef struct
+{
+    FG_RendererQuad3sDrawInfo quad3s_info;
+} FG_RendererDrawInfo;
+
 typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
 
-bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *end);
+bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 
 void FG_DestroyRenderer(FG_Renderer *self);
 

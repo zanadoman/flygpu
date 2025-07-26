@@ -33,11 +33,10 @@ typedef struct FG_Quad3Stage FG_Quad3Stage;
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt);
 
-bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
-                       SDL_GPUCopyPass *cpypass,
-                       const FG_Mat4   *projmat,
-                       const FG_Quad3  *begin,
-                       const FG_Quad3  *end);
+bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
+                       SDL_GPUCopyPass                 *cpypass,
+                       const FG_Mat4                   *projmat,
+                       const FG_RendererQuad3sDrawInfo *info);
 
 void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
 

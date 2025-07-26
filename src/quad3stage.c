@@ -29,7 +29,6 @@
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_video.h>
 
 #define VERTBUF_MAT4S 2
 #define VERTBUF_PITCH (VERTBUF_MAT4S * sizeof(FG_Mat4))
@@ -47,7 +46,7 @@ struct FG_Quad3Stage
     Uint32                           padding1;
     SDL_GPUTransferBuffer           *transbuf;
     SDL_GPUGraphicsPipeline         *pipeline;
-    Uint32                           instances;
+    Uint32                           inst_count;
     Uint32                           padding2;
 };
 
@@ -120,20 +119,20 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat c
     return self;
 }
 
-bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
-                       SDL_GPUCopyPass *cpypass,
-                       const FG_Mat4   *projmat,
-                       const FG_Quad3  *begin,
-                       const FG_Quad3  *end)
+bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
+                       SDL_GPUCopyPass                 *cpypass,
+                       const FG_Mat4                   *projmat,
+                       const FG_RendererQuad3sDrawInfo *info)
 {
     Uint32   size     = 0;
     FG_Mat4 *vertbuf  = NULL;
+    Uint32   i        = 0;
     FG_Mat4  transmat = { .data = { 0.0F } };
 
-    self->instances = (Uint32)(end - begin);
-    if (!self->instances) return true;
+    self->inst_count = info->count;
+    if (!self->inst_count) return true;
 
-    size = self->instances * VERTBUF_PITCH;
+    size = self->inst_count * VERTBUF_PITCH;
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
@@ -148,13 +147,13 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
     vertbuf = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
     if (!vertbuf) return false;
 
-    for (; begin != end; ++begin, vertbuf += VERTBUF_MAT4S) {
-        FG_SetTransMat4(&begin->transform, &transmat);
+    for (i = 0; i != self->inst_count; ++i, vertbuf += VERTBUF_MAT4S) {
+        FG_SetTransMat4(&info->insts[i].transform, &transmat);
         FG_MulMat4s(projmat, &transmat, vertbuf);
-        vertbuf[1].cols[0] = begin->color.bl;
-        vertbuf[1].cols[1] = begin->color.br;
-        vertbuf[1].cols[2] = begin->color.tr;
-        vertbuf[1].cols[3] = begin->color.tl;
+        vertbuf[1].cols[0] = info->insts[i].color.bl;
+        vertbuf[1].cols[1] = info->insts[i].color.br;
+        vertbuf[1].cols[2] = info->insts[i].color.tr;
+        vertbuf[1].cols[3] = info->insts[i].color.tl;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
@@ -175,10 +174,10 @@ bool FG_Quad3StageCopy(FG_Quad3Stage   *self,
 
 void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
-    if (!self->instances) return;
+    if (!self->inst_count) return;
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
-    SDL_DrawGPUPrimitives(rndrpass, 6, self->instances, 0, 0);
+    SDL_DrawGPUPrimitives(rndrpass, 6, self->inst_count, 0, 0);
 }
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)

@@ -90,7 +90,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     return self;
 }
 
-bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *end)
+bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
     SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
     Uint32 width                   = 0;
@@ -118,7 +118,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_Quad3 *begin, const FG_Quad3 *e
     if (self->colortarg_info.texture && self->depthtarg_info.texture) {
         cpypass = SDL_BeginGPUCopyPass(cmdbuf);
         FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
-        if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, begin, end)) return false;
+        if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) return false;
         SDL_EndGPUCopyPass(cpypass);
         rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
         FG_Quad3StageDraw(self->quad3stage, rndrpass);
