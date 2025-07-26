@@ -108,9 +108,11 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
 SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *surface)
 {
-    Sint32          size     = 0;
-    void           *transmem = NULL;
-    SDL_GPUTexture *texture  = NULL;
+    Sint32                size     = 0;
+    SDL_GPUTexture       *texture  = NULL;
+    SDL_GPUCommandBuffer *cmdbuf   = NULL;
+    SDL_GPUCopyPass      *cpypass  = NULL;
+    void                 *transmem = NULL;
 
     size = surface->w * surface->h * 4;
     if (surface->format != SDL_PIXELFORMAT_RGBA8888 || size < 0) {
@@ -121,9 +123,6 @@ SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *s
         SDL_SetError("FlyGPU: Surface area must not exceed %d!", SURFACE_AREA_LIMIT);
         return NULL;
     }
-
-    transmem = SDL_MapGPUTransferBuffer(self->device, self->texbuf, true);
-    if (!transmem) return NULL;
 
     texture = SDL_CreateGPUTexture(
         self->device,
@@ -137,11 +136,19 @@ SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *s
     );
     if (!texture) return NULL;
 
+    cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
+    if (!cmdbuf) return NULL;
+
+    cpypass = SDL_BeginGPUCopyPass(cmdbuf);
+
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->texbuf, true);
+    if (!transmem) return NULL;
+
     SDL_memcpy(transmem, surface->pixels, (size_t)size);
 
     SDL_UnmapGPUTransferBuffer(self->device, self->texbuf);
     SDL_UploadToGPUTexture(
-        NULL,
+        cpypass,
         &(SDL_GPUTextureTransferInfo){ .transfer_buffer = self->texbuf },
         &(SDL_GPUTextureRegion){
             .texture = texture,
@@ -150,6 +157,16 @@ SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *s
         },
         true
     );
+
+    SDL_EndGPUCopyPass(cpypass);
+
+    if (self->cmdbuf_fence) {
+        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
+        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
+    }
+
+    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
+    if (!self->cmdbuf_fence) return NULL;
 
     return texture;
 }
@@ -194,6 +211,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     }
+
     self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
 
     return self->cmdbuf_fence;
