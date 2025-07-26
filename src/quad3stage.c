@@ -125,7 +125,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
                        const FG_RendererQuad3sDrawInfo *info)
 {
     Uint32   size     = 0;
-    FG_Mat4 *vertbuf  = NULL;
+    FG_Mat4 *transmem = NULL;
     Uint32   i        = 0;
     FG_Mat4  transmat = { .data = { 0.0F } };
 
@@ -144,16 +144,16 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
         if (!self->transbuf) return false;
     }
 
-    vertbuf = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
-    if (!vertbuf) return false;
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
+    if (!transmem) return false;
 
-    for (i = 0; i != self->inst_count; ++i, vertbuf += VERTBUF_MAT4S) {
+    for (i = 0; i != self->inst_count; ++i, transmem += VERTBUF_MAT4S) {
         FG_SetTransMat4(&info->insts[i].transform, &transmat);
-        FG_MulMat4s(projmat, &transmat, vertbuf);
-        vertbuf[1].cols[0] = info->insts[i].color.bl;
-        vertbuf[1].cols[1] = info->insts[i].color.br;
-        vertbuf[1].cols[2] = info->insts[i].color.tr;
-        vertbuf[1].cols[3] = info->insts[i].color.tl;
+        FG_MulMat4s(projmat, &transmat, transmem);
+        transmem[1].cols[0] = info->insts[i].color.bl;
+        transmem[1].cols[1] = info->insts[i].color.br;
+        transmem[1].cols[2] = info->insts[i].color.tr;
+        transmem[1].cols[3] = info->insts[i].color.tl;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
