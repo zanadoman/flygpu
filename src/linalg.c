@@ -69,9 +69,9 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
                  const FG_Mat4 *restrict rhs,
                  FG_Mat4 *restrict       out)
 {
-    Uint32 i = 0;
-    Uint32 j = 0;
-    Uint32 k = 0;
+    Uint8 i = 0;
+    Uint8 j = 0;
+    Uint8 k = 0;
 
     for (i = 0; i != FG_LINALG_DIMS_VEC4; ++i) {
         for (j = 0; j != FG_LINALG_DIMS_VEC4; ++j) {
