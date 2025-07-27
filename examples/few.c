@@ -28,69 +28,58 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3_image/SDL_image.h>
 
 Sint32 main(void)
 {
     SDL_Window  *window      = NULL;
     FG_Renderer *renderer    = NULL;
-    Uint64       tick        = 0;
-    bool         running     = true;
-    SDL_Event    event;
-    FG_Quad3     quad3s[2]   = {
+    SDL_Surface *surface     = NULL;
+    FG_Quad3     quad3s[3]   = {
         [0] = {
             .transform = {
-                .translation.z = -1.0F,
-                .scale         = {
-                    .x = 0.1F,
-                    .y = 0.1F
-                }
+                .translation = { 0.0F, 0.0F, -1.0F },
+                .scale       = { 0.5F, 0.5F }
             },
             .color     = {
-                .bl.x = 1.0F,
-                .br.y = 1.0F,
-                .tr.z = 1.0F,
-                .tl   = {
-                    .x = 1.0F,
-                    .y = 1.0F,
-                    .z = 1.0F
-                }
+                .bl = { 1.0F, 1.0F, 1.0F, 1.0F },
+                .br = { 1.0F, 1.0F, 1.0F, 1.0F },
+                .tr = { 1.0F, 1.0F, 1.0F, 1.0F },
+                .tl = { 1.0F, 1.0F, 1.0F, 1.0F }
             }
         },
         [1] = {
             .transform = {
-                .translation = {
-                    .x = 0.5F,
-                    .y = 0.5F,
-                    .z = -5.0F
-                },
-                .rotation    = FG_DegToRad(-45.0F),
-                .scale       = {
-                    .x = 1.2F,
-                    .y = 1.0F
-                }
+                .translation = { 2.0F, 2.0F, -10.0F },
+                .rotation    = FG_DegsToRads(-45.0F),
+                .scale       = { 3.0F, 1.0F }
             },
             .color     = {
-                .bl = {
-                    .y = 1.0F,
-                    .z = 1.0F
-                },
-                .br = {
-                    .y = 1.0F,
-                    .z = 1.0F
-                },
-                .tr = {
-                    .y = 1.0F,
-                    .z = 1.0F
-                },
-                .tl = {
-                    .y = 1.0F,
-                    .z = 1.0F
-                }
+                .bl = { 1.0F, 0.0F, 0.0F, 1.0F },
+                .br = { 0.0F, 1.0F, 0.0F, 1.0F },
+                .tr = { 0.0F, 0.0F, 1.0F, 1.0F },
+                .tl = { 1.0F, 1.0F, 1.0F, 1.0F }
+            }
+        },
+        [2] = {
+            .transform = {
+                .translation = { -2.0F, 0.0F, -5.0F },
+                .scale       = { 1.23F, 1.95F }
+            },
+            .color     = {
+                .bl = { 1.0F, 0.0F, 1.0F, 1.0F },
+                .br = { 1.0F, 0.0F, 1.0F, 1.0F },
+                .tr = { 0.0F, 0.0F, 1.0F, 1.0F },
+                .tl = { 0.0F, 0.0F, 1.0F, 1.0F }
             }
         }
     };
+    Uint64       tick        = 0;
+    bool         running     = true;
+    SDL_Event    event       = { .type = SDL_EVENT_FIRST };
     FG_RendererDrawInfo info = {
         .quad3s_info = {
             .insts = quad3s,
@@ -103,7 +92,7 @@ Sint32 main(void)
         return 1;
     }
 
-    window = SDL_CreateWindow("SDL_GPU", 800, 600, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("FlyGPU | few", 800, 600, SDL_WINDOW_RESIZABLE);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
@@ -115,12 +104,55 @@ Sint32 main(void)
         return 1;
     }
 
+    surface = IMG_Load("./assets/big-house.png");
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[0].texture)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!quad3s[0].texture) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    SDL_DestroySurface(surface);
+
+    surface = IMG_Load("./assets/block-big.png");
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[1].texture)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!quad3s[1].texture) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    SDL_DestroySurface(surface);
+
+    surface = IMG_Load("./assets/pine.png");
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[2].texture)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!quad3s[0].texture) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    SDL_DestroySurface(surface);
+
     tick = SDL_GetTicks();
 
     while (running) {
-        while (SDL_PollEvent(&event)) {
-            if ((event.type) == SDL_EVENT_QUIT) running = false;
-        }
+        while (SDL_PollEvent(&event)) if ((event.type) == SDL_EVENT_QUIT) running = false;
 
         if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
@@ -131,6 +163,8 @@ Sint32 main(void)
         tick = SDL_GetTicks();
     }
 
+    FG_DestroyRendererTexture(renderer, quad3s[1].texture);
+    FG_DestroyRendererTexture(renderer, quad3s[0].texture);
     FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

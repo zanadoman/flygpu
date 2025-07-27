@@ -123,8 +123,8 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
 
     *texture = NULL;
 
-    if (surface->format != SDL_PIXELFORMAT_RGBA8888) {
-        SDL_SetError("FlyGPU: Surface format must be RGBA8888!");
+    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+        SDL_SetError("FlyGPU: Surface format must be RGBA32!");
         return true;
     }
     if (size < 0) {
@@ -140,6 +140,7 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
         self->device,
         &(SDL_GPUTextureCreateInfo){
             .format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
+            .usage                = SDL_GPU_TEXTUREUSAGE_SAMPLER,
             .width                = (Uint32)surface->w,
             .height               = (Uint32)surface->h,
             .layer_count_or_depth = 1,
@@ -187,6 +188,9 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         self->cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
         if (!self->cmdbuf) return false;
     }
+    else {
+        SDL_EndGPUCopyPass(self->cpypass);
+    }
 
     if (!SDL_AcquireGPUSwapchainTexture(
         self->cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
@@ -205,7 +209,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     }
 
     FG_SetProjMat4(FG_DegsToRads(60.0F), (float)width / (float)height, &projmat);
-    if (!self->cpypass) self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
+    self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
     if (!FG_Quad3StageCopy(self->quad3stage, self->cpypass, &projmat, &info->quad3s_info)) return false;
     SDL_EndGPUCopyPass(self->cpypass);
 
