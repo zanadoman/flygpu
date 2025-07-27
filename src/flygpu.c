@@ -33,22 +33,26 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
-#include <stdio.h>
+#include <stddef.h>
 
-#define SURFACE_AREA_LIMIT (8192 * 8192)
-#define SURFACE_SIZE_LIMIT (SURFACE_AREA_LIMIT * 4)
+#define SURFACE_SIDE_LIMIT 0x2000
+#define SURFACE_AREA_LIMIT (SURFACE_SIDE_LIMIT * SURFACE_SIDE_LIMIT)
+#define SURFACE_PIXEL_SIZE 4
+#define SURFACE_SIZE_LIMIT (SURFACE_AREA_LIMIT * SURFACE_PIXEL_SIZE)
 
 struct FG_Renderer
 {
     SDL_Window                    *window;
     SDL_GPUDevice                 *device;
-    SDL_GPUTransferBuffer         *texbuf;
+    SDL_GPUTransferBuffer         *transbuf;
     SDL_GPUColorTargetInfo         colortarg_info;
     SDL_GPUTextureCreateInfo       depthtex_info;
     Uint32                         padding0;
     SDL_GPUDepthStencilTargetInfo  depthtarg_info;
     FG_Quad3Stage                 *quad3stage;
     SDL_GPUFence                  *cmdbuf_fence;
+    SDL_GPUCommandBuffer          *cmdbuf;
+    SDL_GPUCopyPass               *cpypass;
 };
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
@@ -70,17 +74,21 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    if (!SDL_SetGPUSwapchainParameters(self->device, self->window,
-            SDL_GPU_SWAPCHAINCOMPOSITION_SDR, vsync ? SDL_GPU_PRESENTMODE_VSYNC
-                                                    : SDL_GPU_PRESENTMODE_IMMEDIATE))
+    if (!SDL_SetGPUSwapchainParameters(
+            self->device,
+            self->window,
+            SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR,
+            vsync ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE
+        )
+    )
     {
         FG_DestroyRenderer(self);
         return NULL;
     }
 
-    self->texbuf = SDL_CreateGPUTransferBuffer(
+    self->transbuf = SDL_CreateGPUTransferBuffer(
         self->device, &(SDL_GPUTransferBufferCreateInfo){ .size = SURFACE_SIZE_LIMIT });
-    if (!self->texbuf) {
+    if (!self->transbuf) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -106,25 +114,29 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     return self;
 }
 
-SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *surface)
+bool FG_CreateRendererTexture(FG_Renderer        *self,
+                              const SDL_Surface  *surface,
+                              SDL_GPUTexture    **texture)
 {
-    Sint32                size     = 0;
-    SDL_GPUTexture       *texture  = NULL;
-    SDL_GPUCommandBuffer *cmdbuf   = NULL;
-    SDL_GPUCopyPass      *cpypass  = NULL;
-    void                 *transmem = NULL;
+    Sint32  size     = surface->w * surface->h * SURFACE_PIXEL_SIZE;
+    void   *transmem = NULL;
 
-    size = surface->w * surface->h * 4;
-    if (surface->format != SDL_PIXELFORMAT_RGBA8888 || size < 0) {
+    *texture = NULL;
+
+    if (surface->format != SDL_PIXELFORMAT_RGBA8888) {
         SDL_SetError("FlyGPU: Surface format must be RGBA8888!");
-        return NULL;
+        return true;
+    }
+    if (size < 0) {
+        SDL_SetError("FlyGPU: Invalid surface size!");
+        return true;
     }
     if (SURFACE_SIZE_LIMIT < size) {
         SDL_SetError("FlyGPU: Surface area must not exceed %d!", SURFACE_AREA_LIMIT);
-        return NULL;
+        return true;
     }
 
-    texture = SDL_CreateGPUTexture(
+    *texture = SDL_CreateGPUTexture(
         self->device,
         &(SDL_GPUTextureCreateInfo){
             .format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
@@ -134,61 +146,56 @@ SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *s
             .num_levels           = 1
         }
     );
-    if (!texture) return NULL;
+    if (!texture) return false;
 
-    cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
-    if (!cmdbuf) return NULL;
-
-    cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-
-    transmem = SDL_MapGPUTransferBuffer(self->device, self->texbuf, true);
-    if (!transmem) return NULL;
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
+    if (!transmem) return false;
 
     SDL_memcpy(transmem, surface->pixels, (size_t)size);
 
-    SDL_UnmapGPUTransferBuffer(self->device, self->texbuf);
+    SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
+
+    if (!self->cmdbuf) {
+        self->cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
+        if (!self->cmdbuf) return false;
+        self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
+    }
+
     SDL_UploadToGPUTexture(
-        cpypass,
-        &(SDL_GPUTextureTransferInfo){ .transfer_buffer = self->texbuf },
+        self->cpypass,
+        &(SDL_GPUTextureTransferInfo){ .transfer_buffer = self->transbuf },
         &(SDL_GPUTextureRegion){
-            .texture = texture,
+            .texture = *texture,
             .w       = (Uint32)surface->w,
             .h       = (Uint32)surface->h
         },
         true
     );
 
-    SDL_EndGPUCopyPass(cpypass);
-
-    if (self->cmdbuf_fence) {
-        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
-        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
-    }
-
-    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
-    if (!self->cmdbuf_fence) return NULL;
-
-    return texture;
+    return true;
 }
 
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
-    SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
-    Uint32 width                   = 0;
-    Uint32 height                  = 0;
-    SDL_GPUCopyPass      *cpypass  = NULL;
-    FG_Mat4               projmat  = { .data = { 0.0F } };
-    SDL_GPURenderPass    *rndrpass = NULL;
+    Uint32             width    = 0;
+    Uint32             height   = 0;
+    FG_Mat4            projmat  = { .data = { 0.0F } };
+    SDL_GPURenderPass *rndrpass = NULL;
 
-    if (!cmdbuf) return false;
+    if (!self->cmdbuf) {
+        self->cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
+        if (!self->cmdbuf) return false;
+    }
 
     if (!SDL_AcquireGPUSwapchainTexture(
-            cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
+        self->cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
         return false;
     }
 
-    if (width && height && (self->depthtex_info.width != width || self->depthtex_info.height != height))
+    if (!self->colortarg_info.texture) return true;
+
+    if (self->depthtex_info.width != width || self->depthtex_info.height != height)
     {
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         self->depthtex_info.width    = width;
@@ -197,34 +204,43 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->depthtarg_info.texture) return false;
     }
 
-    if (self->colortarg_info.texture && self->depthtarg_info.texture) {
-        cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-        FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
-        if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) return false;
-        SDL_EndGPUCopyPass(cpypass);
-        rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
-        FG_Quad3StageDraw(self->quad3stage, rndrpass);
-        SDL_EndGPURenderPass(rndrpass);
-    }
+    FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
+    if (!self->cpypass) self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
+    if (!FG_Quad3StageCopy(self->quad3stage, self->cpypass, &projmat, &info->quad3s_info)) return false;
+    SDL_EndGPUCopyPass(self->cpypass);
+
+    rndrpass = SDL_BeginGPURenderPass(self->cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+    if (!FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info)) return false;
+    SDL_EndGPURenderPass(rndrpass);
 
     if (self->cmdbuf_fence) {
         if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     }
 
-    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
-
+    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(self->cmdbuf);
+    self->cmdbuf       = NULL;
     return self->cmdbuf_fence;
 }
 
-void FG_DestroyRenderer(FG_Renderer *self)
+void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture)
 {
-    if (!self) return;
-    SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
+    SDL_ReleaseGPUTexture(self->device, texture);
+}
+
+bool FG_DestroyRenderer(FG_Renderer *self)
+{
+    if (!self) return true;
+    if (self->cmdbuf) if (!SDL_CancelGPUCommandBuffer(self->cmdbuf)) return false;
+    if (self->cmdbuf_fence) {
+        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
+        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
+    }
     FG_DestroyQuad3Stage(self->quad3stage);
     SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-    SDL_ReleaseGPUTransferBuffer(self->device, self->texbuf);
+    SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
     SDL_DestroyGPUDevice(self->device);
     SDL_free(self);
+    return true;
 }

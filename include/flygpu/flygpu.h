@@ -43,8 +43,9 @@ typedef struct
 
 typedef struct
 {
-    FG_Transform3 transform;
-    FG_QuadColor  color;
+    FG_Transform3   transform;
+    FG_QuadColor    color;
+    SDL_GPUTexture *texture;
 } FG_Quad3;
 
 typedef struct
@@ -52,22 +53,26 @@ typedef struct
     const FG_Quad3 *insts;
     Uint32          count;
     Uint32          padding0;
-} FG_RendererQuad3sDrawInfo;
+} FG_Quad3StageDrawInfo;
 
 typedef struct
 {
-    FG_RendererQuad3sDrawInfo quad3s_info;
+    FG_Quad3StageDrawInfo quad3s_info;
 } FG_RendererDrawInfo;
 
 typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
 
-SDL_GPUTexture *FG_RendererUploadSurface(FG_Renderer *self, const SDL_Surface *surface);
+bool FG_CreateRendererTexture(FG_Renderer        *self,
+                              const SDL_Surface  *surface,
+                              SDL_GPUTexture    **texture);
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 
-void FG_DestroyRenderer(FG_Renderer *self);
+void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture);
+
+bool FG_DestroyRenderer(FG_Renderer *self);
 
 #ifdef __cplusplus
 }
