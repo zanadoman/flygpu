@@ -166,7 +166,10 @@ Sint32 main(void)
     FG_DestroyRendererTexture(renderer, quad3s[2].texture);
     FG_DestroyRendererTexture(renderer, quad3s[1].texture);
     FG_DestroyRendererTexture(renderer, quad3s[0].texture);
-    FG_DestroyRenderer(renderer);
+    if (!FG_DestroyRenderer(renderer)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
