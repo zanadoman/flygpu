@@ -29,11 +29,13 @@
 
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              const char         *path,
-                             SDL_GPUShaderStage  stage)
+                             SDL_GPUShaderStage  stage,
+                             Uint32              samplers)
 {
     SDL_GPUShaderCreateInfo  info   = {
-        .format = SDL_GPU_SHADERFORMAT_SPIRV,
-        .stage  = stage
+        .format       = SDL_GPU_SHADERFORMAT_SPIRV,
+        .stage        = stage,
+        .num_samplers = samplers
     };
     void                    *code   = SDL_LoadFile(path, &info.code_size);
     SDL_GPUShader           *shader = NULL;
