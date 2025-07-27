@@ -35,10 +35,10 @@
 
 Sint32 main(void)
 {
-    SDL_Window  *window      = NULL;
-    FG_Renderer *renderer    = NULL;
-    SDL_Surface *surface     = NULL;
-    FG_Quad3     quad3s[3]   = {
+    SDL_Window          *window    = NULL;
+    FG_Renderer         *renderer  = NULL;
+    SDL_Surface         *surface   = NULL;
+    FG_Quad3             quad3s[3] = {
         [0] = {
             .transform = {
                 .translation = { 0.0F, 0.0F, -1.0F },
@@ -77,10 +77,10 @@ Sint32 main(void)
             }
         }
     };
-    Uint64       tick        = 0;
-    bool         running     = true;
-    SDL_Event    event       = { .type = SDL_EVENT_FIRST };
-    FG_RendererDrawInfo info = {
+    Uint64               tick      = 0;
+    bool                 running   = true;
+    SDL_Event            event     = { .type = SDL_EVENT_FIRST };
+    FG_RendererDrawInfo  info      = {
         .quad3s_info = {
             .insts = quad3s,
             .count = SDL_arraysize(quad3s)
@@ -143,7 +143,7 @@ Sint32 main(void)
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
         return 1;
     }
-    if (!quad3s[0].texture) {
+    if (!quad3s[2].texture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
     }
@@ -163,6 +163,7 @@ Sint32 main(void)
         tick = SDL_GetTicks();
     }
 
+    FG_DestroyRendererTexture(renderer, quad3s[2].texture);
     FG_DestroyRendererTexture(renderer, quad3s[1].texture);
     FG_DestroyRendererTexture(renderer, quad3s[0].texture);
     FG_DestroyRenderer(renderer);
