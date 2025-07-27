@@ -30,5 +30,5 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     outColor = texture(texSampler, fragTexCoord) * fragColor;
-    if (outColor.a <= 0.01) discard;
+    if (outColor.a <= 0.0) discard;
 }
