@@ -204,7 +204,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->depthtarg_info.texture) return false;
     }
 
-    FG_SetProjMat4(FG_DegToRad(60.0F), (float)width / (float)height, &projmat);
+    FG_SetProjMat4(FG_DegsToRads(60.0F), (float)width / (float)height, &projmat);
     if (!self->cpypass) self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
     if (!FG_Quad3StageCopy(self->quad3stage, self->cpypass, &projmat, &info->quad3s_info)) return false;
     SDL_EndGPUCopyPass(self->cpypass);
