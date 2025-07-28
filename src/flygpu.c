@@ -40,6 +40,13 @@
 #define SURFACE_PIXEL_SIZE 4
 #define SURFACE_SIZE_LIMIT (SURFACE_AREA_LIMIT * SURFACE_PIXEL_SIZE)
 
+typedef enum
+{
+    FG_FENCE_ID_TEXTURE,
+    FG_FENCE_ID_RENDER,
+    FG_FENCE_ID_COUNT
+} FG_FenceID;
+
 struct FG_Renderer
 {
     SDL_Window                    *window;
@@ -50,7 +57,7 @@ struct FG_Renderer
     Uint32                         padding0;
     SDL_GPUDepthStencilTargetInfo  depthtarg_info;
     FG_Quad3Stage                 *quad3stage;
-    SDL_GPUFence                  *cmdbuf_fence;
+    SDL_GPUFence                  *fences[FG_FENCE_ID_COUNT];
 };
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
@@ -149,6 +156,12 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
     );
     if (!texture) return false;
 
+    if (self->fences[FG_FENCE_ID_TEXTURE]) {
+        if (!SDL_WaitForGPUFences(self->device, true, &self->fences[FG_FENCE_ID_TEXTURE], 1)) return false;
+        SDL_ReleaseGPUFence(self->device, self->fences[FG_FENCE_ID_TEXTURE]);
+        self->fences[FG_FENCE_ID_TEXTURE] = NULL;
+    }
+
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
@@ -172,13 +185,15 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
     );
     SDL_EndGPUCopyPass(cpypass);
 
-    return SDL_SubmitGPUCommandBuffer(cmdbuf);
+    self->fences[FG_FENCE_ID_TEXTURE] = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
+    return self->fences[FG_FENCE_ID_TEXTURE];
 }
 
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
     SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
+    Uint8                 i        = 0;
     Uint32                width    = 0;
     Uint32                height   = 0;
     FG_Mat4               projmat  = { .data = { 0.0F } };
@@ -186,6 +201,14 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     SDL_GPURenderPass    *rndrpass = NULL;
 
     if (!cmdbuf) return false;
+
+    for (i = 0; i != FG_FENCE_ID_COUNT; ++i) {
+        if (self->fences[i]) {
+            if (!SDL_WaitForGPUFences(self->device, true, &self->fences[i], 1)) return false;
+            SDL_ReleaseGPUFence(self->device, self->fences[i]);
+            self->fences[i] = NULL;
+        }
+    }
 
     if (!SDL_AcquireGPUSwapchainTexture(
         cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
@@ -212,13 +235,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     if (!FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info)) return false;
     SDL_EndGPURenderPass(rndrpass);
 
-    if (self->cmdbuf_fence) {
-        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
-        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
-    }
-
-    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
-    return self->cmdbuf_fence;
+    self->fences[FG_FENCE_ID_RENDER] = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
+    return self->fences[FG_FENCE_ID_RENDER];
 }
 
 void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture)
@@ -228,10 +246,15 @@ void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture)
 
 bool FG_DestroyRenderer(FG_Renderer *self)
 {
+    Uint8 i = 0;
+
     if (!self) return true;
-    if (self->cmdbuf_fence) {
-        if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
-        SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
+    for (i = 0; i != FG_FENCE_ID_COUNT; ++i) {
+        if (self->fences[i]) {
+            if (!SDL_WaitForGPUFences(self->device, true, &self->fences[i], 1)) return false;
+            SDL_ReleaseGPUFence(self->device, self->fences[i]);
+            self->fences[i] = NULL;
+        }
     }
     FG_DestroyQuad3Stage(self->quad3stage);
     SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
