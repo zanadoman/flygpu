@@ -184,7 +184,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass, const F
     for (i = 0; i != self->inst_count; ++i) {
         self->texsampl_bind.texture = info->insts[i].texture;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
-        SDL_DrawGPUPrimitives(rndrpass, 6, info->count, 0, i);
+        SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, i);
     }
 }
 
