@@ -1,5 +1,5 @@
 /build/
-.cache
-.idea
+.cache/
+.idea/
 *.vim
-.vscode
+.vscode/

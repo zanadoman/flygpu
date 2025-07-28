@@ -9,8 +9,5 @@ insert_final_newline = true
 spelling_language = en-US
 trim_trailing_whitespace = true
 
-[.clang-tidy]
+[{.clang-tidy,*.cmake*,CMakeLists.txt}]
 indent_size = 2
-
-[{Makefile,*.mk}]
-indent_style = tab

@@ -14,23 +14,23 @@ target_link_libraries(${PROJECT_NAME} SDL3)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/shaders/)
 file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.*)
 foreach(SOURCE ${SHADERS})
-    get_filename_component(SHADER ${SOURCE} NAME)
-    set(SPIRV ${CMAKE_BINARY_DIR}/shaders/${SHADER}.spv)
-    add_custom_command(
-        OUTPUT ${SPIRV}
-        COMMAND glslangValidator -V ${SOURCE} -o ${SPIRV}
-        DEPENDS ${SOURCE}
-        VERBATIM
-    )
-    add_custom_target(${SHADER} ALL DEPENDS ${SPIRV})
-    add_dependencies(${PROJECT_NAME} ${SHADER})
+  get_filename_component(SHADER ${SOURCE} NAME)
+  set(SPIRV ${CMAKE_BINARY_DIR}/shaders/${SHADER}.spv)
+  add_custom_command(
+    OUTPUT ${SPIRV}
+    COMMAND glslangValidator -V ${SOURCE} -o ${SPIRV}
+    DEPENDS ${SOURCE}
+    VERBATIM
+  )
+  add_custom_target(${SHADER} ALL DEPENDS ${SPIRV})
+  add_dependencies(${PROJECT_NAME} ${SHADER})
 endforeach()
 
 file(GLOB_RECURSE EXAMPLES ${CMAKE_SOURCE_DIR}/examples/*.c)
 foreach(SOURCE ${EXAMPLES})
-    get_filename_component(EXAMPLE ${SOURCE} NAME_WLE)
-    add_executable(${EXAMPLE} WIN32 ${SOURCE})
-    target_link_libraries(${EXAMPLE} SDL3_image ${PROJECT_NAME})
+  get_filename_component(EXAMPLE ${SOURCE} NAME_WLE)
+  add_executable(${EXAMPLE} WIN32 ${SOURCE})
+  target_link_libraries(${EXAMPLE} SDL3_image ${PROJECT_NAME})
 endforeach()
 
 file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/assets/)
