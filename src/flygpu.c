@@ -185,7 +185,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) return false;
 
-    if (!self->colortarg_info.texture) return true;
+    if (!self->colortarg_info.texture) return SDL_CancelGPUCommandBuffer(cmdbuf);
 
     if (self->depthtex_info.width != width || self->depthtex_info.height != height)
     {
