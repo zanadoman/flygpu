@@ -202,7 +202,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     SDL_EndGPUCopyPass(cpypass);
 
     rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
-    if (!FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info)) return false;
+    FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info);
     SDL_EndGPURenderPass(rndrpass);
 
     if (self->fence) {

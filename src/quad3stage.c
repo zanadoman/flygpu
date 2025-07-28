@@ -51,8 +51,7 @@ struct FG_Quad3Stage
     Uint32                           padding2;
 };
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
-                                   SDL_GPUTextureFormat  colortarg_fmt)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
@@ -93,15 +92,13 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
     self->device = device;
 
-    self->vertspv = FG_LoadShader(
-        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
+    self->vertspv = FG_LoadShader(self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
     if (!self->vertspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
-    self->fragspv = FG_LoadShader(
-        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+    self->fragspv = FG_LoadShader(self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
     if (!self->fragspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
@@ -109,8 +106,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    self->texsampl_bind.sampler = SDL_CreateGPUSampler(
-        self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
+    self->texsampl_bind.sampler = SDL_CreateGPUSampler(self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
     if (!self->texsampl_bind.sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
@@ -128,10 +124,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
     return self;
 }
 
-bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
-                       SDL_GPUCopyPass                 *cpypass,
-                       const FG_Mat4                   *projmat,
-                       const FG_RendererQuad3sDrawInfo *info)
+bool FG_Quad3StageCopy(FG_Quad3Stage *self, SDL_GPUCopyPass *cpypass, const FG_Mat4 *projmat, const FG_Quad3StageDrawInfo *info)
 {
     Uint32   size     = 0;
     FG_Mat4 *transmem = NULL;
@@ -146,18 +139,16 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
-        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(
-            self->device, &self->vertbuf_info);
+        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
 
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(
-            self->device, &self->transbuf_info);
+        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
         if (!self->transbuf) return false;
     }
 
-    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
     for (i = 0; i != self->inst_count; ++i, transmem += VERTBUF_MAT4S) {
@@ -170,6 +161,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
+
     SDL_UploadToGPUBuffer(
         cpypass,
         &(SDL_GPUTransferBufferLocation){ .transfer_buffer = self->transbuf },
@@ -177,30 +169,23 @@ bool FG_Quad3StageCopy(FG_Quad3Stage                   *self,
             .buffer = self->vertbuf_bind.buffer,
             .size   = self->vertbuf_info.size
         },
-        false
+        true
     );
 
     return true;
 }
 
-bool FG_Quad3StageDraw(FG_Quad3Stage                   *self,
-                       SDL_GPURenderPass               *rndrpass,
-                       const FG_RendererQuad3sDrawInfo *info)
+void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass, const FG_Quad3StageDrawInfo *info)
 {
     Uint32 i = 0;
-
-    if (!self->inst_count)              return true;
-    if (self->inst_count < info->count) return false;
 
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     for (i = 0; i != self->inst_count; ++i) {
         self->texsampl_bind.texture = info->insts[i].texture;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
-        SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, i);
+        SDL_DrawGPUPrimitives(rndrpass, 6, info->count, 0, i);
     }
-
-    return true;
 }
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
