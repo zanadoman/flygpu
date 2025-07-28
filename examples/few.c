@@ -42,7 +42,7 @@ Sint32 main(void)
         [0] = {
             .transform = {
                 .translation = { 0.0F, 0.0F, -1.0F },
-                .scale       = { 0.5F, 0.5F }
+                .scale       = { 0.5525F, 0.468F }
             },
             .color     = {
                 .bl = { 1.0F, 1.0F, 1.0F, 1.0F },
