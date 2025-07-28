@@ -35,22 +35,19 @@
 
 #include <stddef.h>
 
-#define SURFACE_SIDE_LIMIT 0x2000
-#define SURFACE_AREA_LIMIT (SURFACE_SIDE_LIMIT * SURFACE_SIDE_LIMIT)
-#define SURFACE_PIXEL_SIZE 4
-#define SURFACE_SIZE_LIMIT (SURFACE_AREA_LIMIT * SURFACE_PIXEL_SIZE)
-
 struct FG_Renderer
 {
-    SDL_Window                    *window;
-    SDL_GPUDevice                 *device;
-    SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUColorTargetInfo         colortarg_info;
-    SDL_GPUTextureCreateInfo       depthtex_info;
-    Uint32                         padding0;
-    SDL_GPUDepthStencilTargetInfo  depthtarg_info;
-    FG_Quad3Stage                 *quad3stage;
-    SDL_GPUFence                  *fence;
+    SDL_Window                      *window;
+    SDL_GPUDevice                   *device;
+    SDL_GPUTransferBufferCreateInfo  transbuf_info;
+    Uint32                           padding0;
+    SDL_GPUTransferBuffer           *transbuf;
+    SDL_GPUColorTargetInfo           colortarg_info;
+    SDL_GPUTextureCreateInfo         depthtex_info;
+    Uint32                           padding1;
+    SDL_GPUDepthStencilTargetInfo    depthtarg_info;
+    FG_Quad3Stage                   *quad3stage;
+    SDL_GPUFence                    *fence;
 };
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
@@ -84,13 +81,6 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    self->transbuf = SDL_CreateGPUTransferBuffer(
-        self->device, &(SDL_GPUTransferBufferCreateInfo){ .size = SURFACE_SIZE_LIMIT });
-    if (!self->transbuf) {
-        FG_DestroyRenderer(self);
-        return NULL;
-    }
-
     self->colortarg_info.load_op = SDL_GPU_LOADOP_CLEAR;
 
     self->depthtex_info.format               = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
@@ -102,8 +92,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
     self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3stage = FG_CreateQuad3Stage(
-        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
+    self->quad3stage = FG_CreateQuad3Stage(self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -112,27 +101,20 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     return self;
 }
 
-bool FG_CreateRendererTexture(FG_Renderer        *self,
-                              const SDL_Surface  *surface,
-                              SDL_GPUTexture    **texture)
+bool FG_CreateRendererTexture(FG_Renderer *self, const SDL_Surface *surface, SDL_GPUTexture **texture)
 {
-    Sint32                size     = surface->w * surface->h * SURFACE_PIXEL_SIZE;
+    Sint32                size     = surface->w * surface->h * 4;
     void                 *transmem = NULL;
     SDL_GPUCommandBuffer *cmdbuf   = NULL;
     SDL_GPUCopyPass      *cpypass  = NULL;
 
-    *texture = NULL;
-
-    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-        SDL_SetError("FlyGPU: Surface format must be RGBA32!");
-        return true;
-    }
     if (size < 0) {
         SDL_SetError("FlyGPU: Invalid surface size!");
         return true;
     }
-    if (SURFACE_SIZE_LIMIT < size) {
-        SDL_SetError("FlyGPU: Surface area must not exceed %d!", SURFACE_AREA_LIMIT);
+
+    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+        SDL_SetError("FlyGPU: Surface format must be RGBA32!");
         return true;
     }
 
@@ -148,6 +130,13 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
         }
     );
     if (!texture) return false;
+
+    if (self->transbuf_info.size < (Uint32)size) {
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        self->transbuf_info.size = (Uint32)size;
+        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
+        if (!self->transbuf) return false;
+    }
 
     if (self->fence) {
         if (!SDL_WaitForGPUFences(self->device, true, &self->fence, 1)) return false;
@@ -194,10 +183,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     if (!cmdbuf) return false;
 
-    if (!SDL_AcquireGPUSwapchainTexture(
-        cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
-        return false;
-    }
+    if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) return false;
 
     if (!self->colortarg_info.texture) return true;
 
@@ -233,16 +219,17 @@ void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture)
     SDL_ReleaseGPUTexture(self->device, texture);
 }
 
-bool FG_DestroyRenderer(FG_Renderer *self)
+void FG_DestroyRenderer(FG_Renderer *self)
 {
-    if (!self) return true;
-    SDL_ReleaseGPUFence(self->device, self->fence);
-    FG_DestroyQuad3Stage(self->quad3stage);
-    SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-    SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
-    if (SDL_WaitForGPUIdle(self->device)) return false;
-    SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
-    SDL_DestroyGPUDevice(self->device);
+    if (!self) return;
+    if (self->device) {
+        SDL_ReleaseGPUFence(self->device, self->fence);
+        FG_DestroyQuad3Stage(self->quad3stage);
+        SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        SDL_WaitForGPUIdle(self->device);
+        SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
+        SDL_DestroyGPUDevice(self->device);
+    }
     SDL_free(self);
-    return true;
 }
