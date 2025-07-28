@@ -21,6 +21,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* NOLINTBEGIN(clang-analyzer-unix.Malloc) */
+
 #include "../include/flygpu/flygpu.h"
 
 #include <SDL3/SDL_error.h>
@@ -34,8 +36,9 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
 
-#define RandInt(min, max) ((min) + SDL_rand((max) - (min)))
+#define QUAD3_COUNT 0x100000
 
+#define RandInt(min, max) ((min) + SDL_rand((max) - (min)))
 #define RandFloat(min, max) ((min) + SDL_randf() * ((max) - (min)))
 
 static const char *IMAGES[] = {
@@ -78,16 +81,21 @@ Sint32 main(void)
     Uint32               i                               = 0;
     SDL_Surface         *surface                         = NULL;
     SDL_GPUTexture      *textures[SDL_arraysize(IMAGES)] = { [0] = NULL };
-    FG_Quad3             quad3s[10000]                   = { [0].texture = NULL };
+    FG_Quad3            *quad3s                          = SDL_calloc(QUAD3_COUNT, sizeof(FG_Quad3));
     Uint64               tick                            = 0;
     bool                 running                         = true;
     SDL_Event            event                           = { .type = SDL_EVENT_FIRST };
     FG_RendererDrawInfo  info                            = {
         .quad3s_info = {
             .insts = quad3s,
-            .count = SDL_arraysize(quad3s)
+            .count = QUAD3_COUNT
         }
     };
+
+    if (!quad3s) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -123,13 +131,13 @@ Sint32 main(void)
         SDL_DestroySurface(surface);
     }
 
-    for (i = 0; i != SDL_arraysize(quad3s); ++i) {
+    for (i = 0; i != QUAD3_COUNT; ++i) {
        quad3s[i] = (FG_Quad3){
             .transform = {
                 .translation = {
-                    .x = RandFloat(-2.0F, 2.0F),
-                    .y = RandFloat(-2.0F, 2.0F),
-                    .z = RandFloat(-1.0F, -3.0F)
+                    .x = RandFloat(-10.0F, 10.0F),
+                    .y = RandFloat(-10.0F, 10.0F),
+                    .z = RandFloat(-10.0F, -30.0F)
                 },
                 .rotation    = RandFloat(-FG_PI, FG_PI),
                 .scale       = {
@@ -181,15 +189,14 @@ Sint32 main(void)
         tick = SDL_GetTicks();
     }
 
+    SDL_free(quad3s);
     for (i = 0; i != SDL_arraysize(IMAGES); ++i) {
         FG_DestroyRendererTexture(renderer, textures[i]);
     }
-    if (!FG_DestroyRenderer(renderer)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
-        return 1;
-    }
+    FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
 }
 
+/* NOLINTEND(clang-analyzer-unix.Malloc) */

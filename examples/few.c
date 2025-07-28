@@ -70,8 +70,8 @@ Sint32 main(void)
                 .scale       = { 1.23F, 1.95F }
             },
             .color     = {
-                .bl = { 1.0F, 0.0F, 1.0F, 1.0F },
-                .br = { 1.0F, 0.0F, 1.0F, 1.0F },
+                .bl = { 1.0F, 0.0F, 0.0F, 1.0F },
+                .br = { 1.0F, 0.0F, 0.0F, 1.0F },
                 .tr = { 0.0F, 0.0F, 1.0F, 1.0F },
                 .tl = { 0.0F, 0.0F, 1.0F, 1.0F }
             }
@@ -166,12 +166,8 @@ Sint32 main(void)
     FG_DestroyRendererTexture(renderer, quad3s[2].texture);
     FG_DestroyRendererTexture(renderer, quad3s[1].texture);
     FG_DestroyRendererTexture(renderer, quad3s[0].texture);
-    if (!FG_DestroyRenderer(renderer)) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
-        return 1;
-    }
+    FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
 }
-
