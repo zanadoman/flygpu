@@ -51,8 +51,6 @@ struct FG_Renderer
     SDL_GPUDepthStencilTargetInfo  depthtarg_info;
     FG_Quad3Stage                 *quad3stage;
     SDL_GPUFence                  *cmdbuf_fence;
-    SDL_GPUCommandBuffer          *cmdbuf;
-    SDL_GPUCopyPass               *cpypass;
 };
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
@@ -118,8 +116,10 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,
                               SDL_GPUTexture    **texture)
 {
-    Sint32  size     = surface->w * surface->h * SURFACE_PIXEL_SIZE;
-    void   *transmem = NULL;
+    Sint32                size     = surface->w * surface->h * SURFACE_PIXEL_SIZE;
+    void                 *transmem = NULL;
+    SDL_GPUCommandBuffer *cmdbuf   = NULL;
+    SDL_GPUCopyPass      *cpypass  = NULL;
 
     *texture = NULL;
 
@@ -156,14 +156,12 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
 
-    if (!self->cmdbuf) {
-        self->cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
-        if (!self->cmdbuf) return false;
-        self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
-    }
+    cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
+    if (!cmdbuf) return false;
 
+    cpypass = SDL_BeginGPUCopyPass(cmdbuf);
     SDL_UploadToGPUTexture(
-        self->cpypass,
+        cpypass,
         &(SDL_GPUTextureTransferInfo){ .transfer_buffer = self->transbuf },
         &(SDL_GPUTextureRegion){
             .texture = *texture,
@@ -172,28 +170,25 @@ bool FG_CreateRendererTexture(FG_Renderer        *self,
         },
         true
     );
+    SDL_EndGPUCopyPass(cpypass);
 
-    return true;
+    return SDL_SubmitGPUCommandBuffer(cmdbuf);
 }
 
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
-    Uint32             width    = 0;
-    Uint32             height   = 0;
-    FG_Mat4            projmat  = { .data = { 0.0F } };
-    SDL_GPURenderPass *rndrpass = NULL;
+    SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
+    Uint32                width    = 0;
+    Uint32                height   = 0;
+    FG_Mat4               projmat  = { .data = { 0.0F } };
+    SDL_GPUCopyPass      *cpypass  = NULL;
+    SDL_GPURenderPass    *rndrpass = NULL;
 
-    if (!self->cmdbuf) {
-        self->cmdbuf = SDL_AcquireGPUCommandBuffer(self->device);
-        if (!self->cmdbuf) return false;
-    }
-    else {
-        SDL_EndGPUCopyPass(self->cpypass);
-    }
+    if (!cmdbuf) return false;
 
     if (!SDL_AcquireGPUSwapchainTexture(
-        self->cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
+        cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
         return false;
     }
 
@@ -209,11 +204,11 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     }
 
     FG_SetProjMat4(FG_DegsToRads(60.0F), (float)width / (float)height, &projmat);
-    self->cpypass = SDL_BeginGPUCopyPass(self->cmdbuf);
-    if (!FG_Quad3StageCopy(self->quad3stage, self->cpypass, &projmat, &info->quad3s_info)) return false;
-    SDL_EndGPUCopyPass(self->cpypass);
+    cpypass = SDL_BeginGPUCopyPass(cmdbuf);
+    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) return false;
+    SDL_EndGPUCopyPass(cpypass);
 
-    rndrpass = SDL_BeginGPURenderPass(self->cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+    rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
     if (!FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info)) return false;
     SDL_EndGPURenderPass(rndrpass);
 
@@ -222,8 +217,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
     }
 
-    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(self->cmdbuf);
-    self->cmdbuf       = NULL;
+    self->cmdbuf_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
     return self->cmdbuf_fence;
 }
 
@@ -235,7 +229,6 @@ void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture)
 bool FG_DestroyRenderer(FG_Renderer *self)
 {
     if (!self) return true;
-    if (self->cmdbuf) if (!SDL_CancelGPUCommandBuffer(self->cmdbuf)) return false;
     if (self->cmdbuf_fence) {
         if (!SDL_WaitForGPUFences(self->device, true, &self->cmdbuf_fence, 1)) return false;
         SDL_ReleaseGPUFence(self->device, self->cmdbuf_fence);
