@@ -49,8 +49,10 @@ const vec2 fragTexCoords[4] = vec2[](
     vec2(0.0, 0.0)
 );
 
-void main() {
-    uint i       = indices[gl_VertexIndex];
+void main()
+{
+    uint i = indices[gl_VertexIndex];
+
     gl_Position  = mat4(mvp0, mvp1, mvp2, mvp3) * vec4(positions[i], 0.0, 1.0);
     fragColor    = vec4[](inColor0, inColor1, inColor2, inColor3)[i];
     fragTexCoord = fragTexCoords[i];
