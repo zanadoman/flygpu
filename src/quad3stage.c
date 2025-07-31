@@ -37,16 +37,16 @@
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                   *device;
-    SDL_GPUShader                   *vertspv;
-    SDL_GPUShader                   *fragspv;
     SDL_GPUBufferCreateInfo          vertbuf_info;
     Uint32                           padding0;
     SDL_GPUBufferBinding             vertbuf_bind;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint32                           padding1;
     SDL_GPUTransferBuffer           *transbuf;
-    SDL_GPUTextureSamplerBinding     texsampl_bind;
+    SDL_GPUShader                   *vertspv;
+    SDL_GPUShader                   *fragspv;
     SDL_GPUGraphicsPipeline         *pipeline;
+    SDL_GPUTextureSamplerBinding     texsampl_bind;
 };
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
@@ -91,6 +91,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
     self->device = device;
 
+    self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+
     self->vertspv = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
     if (!self->vertspv) {
@@ -105,20 +107,18 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
         return NULL;
     }
 
-    self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-
-    self->texsampl_bind.sampler = SDL_CreateGPUSampler(
-        self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
-    if (!self->texsampl_bind.sampler) {
-        FG_DestroyQuad3Stage(self);
-        return NULL;
-    }
-
     info.vertex_shader   = self->vertspv;
     info.fragment_shader = self->fragspv;
 
     self->pipeline = SDL_CreateGPUGraphicsPipeline(self->device, &info);
     if (!self->pipeline) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
+    }
+
+    self->texsampl_bind.sampler = SDL_CreateGPUSampler(
+        self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
+    if (!self->texsampl_bind.sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
@@ -197,11 +197,11 @@ void FG_Quad3StageDraw(FG_Quad3Stage               *self,
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
 {
     if (!self) return;
-    SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
     SDL_ReleaseGPUSampler(self->device, self->texsampl_bind.sampler);
-    SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
-    SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
+    SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
     SDL_ReleaseGPUShader(self->device, self->vertspv);
+    SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+    SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
     SDL_free(self);
 }
