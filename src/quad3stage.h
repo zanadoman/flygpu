@@ -39,9 +39,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info);
 
-void FG_Quad3StageDraw(FG_Quad3Stage               *self,
-                       SDL_GPURenderPass           *rndrpass,
-                       const FG_Quad3StageDrawInfo *info);
+void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self);
 

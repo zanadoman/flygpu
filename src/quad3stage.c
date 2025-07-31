@@ -34,20 +34,31 @@
 #define VERTBUF_PITCH (VERTBUF_MAT4S * sizeof(FG_Mat4))
 #define VERTBUF_ATTRS (VERTBUF_PITCH / sizeof(FG_Vec4))
 
+typedef struct
+{
+    SDL_GPUTexture *texture;
+    Uint32          count;
+    Uint32          padding0;
+} FG_Quad3Batch;
+
 struct FG_Quad3Stage
 {
-    SDL_GPUDevice                   *device;
-    SDL_GPUBufferCreateInfo          vertbuf_info;
-    Uint32                           padding0;
-    SDL_GPUBufferBinding             vertbuf_bind;
-    SDL_GPUTransferBufferCreateInfo  transbuf_info;
-    Uint32                           padding1;
-    SDL_GPUTransferBuffer           *transbuf;
-    SDL_GPUShader                   *vertspv;
-    SDL_GPUShader                   *fragspv;
-    SDL_GPUGraphicsPipeline         *pipeline;
-    SDL_GPUTextureSamplerBinding     texsampl_bind;
+    SDL_GPUDevice                    *device;
+    const FG_Quad3                  **instances;
+    FG_Quad3Batch                    *batches;
+    Uint32                            count;
+    SDL_GPUBufferCreateInfo           vertbuf_info;
+    SDL_GPUBufferBinding              vertbuf_bind;
+    SDL_GPUTransferBufferCreateInfo   transbuf_info;
+    Uint32                            padding0;
+    SDL_GPUTransferBuffer            *transbuf;
+    SDL_GPUShader                    *vertspv;
+    SDL_GPUShader                    *fragspv;
+    SDL_GPUGraphicsPipeline          *pipeline;
+    SDL_GPUTextureSamplerBinding      texsampl_bind;
 };
+
+Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
                                    SDL_GPUTextureFormat  colortarg_fmt)
@@ -126,6 +137,16 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
     return self;
 }
 
+Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
+{
+    const FG_Quad3 *a = *(FG_Quad3 *const*)lhs;
+    const FG_Quad3 *b = *(FG_Quad3 *const*)rhs;
+
+    if (a->texture < b->texture) return -1;
+    if (b->texture < a->texture) return 1;
+    return 0;
+}
+
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
                        const FG_Mat4               *vpmat,
@@ -135,8 +156,28 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     FG_Mat4 *transmem = NULL;
     Uint32   i        = 0;
     FG_Mat4  modelmat = { .data = { 0.0F } };
+    Uint32   j        = 0;
 
     if (!size) return true;
+
+    if (self->count < info->count) {
+        self->count = info->count;
+
+        self->instances = SDL_realloc(
+            self->instances, self->count * sizeof(*self->instances));
+        if (!self->instances) return false;
+
+        self->batches = SDL_realloc(
+            self->batches, self->count * sizeof(*self->batches));
+        if (!self->batches) return false;
+    }
+
+    for (i = 0; i != self->count; ++i) self->instances[i] = info->instances + i;
+    SDL_qsort(
+        self->instances, self->count, sizeof(*self->instances), FG_CompareQuad3s);
+
+    self->batches->texture = (*self->instances)->texture;
+    self->batches->count   = 0;
 
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
@@ -155,13 +196,19 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
-    for (i = 0; i != info->count; ++i, transmem += VERTBUF_MAT4S) {
-        FG_SetTransMat4(&info->instances[i].transform, &modelmat);
+    for (i = 0; i != self->count; ++i, transmem += VERTBUF_MAT4S) {
+        FG_SetTransMat4(&self->instances[i]->transform, &modelmat);
         FG_MulMat4s(vpmat, &modelmat, transmem);
-        transmem[1].cols[0] = info->instances[i].color.bl;
-        transmem[1].cols[1] = info->instances[i].color.br;
-        transmem[1].cols[2] = info->instances[i].color.tr;
-        transmem[1].cols[3] = info->instances[i].color.tl;
+        transmem[1].cols[0] = self->instances[i]->color.bl;
+        transmem[1].cols[1] = self->instances[i]->color.br;
+        transmem[1].cols[2] = self->instances[i]->color.tr;
+        transmem[1].cols[3] = self->instances[i]->color.tl;
+        if (self->instances[i]->texture != self->batches[j].texture) {
+            ++j;
+            self->batches[j].texture = self->instances[i]->texture;
+            self->batches[j].count   = 1;
+        }
+        else ++self->batches[j].count;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
@@ -179,18 +226,17 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     return true;
 }
 
-void FG_Quad3StageDraw(FG_Quad3Stage               *self,
-                       SDL_GPURenderPass           *rndrpass,
-                       const FG_Quad3StageDrawInfo *info)
+void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
     Uint32 i = 0;
+    Uint32 j = 0;
 
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
-    for (i = 0; i != info->count; ++i) {
-        self->texsampl_bind.texture = info->instances[i].texture;
+    for (i = 0, j = 0; i != self->count; i += self->batches[j].count, ++j) {
+        self->texsampl_bind.texture = self->batches[j].texture;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
-        SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, i);
+        SDL_DrawGPUPrimitives(rndrpass, 6, self->batches[j].count, 0, i);
     }
 }
 
@@ -203,5 +249,7 @@ void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
     SDL_ReleaseGPUShader(self->device, self->vertspv);
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
+    SDL_free(self->batches);
+    SDL_free(self->instances);
     SDL_free(self);
 }
