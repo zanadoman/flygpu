@@ -24,11 +24,11 @@
 #ifndef FLYGPU_LINALG_H
 #define FLYGPU_LINALG_H
 
-#include <SDL3/SDL_stdinc.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#include <SDL3/SDL_stdinc.h>
 
 #define FG_FAR  100.0F
 #define FG_NEAR 0.1F

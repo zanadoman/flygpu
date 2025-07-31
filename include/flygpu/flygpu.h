@@ -24,14 +24,14 @@
 #ifndef FLYGPU_FLYGPU_H
 #define FLYGPU_FLYGPU_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include "linalg.h" /* IWYU pragma: export */
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
 typedef struct
 {
@@ -50,7 +50,7 @@ typedef struct
 
 typedef struct
 {
-    const FG_Quad3 *insts;
+    const FG_Quad3 *instances;
     Uint32          count;
     Uint32          padding0;
 } FG_Quad3StageDrawInfo;
@@ -64,7 +64,9 @@ typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
 
-bool FG_CreateRendererTexture(FG_Renderer *self, const SDL_Surface *surface, SDL_GPUTexture **texture);
+bool FG_CreateRendererTexture(FG_Renderer        *self,
+                              const SDL_Surface  *surface,
+                              SDL_GPUTexture    **texture);
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 

@@ -27,7 +27,10 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice *device, const char *path, SDL_GPUShaderStage stage, Uint32 samplers)
+SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
+                             const char         *path,
+                             SDL_GPUShaderStage  stage,
+                             Uint32              samplers)
 {
     SDL_GPUShaderCreateInfo  info   = {
         .format       = SDL_GPU_SHADERFORMAT_SPIRV,

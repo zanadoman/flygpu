@@ -70,13 +70,11 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     }
 
     if (!SDL_SetGPUSwapchainParameters(
-            self->device,
-            self->window,
-            SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR,
-            vsync ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE
-        )
-    )
-    {
+        self->device,
+        self->window,
+        SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR,
+        vsync ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE
+    )) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -92,7 +90,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
     self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3stage = FG_CreateQuad3Stage(self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
+    self->quad3stage = FG_CreateQuad3Stage(
+        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -101,20 +100,24 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     return self;
 }
 
-bool FG_CreateRendererTexture(FG_Renderer *self, const SDL_Surface *surface, SDL_GPUTexture **texture)
+bool FG_CreateRendererTexture(FG_Renderer        *self,
+                              const SDL_Surface  *surface,
+                              SDL_GPUTexture    **texture)
 {
     Sint32                size     = surface->w * surface->h * 4;
     void                 *transmem = NULL;
     SDL_GPUCommandBuffer *cmdbuf   = NULL;
     SDL_GPUCopyPass      *cpypass  = NULL;
 
-    if (size < 0) {
+    *texture = NULL;
+
+    if (size <= 0) {
         SDL_SetError("FlyGPU: Invalid surface size!");
         return true;
     }
 
-    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-        SDL_SetError("FlyGPU: Surface format must be RGBA32!");
+    if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
+        SDL_SetError("FlyGPU: Surface format must be ABGR8888!");
         return true;
     }
 
@@ -134,7 +137,8 @@ bool FG_CreateRendererTexture(FG_Renderer *self, const SDL_Surface *surface, SDL
     if (self->transbuf_info.size < (Uint32)size) {
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = (Uint32)size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
+        self->transbuf           = SDL_CreateGPUTransferBuffer(
+            self->device, &self->transbuf_info);
         if (!self->transbuf) return false;
     }
 
@@ -183,25 +187,32 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     if (!cmdbuf) return false;
 
-    if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) return false;
+    if (!SDL_AcquireGPUSwapchainTexture(
+        cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
+        return false;
+    }
 
     if (!self->colortarg_info.texture) return SDL_CancelGPUCommandBuffer(cmdbuf);
 
-    if (self->depthtex_info.width != width || self->depthtex_info.height != height)
-    {
+    if (self->depthtex_info.width != width || self->depthtex_info.height != height) {
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         self->depthtex_info.width    = width;
         self->depthtex_info.height   = height;
-        self->depthtarg_info.texture = SDL_CreateGPUTexture(self->device, &self->depthtex_info);
+        self->depthtarg_info.texture = SDL_CreateGPUTexture(
+            self->device, &self->depthtex_info);
         if (!self->depthtarg_info.texture) return false;
     }
 
     FG_SetProjMat4(FG_DegsToRads(60.0F), (float)width / (float)height, &projmat);
+
     cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) return false;
+    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) {
+        return false;
+    }
     SDL_EndGPUCopyPass(cpypass);
 
-    rndrpass = SDL_BeginGPURenderPass(cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+    rndrpass = SDL_BeginGPURenderPass(
+        cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
     FG_Quad3StageDraw(self->quad3stage, rndrpass, &info->quad3s_info);
     SDL_EndGPURenderPass(rndrpass);
 

@@ -47,11 +47,10 @@ struct FG_Quad3Stage
     SDL_GPUTransferBuffer           *transbuf;
     SDL_GPUTextureSamplerBinding     texsampl_bind;
     SDL_GPUGraphicsPipeline         *pipeline;
-    Uint32                           inst_count;
-    Uint32                           padding2;
 };
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat colortarg_fmt)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
+                                   SDL_GPUTextureFormat  colortarg_fmt)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
@@ -92,13 +91,15 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat c
 
     self->device = device;
 
-    self->vertspv = FG_LoadShader(self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
+    self->vertspv = FG_LoadShader(
+        self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
     if (!self->vertspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
-    self->fragspv = FG_LoadShader(self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
+    self->fragspv = FG_LoadShader(
+        self->device, "./shaders/quad3.frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1);
     if (!self->fragspv) {
         FG_DestroyQuad3Stage(self);
         return NULL;
@@ -106,7 +107,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat c
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    self->texsampl_bind.sampler = SDL_CreateGPUSampler(self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
+    self->texsampl_bind.sampler = SDL_CreateGPUSampler(
+        self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
     if (!self->texsampl_bind.sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
@@ -124,40 +126,42 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, SDL_GPUTextureFormat c
     return self;
 }
 
-bool FG_Quad3StageCopy(FG_Quad3Stage *self, SDL_GPUCopyPass *cpypass, const FG_Mat4 *projmat, const FG_Quad3StageDrawInfo *info)
+bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
+                       SDL_GPUCopyPass             *cpypass,
+                       const FG_Mat4               *projmat,
+                       const FG_Quad3StageDrawInfo *info)
 {
-    Uint32   size     = 0;
+    Uint32   size     = info->count * VERTBUF_PITCH;
     FG_Mat4 *transmem = NULL;
     Uint32   i        = 0;
     FG_Mat4  transmat = { .data = { 0.0F } };
 
-    self->inst_count = info->count;
-    if (!self->inst_count) return true;
-
-    size = self->inst_count * VERTBUF_PITCH;
+    if (!size) return true;
 
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
-        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(self->device, &self->vertbuf_info);
+        self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(
+            self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
 
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(self->device, &self->transbuf_info);
+        self->transbuf           = SDL_CreateGPUTransferBuffer(
+            self->device, &self->transbuf_info);
         if (!self->transbuf) return false;
     }
 
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
-    for (i = 0; i != self->inst_count; ++i, transmem += VERTBUF_MAT4S) {
-        FG_SetTransMat4(&info->insts[i].transform, &transmat);
+    for (i = 0; i != info->count; ++i, transmem += VERTBUF_MAT4S) {
+        FG_SetTransMat4(&info->instances[i].transform, &transmat);
         FG_MulMat4s(projmat, &transmat, transmem);
-        transmem[1].cols[0] = info->insts[i].color.bl;
-        transmem[1].cols[1] = info->insts[i].color.br;
-        transmem[1].cols[2] = info->insts[i].color.tr;
-        transmem[1].cols[3] = info->insts[i].color.tl;
+        transmem[1].cols[0] = info->instances[i].color.bl;
+        transmem[1].cols[1] = info->instances[i].color.br;
+        transmem[1].cols[2] = info->instances[i].color.tr;
+        transmem[1].cols[3] = info->instances[i].color.tl;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
@@ -175,14 +179,16 @@ bool FG_Quad3StageCopy(FG_Quad3Stage *self, SDL_GPUCopyPass *cpypass, const FG_M
     return true;
 }
 
-void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass, const FG_Quad3StageDrawInfo *info)
+void FG_Quad3StageDraw(FG_Quad3Stage               *self,
+                       SDL_GPURenderPass           *rndrpass,
+                       const FG_Quad3StageDrawInfo *info)
 {
     Uint32 i = 0;
 
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
-    for (i = 0; i != self->inst_count; ++i) {
-        self->texsampl_bind.texture = info->insts[i].texture;
+    for (i = 0; i != info->count; ++i) {
+        self->texsampl_bind.texture = info->instances[i].texture;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
         SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, i);
     }

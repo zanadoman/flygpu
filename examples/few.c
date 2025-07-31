@@ -82,8 +82,8 @@ Sint32 main(void)
     SDL_Event            event     = { .type = SDL_EVENT_FIRST };
     FG_RendererDrawInfo  info      = {
         .quad3s_info = {
-            .insts = quad3s,
-            .count = SDL_arraysize(quad3s)
+            .instances = quad3s,
+            .count     = SDL_arraysize(quad3s)
         }
     };
 
