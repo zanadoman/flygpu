@@ -24,10 +24,10 @@
 #ifndef FLYGPU_QUAD3STAGE_H
 #define FLYGPU_QUAD3STAGE_H
 
-#include <SDL3/SDL_gpu.h>
-
 #include "../include/flygpu/flygpu.h"
 #include "../include/flygpu/linalg.h"
+
+#include <SDL3/SDL_gpu.h>
 
 typedef struct FG_Quad3Stage FG_Quad3Stage;
 
