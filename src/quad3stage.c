@@ -128,13 +128,13 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
-                       const FG_Mat4               *projmat,
+                       const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
     Uint32   size     = info->count * VERTBUF_PITCH;
     FG_Mat4 *transmem = NULL;
     Uint32   i        = 0;
-    FG_Mat4  transmat = { .data = { 0.0F } };
+    FG_Mat4  modelmat = { .data = { 0.0F } };
 
     if (!size) return true;
 
@@ -156,8 +156,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     if (!transmem) return false;
 
     for (i = 0; i != info->count; ++i, transmem += VERTBUF_MAT4S) {
-        FG_SetTransMat4(&info->instances[i].transform, &transmat);
-        FG_MulMat4s(projmat, &transmat, transmem);
+        FG_SetTransMat4(&info->instances[i].transform, &modelmat);
+        FG_MulMat4s(vpmat, &modelmat, transmem);
         transmem[1].cols[0] = info->instances[i].color.bl;
         transmem[1].cols[1] = info->instances[i].color.br;
         transmem[1].cols[2] = info->instances[i].color.tr;

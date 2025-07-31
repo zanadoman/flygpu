@@ -25,18 +25,20 @@
 
 #include <SDL3/SDL_stdinc.h>
 
-void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat)
+void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat)
 {
-    float focal = 1.0F / SDL_tanf(fov / 2.0F);
+    float focal = 1.0F / SDL_tanf(perspective->fov / 2.0F);
 
     *projmat = (FG_Mat4){
         .cols[0].x = focal / aspect,
         .cols[1].y = focal,
         .cols[2]   = {
-            .z = (FG_FAR + FG_NEAR) / (FG_NEAR - FG_FAR),
+            .z = (perspective->far + perspective->near)
+               / (perspective->near - perspective->far),
             .w = -1.0F
         },
-        .cols[3].z = 2.0F * FG_FAR * FG_NEAR / (FG_NEAR - FG_FAR)
+        .cols[3].z = 2.0F * perspective->far * perspective->near
+                   / (perspective->near - perspective->far)
     };
 }
 

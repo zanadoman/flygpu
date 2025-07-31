@@ -35,6 +35,13 @@ extern "C" {
 
 typedef struct
 {
+    FG_Perspective perspective;
+    FG_Vec3        translation;
+    float          rotation;
+} FG_Camera;
+
+typedef struct
+{
     FG_Vec4 bl;
     FG_Vec4 br;
     FG_Vec4 tr;
@@ -57,6 +64,8 @@ typedef struct
 
 typedef struct
 {
+    FG_Camera             camera;
+    Uint32                padding0;
     FG_Quad3StageDrawInfo quad3s_info;
 } FG_RendererDrawInfo;
 

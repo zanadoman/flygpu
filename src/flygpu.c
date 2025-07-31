@@ -182,6 +182,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     Uint32                width    = 0;
     Uint32                height   = 0;
     FG_Mat4               projmat  = { .data = { 0.0F } };
+    FG_Mat4               viewmat  = { .data = { 0.0F } };
+    FG_Mat4               vpmat    = { .data = { 0.0F } };
     SDL_GPUCopyPass      *cpypass  = NULL;
     SDL_GPURenderPass    *rndrpass = NULL;
 
@@ -203,10 +205,23 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->depthtarg_info.texture) return false;
     }
 
-    FG_SetProjMat4(FG_DegsToRads(60.0F), (float)width / (float)height, &projmat);
+    FG_SetProjMat4(&info->camera.perspective, (float)width / (float)height, &projmat);
+    FG_SetTransMat4(
+        &(FG_Transform3){
+            .translation = {
+                .x = -info->camera.translation.x,
+                .y = -info->camera.translation.y,
+                .z = -info->camera.translation.z
+            },
+            .rotation    = -info->camera.rotation,
+            .scale       = { 1.0F, 1.0F }
+        },
+        &viewmat
+    );
+    FG_MulMat4s(&projmat, &viewmat, &vpmat);
 
     cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &projmat, &info->quad3s_info)) {
+    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &vpmat, &info->quad3s_info)) {
         return false;
     }
     SDL_EndGPUCopyPass(cpypass);

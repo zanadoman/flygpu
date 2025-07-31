@@ -29,7 +29,9 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
@@ -82,15 +84,24 @@ Sint32 main(void)
     SDL_Surface         *surface                         = NULL;
     SDL_GPUTexture      *textures[SDL_arraysize(IMAGES)] = { [0] = NULL };
     FG_Quad3            *quad3s                          = SDL_calloc(QUAD3_COUNT, sizeof(FG_Quad3));
+    const bool          *keys                            = NULL;
     Uint64               tick                            = 0;
     bool                 running                         = true;
     SDL_Event            event                           = { .type = SDL_EVENT_FIRST };
     FG_RendererDrawInfo  info                            = {
+        .camera      = {
+            .perspective = {
+                .fov  = FG_DegsToRads(60.0F),
+                .near = 0.1F,
+                .far  = 100.0F
+            }
+        },
         .quad3s_info = {
             .instances = quad3s,
             .count     = QUAD3_COUNT
         }
     };
+    Uint64               delta                           = 0;
 
     if (!quad3s) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -175,18 +186,25 @@ Sint32 main(void)
         };
     }
 
-    tick = SDL_GetTicks();
+    keys = SDL_GetKeyboardState(NULL);
 
     while (running) {
+        tick = SDL_GetTicks();
+
         while (SDL_PollEvent(&event)) if ((event.type) == SDL_EVENT_QUIT) running = false;
+
+        info.camera.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
+        info.camera.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
+        info.camera.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
+        info.camera.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
 
         if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
             return 1;
         }
 
-        SDL_Log("Frame time: %lu ms\n", SDL_GetTicks() - tick);
-        tick = SDL_GetTicks();
+        delta = SDL_GetTicks() - tick;
+        SDL_Log("Frame time: %lu ms\n", delta);
     }
 
     SDL_free(quad3s);

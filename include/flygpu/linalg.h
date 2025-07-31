@@ -30,12 +30,17 @@ extern "C" {
 
 #include <SDL3/SDL_stdinc.h>
 
-#define FG_FAR  100.0F
-#define FG_NEAR 0.1F
-#define FG_PI   3.14159F
+#define FG_PI 3.14159F
 
 #define FG_DegsToRads(d) ((d) / 180.0F * FG_PI)
 #define FG_RadsToDegs(r) ((r) * 180.0F / FG_PI)
+
+typedef struct
+{
+    float fov;
+    float near;
+    float far;
+} FG_Perspective;
 
 typedef struct
 {
@@ -79,7 +84,7 @@ typedef struct
     FG_Vec2 scale;
 } FG_Transform3;
 
-void FG_SetProjMat4(float fov, float aspect, FG_Mat4 *projmat);
+void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 
 void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat);
 
