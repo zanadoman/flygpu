@@ -120,7 +120,7 @@ Sint32 main(void)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
             return 1;
         }
-        if (!FG_CreateRendererTexture(renderer, surface, textures + i)) {
+        if (!FG_RendererCreateTexture(renderer, surface, textures + i)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
             return 1;
         }
@@ -191,7 +191,7 @@ Sint32 main(void)
 
     SDL_free(quad3s);
     for (i = 0; i != SDL_arraysize(IMAGES); ++i) {
-        FG_DestroyRendererTexture(renderer, textures[i]);
+        FG_RendererDestroyTexture(renderer, textures[i]);
     }
     FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

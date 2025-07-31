@@ -109,7 +109,7 @@ Sint32 main(void)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
     }
-    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[0].texture)) {
+    if (!FG_RendererCreateTexture(renderer, surface, &quad3s[0].texture)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
         return 1;
     }
@@ -124,7 +124,7 @@ Sint32 main(void)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
     }
-    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[1].texture)) {
+    if (!FG_RendererCreateTexture(renderer, surface, &quad3s[1].texture)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
         return 1;
     }
@@ -139,7 +139,7 @@ Sint32 main(void)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
     }
-    if (!FG_CreateRendererTexture(renderer, surface, &quad3s[2].texture)) {
+    if (!FG_RendererCreateTexture(renderer, surface, &quad3s[2].texture)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
         return 1;
     }
@@ -163,9 +163,9 @@ Sint32 main(void)
         tick = SDL_GetTicks();
     }
 
-    FG_DestroyRendererTexture(renderer, quad3s[2].texture);
-    FG_DestroyRendererTexture(renderer, quad3s[1].texture);
-    FG_DestroyRendererTexture(renderer, quad3s[0].texture);
+    FG_RendererDestroyTexture(renderer, quad3s[2].texture);
+    FG_RendererDestroyTexture(renderer, quad3s[1].texture);
+    FG_RendererDestroyTexture(renderer, quad3s[0].texture);
     FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

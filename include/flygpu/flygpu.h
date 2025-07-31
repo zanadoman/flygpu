@@ -64,13 +64,13 @@ typedef struct FG_Renderer FG_Renderer;
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
 
-bool FG_CreateRendererTexture(FG_Renderer        *self,
+bool FG_RendererCreateTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,
                               SDL_GPUTexture    **texture);
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 
-void FG_DestroyRendererTexture(FG_Renderer *self, SDL_GPUTexture *texture);
+void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture);
 
 void FG_DestroyRenderer(FG_Renderer *self);
 
