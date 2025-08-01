@@ -36,8 +36,7 @@ extern "C" {
 typedef struct
 {
     FG_Perspective perspective;
-    FG_Vec3        translation;
-    float          rotation;
+    FG_Transform3  transform;
 } FG_Camera;
 
 typedef struct

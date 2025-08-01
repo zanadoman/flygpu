@@ -206,22 +206,17 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     }
 
     FG_SetProjMat4(&info->camera.perspective, (float)width / (float)height, &projmat);
-    FG_SetTransMat4(
-        &(FG_Transform3){
-            .translation = {
-                .x = -info->camera.translation.x,
-                .y = -info->camera.translation.y,
-                .z = -info->camera.translation.z
-            },
-            .rotation    = -info->camera.rotation,
-            .scale       = { 1.0F, 1.0F }
-        },
-        &viewmat
-    );
+    FG_SetViewMat4(&info->camera.transform, &viewmat);
     FG_MulMat4s(&projmat, &viewmat, &vpmat);
 
     cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-    if (!FG_Quad3StageCopy(self->quad3stage, cpypass, &vpmat, &info->quad3s_info)) {
+    if (!FG_Quad3StageCopy(
+        self->quad3stage,
+        cpypass,
+        info->camera.transform.translation.z,
+        &vpmat,
+        &info->quad3s_info
+    )) {
         return false;
     }
     SDL_EndGPUCopyPass(cpypass);

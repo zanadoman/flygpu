@@ -36,6 +36,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
+                       float                        view_z,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info);
 

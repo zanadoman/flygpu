@@ -94,7 +94,8 @@ Sint32 main(void)
                 .fov  = FG_DegsToRads(60.0F),
                 .near = 0.1F,
                 .far  = 100.0F
-            }
+            },
+            .transform.scale = { 1.0F, 1.0F }
         },
         .quad3s_info = {
             .instances = quad3s,
@@ -193,10 +194,10 @@ Sint32 main(void)
 
         while (SDL_PollEvent(&event)) if ((event.type) == SDL_EVENT_QUIT) running = false;
 
-        info.camera.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
-        info.camera.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
-        info.camera.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
-        info.camera.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
+        info.camera.transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
+        info.camera.transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
+        info.camera.transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
+        info.camera.transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
 
         if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());

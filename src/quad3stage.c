@@ -46,11 +46,13 @@ struct FG_Quad3Stage
     SDL_GPUDevice                    *device;
     const FG_Quad3                  **instances;
     FG_Quad3Batch                    *batches;
+    Uint32                            capacity;
     Uint32                            count;
     SDL_GPUBufferCreateInfo           vertbuf_info;
+    Uint32                            padding0;
     SDL_GPUBufferBinding              vertbuf_bind;
     SDL_GPUTransferBufferCreateInfo   transbuf_info;
-    Uint32                            padding0;
+    Uint32                            padding1;
     SDL_GPUTransferBuffer            *transbuf;
     SDL_GPUShader                    *vertspv;
     SDL_GPUShader                    *fragspv;
@@ -149,6 +151,7 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
+                       float                        view_z,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
@@ -160,19 +163,24 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
 
     if (!size) return true;
 
-    if (self->count < info->count) {
-        self->count = info->count;
+    if (self->capacity < info->count) {
+        self->capacity = info->count;
 
         self->instances = SDL_realloc(
-            self->instances, self->count * sizeof(*self->instances));
+            self->instances, self->capacity * sizeof(*self->instances));
         if (!self->instances) return false;
 
         self->batches = SDL_realloc(
-            self->batches, self->count * sizeof(*self->batches));
+            self->batches, self->capacity * sizeof(*self->batches));
         if (!self->batches) return false;
     }
 
-    for (i = 0; i != self->count; ++i) self->instances[i] = info->instances + i;
+    for (i = 0, self->count = 0; i != self->capacity; ++i) {
+        if (info->instances[i].transform.translation.z < view_z) {
+            self->instances[self->count++] = info->instances + i;
+        }
+    }
+
     SDL_qsort(
         self->instances, self->count, sizeof(*self->instances), FG_CompareQuad3s);
 
@@ -197,7 +205,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     if (!transmem) return false;
 
     for (i = 0; i != self->count; ++i, transmem += VERTBUF_MAT4S) {
-        FG_SetTransMat4(&self->instances[i]->transform, &modelmat);
+        FG_SetModelMat4(&self->instances[i]->transform, &modelmat);
         FG_MulMat4s(vpmat, &modelmat, transmem);
         transmem[1].cols[0] = self->instances[i]->color.bl;
         transmem[1].cols[1] = self->instances[i]->color.br;

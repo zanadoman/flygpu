@@ -42,13 +42,38 @@ void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *pr
     };
 }
 
-void FG_SetTransMat4(const FG_Transform3 *restrict transform3,
-                     FG_Mat4             *restrict transmat)
+void FG_SetViewMat4(const FG_Transform3 *restrict transform3,
+                    FG_Mat4             *restrict viewmat)
 {
     float cos = SDL_cosf(transform3->rotation);
     float sin = SDL_sinf(transform3->rotation);
 
-    *transmat = (FG_Mat4){
+    *viewmat = (FG_Mat4){
+        .cols[0]   = {
+            .x = cos * transform3->scale.x,
+            .y = -sin * transform3->scale.x
+        },
+        .cols[1]   = {
+            .x = sin * transform3->scale.y,
+            .y = cos * transform3->scale.y
+        },
+        .cols[2].z = 1.0F,
+        .cols[3]   = {
+            .x = -cos * transform3->translation.x - sin * transform3->translation.y,
+            .y = sin * transform3->translation.x - cos * transform3->translation.y,
+            .z = -transform3->translation.z,
+            .w = 1.0F
+        }
+    };
+}
+
+void FG_SetModelMat4(const FG_Transform3 *restrict transform3,
+                     FG_Mat4             *restrict modelmat)
+{
+    float cos = SDL_cosf(transform3->rotation);
+    float sin = SDL_sinf(transform3->rotation);
+
+    *modelmat = (FG_Mat4){
         .cols[0]   = {
             .x = cos * transform3->scale.x,
             .y = sin * transform3->scale.x

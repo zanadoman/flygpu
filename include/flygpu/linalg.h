@@ -86,7 +86,9 @@ typedef struct
 
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 
-void FG_SetTransMat4(const FG_Transform3 *transform3, FG_Mat4 *transmat);
+void FG_SetViewMat4(const FG_Transform3 *transform3, FG_Mat4 *viewmat);
+
+void FG_SetModelMat4(const FG_Transform3 *transform3, FG_Mat4 *modelmat);
 
 void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
 
