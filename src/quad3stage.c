@@ -228,7 +228,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
             .buffer = self->vertbuf_bind.buffer,
             .size   = self->vertbuf_info.size
         },
-        true
+        false
     );
 
     return true;

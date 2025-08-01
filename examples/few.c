@@ -37,10 +37,10 @@
 
 Sint32 main(void)
 {
-    SDL_Window          *window    = NULL;
-    FG_Renderer         *renderer  = NULL;
-    SDL_Surface         *surface   = NULL;
-    FG_Quad3             quad3s[3] = {
+    SDL_Window          *window     = NULL;
+    FG_Renderer         *renderer   = NULL;
+    SDL_Surface         *surface    = NULL;
+    FG_Quad3             quad3s[3]  = {
         [0] = {
             .transform = {
                 .translation = { 0.0F, 0.0F, -1.0F },
@@ -79,25 +79,40 @@ Sint32 main(void)
             }
         }
     };
-    const bool          *keys      = NULL;
-    Uint64               tick      = 0;
-    bool                 running   = true;
-    SDL_Event            event     = { .type = SDL_EVENT_FIRST };
-    FG_RendererDrawInfo  info      = {
-        .camera      = {
-            .perspective = {
+    const bool          *keys       = NULL;
+    Uint64               tick       = 0;
+    bool                 running    = true;
+    SDL_Event            event      = { .type = SDL_EVENT_FIRST };
+    FG_Camera            cameras[2] = {
+        [0] = {
+            .viewport        = { { 0.0F, 0.0F },  { 0.5F, 1.0F } },
+            .perspective     = {
+                .fov  = FG_DegsToRads(60.0F),
+                .near = 0.1F,
+                .far  = 100.0F
+            },
+            .transform.scale = { 1.0F, 1.0F },
+            .priority        = 1
+        },
+        [1] = {
+            .viewport        = { { 0.5F, 0.0F },  { 1.0F, 1.0F } },
+            .perspective     = {
                 .fov  = FG_DegsToRads(60.0F),
                 .near = 0.1F,
                 .far  = 100.0F
             },
             .transform.scale = { 1.0F, 1.0F }
-        },
-        .quad3s_info = {
+        }
+    };
+    FG_RendererDrawInfo  info       = {
+        .cameras      = cameras,
+        .camera_count = SDL_arraysize(cameras),
+        .quad3s_info  = {
             .instances = quad3s,
             .count     = SDL_arraysize(quad3s)
         }
     };
-    Uint64               delta     = 0;
+    Uint64               delta      = 0;
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -168,10 +183,14 @@ Sint32 main(void)
 
         while (SDL_PollEvent(&event)) if ((event.type) == SDL_EVENT_QUIT) running = false;
 
-        info.camera.transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
-        info.camera.transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
-        info.camera.transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
-        info.camera.transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
+        cameras[0].transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
+        cameras[0].transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
+        cameras[0].transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
+        cameras[0].transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
+        cameras[1].transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_L] - keys[SDL_SCANCODE_J]) * (float)delta;
+        cameras[1].transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_UP] - keys[SDL_SCANCODE_DOWN]) * (float)delta;
+        cameras[1].transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_K] - keys[SDL_SCANCODE_I]) * (float)delta;
+        cameras[1].transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_U] - keys[SDL_SCANCODE_O]) * (float)delta;
 
         if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());

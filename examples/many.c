@@ -88,15 +88,18 @@ Sint32 main(void)
     Uint64               tick                            = 0;
     bool                 running                         = true;
     SDL_Event            event                           = { .type = SDL_EVENT_FIRST };
-    FG_RendererDrawInfo  info                            = {
-        .camera      = {
-            .perspective = {
-                .fov  = FG_DegsToRads(60.0F),
-                .near = 0.1F,
-                .far  = 100.0F
-            },
-            .transform.scale = { 1.0F, 1.0F }
+    FG_Camera            camera                          = {
+        .viewport        = { { 0.0F, 0.0F },  { 1.0F, 1.0F } },
+        .perspective     = {
+            .fov  = FG_DegsToRads(60.0F),
+            .near = 0.1F,
+            .far  = 100.0F
         },
+        .transform.scale = { 1.0F, 1.0F }
+    };
+    FG_RendererDrawInfo  info                            = {
+        .cameras       = &camera,
+        .camera_count  = 1,
         .quad3s_info = {
             .instances = quad3s,
             .count     = QUAD3_COUNT
@@ -194,10 +197,10 @@ Sint32 main(void)
 
         while (SDL_PollEvent(&event)) if ((event.type) == SDL_EVENT_QUIT) running = false;
 
-        info.camera.transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
-        info.camera.transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
-        info.camera.transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
-        info.camera.transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
+        camera.transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D] - keys[SDL_SCANCODE_A]) * (float)delta;
+        camera.transform.translation.y += 0.001F * (float)(keys[SDL_SCANCODE_SPACE] - keys[SDL_SCANCODE_LSHIFT]) * (float)delta;
+        camera.transform.translation.z += 0.001F * (float)(keys[SDL_SCANCODE_S] - keys[SDL_SCANCODE_W]) * (float)delta;
+        camera.transform.rotation      += 0.003F * (float)(keys[SDL_SCANCODE_Q] - keys[SDL_SCANCODE_E]) * (float)delta;
 
         if (!FG_RendererDraw(renderer, &info)) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());

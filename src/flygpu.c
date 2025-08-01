@@ -46,9 +46,12 @@ struct FG_Renderer
     SDL_GPUTextureCreateInfo         depthtex_info;
     Uint32                           padding1;
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
+    SDL_GPUViewport                  viewport;
     FG_Quad3Stage                   *quad3stage;
     SDL_GPUFence                    *fence;
 };
+
+Sint32 FG_CompareCameras(const void *lhs, const void *rhs);
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 {
@@ -79,8 +82,6 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    self->colortarg_info.load_op = SDL_GPU_LOADOP_CLEAR;
-
     self->depthtex_info.format               = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
     self->depthtex_info.usage                = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     self->depthtex_info.layer_count_or_depth = 1;
@@ -89,6 +90,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.clear_depth = 1.0F;
     self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
     self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
+
+    self->viewport.max_depth = 1.0F;
 
     self->quad3stage = FG_CreateQuad3Stage(
         self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
@@ -175,17 +178,25 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     return self->fence;
 }
 
+Sint32 FG_CompareCameras(const void *lhs, const void *rhs)
+{
+    return (*(FG_Camera *const*)lhs)->priority - (*(FG_Camera *const*)rhs)->priority;
+}
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
-    SDL_GPUCommandBuffer *cmdbuf   = SDL_AcquireGPUCommandBuffer(self->device);
-    Uint32                width    = 0;
-    Uint32                height   = 0;
-    FG_Mat4               projmat  = { .data = { 0.0F } };
-    FG_Mat4               viewmat  = { .data = { 0.0F } };
-    FG_Mat4               vpmat    = { .data = { 0.0F } };
-    SDL_GPUCopyPass      *cpypass  = NULL;
-    SDL_GPURenderPass    *rndrpass = NULL;
+    const FG_Camera      *cameras[info->camera_count];
+    SDL_GPUCommandBuffer *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
+    Uint32                width                       = 0;
+    Uint32                height                      = 0;
+    SDL_GPURenderPass    *rndrpass                    = NULL;
+    size_t                i                           = 0;
+    FG_Mat4               projmat                     = { .data = { 0.0F } };
+    FG_Mat4               viewmat                     = { .data = { 0.0F } };
+    FG_Mat4               vpmat                       = { .data = { 0.0F } };
+    SDL_GPUCopyPass      *cpypass                     = NULL;
+
+    for (i = 0; i != info->camera_count; ++i) cameras[i] = info->cameras + i;
 
     if (!cmdbuf) return false;
 
@@ -205,26 +216,47 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->depthtarg_info.texture) return false;
     }
 
-    FG_SetProjMat4(&info->camera.perspective, (float)width / (float)height, &projmat);
-    FG_SetViewMat4(&info->camera.transform, &viewmat);
-    FG_MulMat4s(&projmat, &viewmat, &vpmat);
-
-    cpypass = SDL_BeginGPUCopyPass(cmdbuf);
-    if (!FG_Quad3StageCopy(
-        self->quad3stage,
-        cpypass,
-        info->camera.transform.translation.z,
-        &vpmat,
-        &info->quad3s_info
-    )) {
-        return false;
-    }
-    SDL_EndGPUCopyPass(cpypass);
+    self->colortarg_info.load_op = SDL_GPU_LOADOP_CLEAR;
 
     rndrpass = SDL_BeginGPURenderPass(
         cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
-    FG_Quad3StageDraw(self->quad3stage, rndrpass);
     SDL_EndGPURenderPass(rndrpass);
+
+    SDL_qsort(cameras, info->camera_count, sizeof(*cameras), FG_CompareCameras);
+
+    self->colortarg_info.load_op = SDL_GPU_LOADOP_LOAD;
+
+    for (i = 0; i != info->camera_count; ++i) {
+        self->viewport.x = (float)width * cameras[i]->viewport.tl.x;
+        self->viewport.y = (float)height * cameras[i]->viewport.tl.y;
+        self->viewport.w = (float)width
+                         * (cameras[i]->viewport.br.x - cameras[i]->viewport.tl.x);
+        self->viewport.h = (float)height
+                         * (cameras[i]->viewport.br.y - cameras[i]->viewport.tl.y);
+
+        FG_SetProjMat4(
+            &cameras[i]->perspective, self->viewport.w / self->viewport.h, &projmat);
+        FG_SetViewMat4(&cameras[i]->transform, &viewmat);
+        FG_MulMat4s(&projmat, &viewmat, &vpmat);
+
+        cpypass = SDL_BeginGPUCopyPass(cmdbuf);
+        if (!FG_Quad3StageCopy(
+            self->quad3stage,
+            cpypass,
+            cameras[i]->transform.translation.z,
+            &vpmat,
+            &info->quad3s_info
+        )) {
+            return false;
+        }
+        SDL_EndGPUCopyPass(cpypass);
+
+        rndrpass = SDL_BeginGPURenderPass(
+            cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+        SDL_SetGPUViewport(rndrpass, &self->viewport);
+        FG_Quad3StageDraw(self->quad3stage, rndrpass);
+        SDL_EndGPURenderPass(rndrpass);
+    }
 
     if (self->fence) {
         if (!SDL_WaitForGPUFences(self->device, true, &self->fence, 1)) return false;

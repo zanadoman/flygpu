@@ -33,10 +33,20 @@ extern "C" {
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
 
+#include <stddef.h>
+
 typedef struct
 {
+    FG_Vec2 tl;
+    FG_Vec2 br;
+} FG_Viewport;
+
+typedef struct
+{
+    FG_Viewport    viewport;
     FG_Perspective perspective;
     FG_Transform3  transform;
+    Sint32         priority;
 } FG_Camera;
 
 typedef struct
@@ -63,9 +73,9 @@ typedef struct
 
 typedef struct
 {
-    FG_Camera             camera;
-    Uint32                padding0;
-    FG_Quad3StageDrawInfo quad3s_info;
+    const FG_Camera       *cameras;
+    size_t                 camera_count;
+    FG_Quad3StageDrawInfo  quad3s_info;
 } FG_RendererDrawInfo;
 
 typedef struct FG_Renderer FG_Renderer;
