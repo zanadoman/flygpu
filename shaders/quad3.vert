@@ -33,20 +33,20 @@ layout(location = 7) in vec4 inColor3;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
-const uint indices[6] = uint[](0, 1, 2, 2, 3, 0);
+const uint indices[6] = uint[](0, 1, 3, 1, 2, 3);
 
 const vec2 positions[4] = vec2[](
+    vec2(-0.5, 0.5),
     vec2(-0.5, -0.5),
     vec2(0.5, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
+    vec2(0.5, 0.5)
 );
 
 const vec2 fragTexCoords[4] = vec2[](
+    vec2(0.0, 0.0),
     vec2(0.0, 1.0),
     vec2(1.0, 1.0),
-    vec2(1.0, 0.0),
-    vec2(0.0, 0.0)
+    vec2(1.0, 0.0)
 );
 
 void main()

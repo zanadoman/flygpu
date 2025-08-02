@@ -161,6 +161,12 @@ Sint32 main(void)
                 }
             },
             .color     = {
+                .tl = {
+                    .x = RandFloat(0.0F, 1.0F),
+                    .y = RandFloat(0.0F, 1.0F),
+                    .z = RandFloat(0.0F, 1.0F),
+                    .w = RandFloat(0.0F, 1.0F)
+                },
                 .bl = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
@@ -174,12 +180,6 @@ Sint32 main(void)
                     .w = RandFloat(0.0F, 1.0F)
                 },
                 .tr = {
-                    .x = RandFloat(0.0F, 1.0F),
-                    .y = RandFloat(0.0F, 1.0F),
-                    .z = RandFloat(0.0F, 1.0F),
-                    .w = RandFloat(0.0F, 1.0F)
-                },
-                .tl = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
                     .z = RandFloat(0.0F, 1.0F),

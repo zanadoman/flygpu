@@ -51,10 +51,10 @@ typedef struct
 
 typedef struct
 {
+    FG_Vec4 tl;
     FG_Vec4 bl;
     FG_Vec4 br;
     FG_Vec4 tr;
-    FG_Vec4 tl;
 } FG_QuadColor;
 
 typedef struct
