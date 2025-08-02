@@ -61,7 +61,7 @@ typedef struct
 {
     FG_Transform3   transform;
     FG_QuadColor    color;
-    SDL_GPUTexture *texture;
+    SDL_GPUTexture *albedo;
     FG_Rect         texcoords;
 } FG_Quad3;
 

@@ -40,7 +40,7 @@ typedef struct {
 
 typedef struct
 {
-    SDL_GPUTexture *texture;
+    SDL_GPUTexture *albedo;
     Uint32          count;
     Uint32          padding0;
 } FG_Quad3Batch;
@@ -155,8 +155,8 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
     const FG_Quad3 *a = *(FG_Quad3 *const*)lhs;
     const FG_Quad3 *b = *(FG_Quad3 *const*)rhs;
 
-    if (a->texture < b->texture) return -1;
-    if (b->texture < a->texture) return 1;
+    if (a->albedo < b->albedo) return -1;
+    if (b->albedo < a->albedo) return 1;
     return 0;
 }
 
@@ -195,8 +195,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     SDL_qsort(
         self->instances, self->count, sizeof(*self->instances), FG_CompareQuad3s);
 
-    self->batches->texture = (*self->instances)->texture;
-    self->batches->count   = 0;
+    self->batches->albedo = (*self->instances)->albedo;
+    self->batches->count  = 0;
 
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
@@ -220,10 +220,10 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         FG_MulMat4s(vpmat, &modelmat, &transmem->mvpmat);
         transmem->color = self->instances[i]->color;
         transmem->texcoords = self->instances[i]->texcoords;
-        if (self->instances[i]->texture != self->batches[j].texture) {
+        if (self->instances[i]->albedo != self->batches[j].albedo) {
             ++j;
-            self->batches[j].texture = self->instances[i]->texture;
-            self->batches[j].count   = 1;
+            self->batches[j].albedo = self->instances[i]->albedo;
+            self->batches[j].count  = 1;
         }
         else ++self->batches[j].count;
     }
@@ -251,7 +251,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     for (i = 0, j = 0; i != self->count; i += self->batches[j].count, ++j) {
-        self->texsampl_bind.texture = self->batches[j].texture;
+        self->texsampl_bind.texture = self->batches[j].albedo;
         if (!self->texsampl_bind.texture) self->texsampl_bind.texture = self->nulltex;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
         SDL_DrawGPUPrimitives(rndrpass, 6, self->batches[j].count, 0, i);
