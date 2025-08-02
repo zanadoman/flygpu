@@ -42,7 +42,6 @@ struct FG_Renderer
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint32                           padding0;
     SDL_GPUTransferBuffer           *transbuf;
-    SDL_GPUColorTargetInfo           colortarg_info;
     SDL_GPUTextureCreateInfo         depthtex_info;
     Uint32                           padding1;
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
@@ -185,27 +184,28 @@ Sint32 FG_CompareCameras(const void *lhs, const void *rhs)
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
-    const FG_Camera      *cameras[info->camera_count];
-    SDL_GPUCommandBuffer *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
-    Uint32                width                       = 0;
-    Uint32                height                      = 0;
-    SDL_GPURenderPass    *rndrpass                    = NULL;
-    size_t                i                           = 0;
-    FG_Mat4               projmat                     = { .data = { 0.0F } };
-    FG_Mat4               viewmat                     = { .data = { 0.0F } };
-    FG_Mat4               vpmat                       = { .data = { 0.0F } };
-    SDL_GPUCopyPass      *cpypass                     = NULL;
+    const FG_Camera        *cameras[info->camera_count];
+    SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
+    SDL_GPUColorTargetInfo  colortarg_info              = { .load_op = SDL_GPU_LOADOP_CLEAR };
+    Uint32                  width                       = 0;
+    Uint32                  height                      = 0;
+    SDL_GPURenderPass      *rndrpass                    = NULL;
+    size_t                  i                           = 0;
+    FG_Mat4                 projmat                     = { .data = { 0.0F } };
+    FG_Mat4                 viewmat                     = { .data = { 0.0F } };
+    FG_Mat4                 vpmat                       = { .data = { 0.0F } };
+    SDL_GPUCopyPass        *cpypass                     = NULL;
 
     for (i = 0; i != info->camera_count; ++i) cameras[i] = info->cameras + i;
 
     if (!cmdbuf) return false;
 
     if (!SDL_AcquireGPUSwapchainTexture(
-        cmdbuf, self->window, &self->colortarg_info.texture, &width, &height)) {
+        cmdbuf, self->window, &colortarg_info.texture, &width, &height)) {
         return false;
     }
 
-    if (!self->colortarg_info.texture) return SDL_CancelGPUCommandBuffer(cmdbuf);
+    if (!colortarg_info.texture) return SDL_CancelGPUCommandBuffer(cmdbuf);
 
     if (self->depthtex_info.width != width || self->depthtex_info.height != height) {
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
@@ -216,15 +216,13 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->depthtarg_info.texture) return false;
     }
 
-    self->colortarg_info.load_op = SDL_GPU_LOADOP_CLEAR;
-
     rndrpass = SDL_BeginGPURenderPass(
-        cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+        cmdbuf, &colortarg_info, 1, &self->depthtarg_info);
     SDL_EndGPURenderPass(rndrpass);
 
     SDL_qsort(cameras, info->camera_count, sizeof(*cameras), FG_CompareCameras);
 
-    self->colortarg_info.load_op = SDL_GPU_LOADOP_LOAD;
+    colortarg_info.load_op = SDL_GPU_LOADOP_LOAD;
 
     for (i = 0; i != info->camera_count; ++i) {
         self->viewport.x = (float)width * cameras[i]->viewport.tl.x;
@@ -252,7 +250,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         SDL_EndGPUCopyPass(cpypass);
 
         rndrpass = SDL_BeginGPURenderPass(
-            cmdbuf, &self->colortarg_info, 1, &self->depthtarg_info);
+            cmdbuf, &colortarg_info, 1, &self->depthtarg_info);
         SDL_SetGPUViewport(rndrpass, &self->viewport);
         FG_Quad3StageDraw(self->quad3stage, rndrpass);
         SDL_EndGPURenderPass(rndrpass);
