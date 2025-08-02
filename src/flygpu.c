@@ -46,6 +46,7 @@ struct FG_Renderer
     Uint32                           padding1;
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
     SDL_GPUViewport                  viewport;
+    SDL_GPUTexture                  *nulltex;
     FG_Quad3Stage                   *quad3stage;
     SDL_GPUFence                    *fence;
 };
@@ -92,8 +93,26 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
     self->viewport.max_depth = 1.0F;
 
+    FG_RendererCreateTexture(
+        self,
+        &(SDL_Surface){
+            .format = SDL_PIXELFORMAT_ABGR8888,
+            .w      = 1,
+            .h      = 1,
+            .pixels = &(Uint32){ 0xFFFFFFFF }
+        },
+        &self->nulltex
+    );
+    if (!self->nulltex) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
     self->quad3stage = FG_CreateQuad3Stage(
-        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
+        self->device,
+        SDL_GetGPUSwapchainTextureFormat(self->device, self->window),
+        self->nulltex
+    );
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -276,6 +295,7 @@ void FG_DestroyRenderer(FG_Renderer *self)
     if (self->device) {
         SDL_ReleaseGPUFence(self->device, self->fence);
         FG_DestroyQuad3Stage(self->quad3stage);
+        SDL_ReleaseGPUTexture(self->device, self->nulltex);
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         SDL_WaitForGPUIdle(self->device);

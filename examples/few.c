@@ -40,7 +40,7 @@ Sint32 main(void)
     SDL_Window          *window     = NULL;
     FG_Renderer         *renderer   = NULL;
     SDL_Surface         *surface    = NULL;
-    FG_Quad3             quad3s[3]  = {
+    FG_Quad3             quad3s[4]  = {
         [0] = {
             .transform = {
                 .translation = { 0.0F, 0.0F, -1.0F },
@@ -76,6 +76,18 @@ Sint32 main(void)
                 .br = { 1.0F, 0.0F, 0.0F, 1.0F },
                 .tr = { 0.0F, 0.0F, 1.0F, 1.0F },
                 .tl = { 0.0F, 0.0F, 1.0F, 1.0F }
+            }
+        },
+        [3] = {
+            .transform = {
+                .translation = { 0.0F, 0.4F, -1.0F },
+                .scale       = { 0.5F, 0.05F }
+            },
+            .color     = {
+                .bl = { 1.0F, 0.0F, 0.0F, 1.0F },
+                .br = { 0.0F, 1.0F, 0.0F, 1.0F },
+                .tr = { 0.0F, 1.0F, 0.0F, 1.0F },
+                .tl = { 1.0F, 0.0F, 0.0F, 1.0F }
             }
         }
     };

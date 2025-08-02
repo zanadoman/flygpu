@@ -44,6 +44,7 @@ typedef struct
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                    *device;
+    SDL_GPUTexture                   *nulltex;
     const FG_Quad3                  **instances;
     FG_Quad3Batch                    *batches;
     Uint32                            capacity;
@@ -63,7 +64,8 @@ struct FG_Quad3Stage
 Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
-                                   SDL_GPUTextureFormat  colortarg_fmt)
+                                   SDL_GPUTextureFormat  colortarg_fmt,
+                                   SDL_GPUTexture       *nulltex)
 {
     FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
     SDL_GPUGraphicsPipelineCreateInfo  info = {
@@ -103,6 +105,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
     if (!self) return NULL;
 
     self->device = device;
+
+    self->nulltex = nulltex;
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
@@ -243,6 +247,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     for (i = 0, j = 0; i != self->count; i += self->batches[j].count, ++j) {
         self->texsampl_bind.texture = self->batches[j].texture;
+        if (!self->texsampl_bind.texture) self->texsampl_bind.texture = self->nulltex;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
         SDL_DrawGPUPrimitives(rndrpass, 6, self->batches[j].count, 0, i);
     }
