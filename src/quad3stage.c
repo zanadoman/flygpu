@@ -30,9 +30,13 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 
-#define VERTBUF_MAT4S 2
-#define VERTBUF_PITCH (VERTBUF_MAT4S * sizeof(FG_Mat4))
-#define VERTBUF_ATTRS (VERTBUF_PITCH / sizeof(FG_Vec4))
+#include <stddef.h>
+
+typedef struct {
+    FG_Mat4      mvpmat;
+    FG_QuadColor color;
+    FG_Rect      texcoords;
+} FG_Quad3VertIn;
 
 typedef struct
 {
@@ -67,25 +71,28 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
                                    SDL_GPUTextureFormat  colortarg_fmt,
                                    SDL_GPUTexture       *nulltex)
 {
-    FG_Quad3Stage                     *self = SDL_calloc(1, sizeof(*self));
-    SDL_GPUGraphicsPipelineCreateInfo  info = {
+    FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
+    SDL_GPUVertexAttribute             vertattrs[] = {
+        { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[0]) },
+        { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[1]) },
+        { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[2]) },
+        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[3]) },
+        { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tl) },
+        { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.bl) },
+        { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.br) },
+        { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tr) },
+        { .location = 8, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, texcoords.tl) },
+        { .location = 9, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, texcoords.br) }
+    };
+    SDL_GPUGraphicsPipelineCreateInfo  info        = {
         .vertex_input_state  = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
-                .pitch      = VERTBUF_PITCH,
+                .pitch      = sizeof(FG_Quad3VertIn),
                 .input_rate = SDL_GPU_VERTEXINPUTRATE_INSTANCE
             },
             .num_vertex_buffers         = 1,
-            .vertex_attributes          = (SDL_GPUVertexAttribute[VERTBUF_ATTRS]){
-                { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 0 * sizeof(FG_Vec4) },
-                { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 1 * sizeof(FG_Vec4) },
-                { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 2 * sizeof(FG_Vec4) },
-                { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 3 * sizeof(FG_Vec4) },
-                { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 4 * sizeof(FG_Vec4) },
-                { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 5 * sizeof(FG_Vec4) },
-                { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 6 * sizeof(FG_Vec4) },
-                { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = 7 * sizeof(FG_Vec4) }
-            },
-            .num_vertex_attributes      = VERTBUF_ATTRS
+            .vertex_attributes          = vertattrs,
+            .num_vertex_attributes      = SDL_arraysize(vertattrs)
         },
         .depth_stencil_state = {
             .compare_op         = SDL_GPU_COMPAREOP_LESS,
@@ -159,11 +166,11 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
-    Uint32   size     = info->count * VERTBUF_PITCH;
-    FG_Mat4 *transmem = NULL;
-    Uint32   i        = 0;
-    FG_Mat4  modelmat = { .data = { 0.0F } };
-    Uint32   j        = 0;
+    FG_Quad3VertIn *transmem = NULL;
+    Uint32          size     = info->count * sizeof(*transmem);
+    Uint32          i        = 0;
+    FG_Mat4         modelmat = { .data = { 0.0F } };
+    Uint32          j        = 0;
 
     if (!size) return true;
 
@@ -208,13 +215,11 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
-    for (i = 0; i != self->count; ++i, transmem += VERTBUF_MAT4S) {
+    for (i = 0; i != self->count; ++i, ++transmem) {
         FG_SetModelMat4(&self->instances[i]->transform, &modelmat);
-        FG_MulMat4s(vpmat, &modelmat, transmem);
-        transmem[1].cols[0] = self->instances[i]->color.tl;
-        transmem[1].cols[1] = self->instances[i]->color.bl;
-        transmem[1].cols[2] = self->instances[i]->color.br;
-        transmem[1].cols[3] = self->instances[i]->color.tr;
+        FG_MulMat4s(vpmat, &modelmat, &transmem->mvpmat);
+        transmem->color = self->instances[i]->color;
+        transmem->texcoords = self->instances[i]->texcoords;
         if (self->instances[i]->texture != self->batches[j].texture) {
             ++j;
             self->batches[j].texture = self->instances[i]->texture;

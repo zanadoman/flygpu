@@ -39,11 +39,11 @@ typedef struct
 {
     FG_Vec2 tl;
     FG_Vec2 br;
-} FG_Viewport;
+} FG_Rect;
 
 typedef struct
 {
-    FG_Viewport    viewport;
+    FG_Rect        viewport;
     FG_Perspective perspective;
     FG_Transform3  transform;
     Sint32         priority;
@@ -62,6 +62,7 @@ typedef struct
     FG_Transform3   transform;
     FG_QuadColor    color;
     SDL_GPUTexture *texture;
+    FG_Rect         texcoords;
 } FG_Quad3;
 
 typedef struct

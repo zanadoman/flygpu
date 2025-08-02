@@ -186,7 +186,17 @@ Sint32 main(void)
                     .w = RandFloat(0.0F, 1.0F)
                 }
             },
-            .texture   = textures[RandInt(0, SDL_arraysize(IMAGES))]
+            .texture   = textures[RandInt(0, SDL_arraysize(IMAGES))],
+            .texcoords = {
+                .tl = {
+                    .x = RandFloat(0.0F, 2.0F),
+                    .y = RandFloat(0.0F, 2.0F)
+                },
+                .br = {
+                    .x = RandFloat(0.0F, 2.0F),
+                    .y = RandFloat(0.0F, 2.0F)
+                }
+            }
         };
     }
 
