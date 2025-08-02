@@ -73,10 +73,10 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 {
     FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
     SDL_GPUVertexAttribute             vertattrs[] = {
-        { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[0]) },
-        { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[1]) },
-        { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[2]) },
-        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.cols[3]) },
+        { .location = 0, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[0 * FG_DIMS_VEC4]) },
+        { .location = 1, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[1 * FG_DIMS_VEC4]) },
+        { .location = 2, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[2 * FG_DIMS_VEC4]) },
+        { .location = 3, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[3 * FG_DIMS_VEC4]) },
         { .location = 4, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tl) },
         { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.bl) },
         { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.br) },
@@ -169,7 +169,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     FG_Quad3VertIn *transmem = NULL;
     Uint32          size     = info->count * sizeof(*transmem);
     Uint32          i        = 0;
-    FG_Mat4         modelmat = { .data = { 0.0F } };
+    FG_Mat4         modelmat = { .m = { 0.0F } };
     Uint32          j        = 0;
 
     if (!size) return true;

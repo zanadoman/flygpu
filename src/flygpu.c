@@ -210,9 +210,9 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     Uint32                  height                      = 0;
     SDL_GPURenderPass      *rndrpass                    = NULL;
     size_t                  i                           = 0;
-    FG_Mat4                 projmat                     = { .data = { 0.0F } };
-    FG_Mat4                 viewmat                     = { .data = { 0.0F } };
-    FG_Mat4                 vpmat                       = { .data = { 0.0F } };
+    FG_Mat4                 projmat                     = { .m = { 0.0F } };
+    FG_Mat4                 viewmat                     = { .m = { 0.0F } };
+    FG_Mat4                 vpmat                       = { .m = { 0.0F } };
     SDL_GPUCopyPass        *cpypass                     = NULL;
 
     for (i = 0; i != info->camera_count; ++i) cameras[i] = info->cameras + i;

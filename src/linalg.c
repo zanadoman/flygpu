@@ -30,15 +30,15 @@ void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *pr
     float focal = 1.0F / SDL_tanf(perspective->fov / 2.0F);
 
     *projmat = (FG_Mat4){
-        .cols[0].x = focal / aspect,
-        .cols[1].y = focal,
-        .cols[2]   = {
-            .z = (perspective->far + perspective->near)
-               / (perspective->near - perspective->far),
-            .w = -1.0F
-        },
-        .cols[3].z = 2.0F * perspective->far * perspective->near
-                   / (perspective->near - perspective->far)
+        .m = {
+            [0]  = focal / aspect,
+            [5]  = focal,
+            [10] = (perspective->far + perspective->near)
+                 / (perspective->near - perspective->far),
+            [11] = -1.0F,
+            [14] = 2.0F * perspective->far * perspective->near
+                 / (perspective->near - perspective->far)
+        }
     };
 }
 
@@ -49,20 +49,16 @@ void FG_SetViewMat4(const FG_Transform3 *restrict transform3,
     float sin = SDL_sinf(transform3->rotation);
 
     *viewmat = (FG_Mat4){
-        .cols[0]   = {
-            .x = cos * transform3->scale.x,
-            .y = -sin * transform3->scale.x
-        },
-        .cols[1]   = {
-            .x = sin * transform3->scale.y,
-            .y = cos * transform3->scale.y
-        },
-        .cols[2].z = 1.0F,
-        .cols[3]   = {
-            .x = -cos * transform3->translation.x - sin * transform3->translation.y,
-            .y = sin * transform3->translation.x - cos * transform3->translation.y,
-            .z = -transform3->translation.z,
-            .w = 1.0F
+        .m = {
+            [0]  = cos * transform3->scale.x,
+            [1]  = -sin * transform3->scale.x,
+            [4]  = sin * transform3->scale.y,
+            [5]  = cos * transform3->scale.y,
+            [10] = 1.0F,
+            [12] = -cos * transform3->translation.x - sin * transform3->translation.y,
+            [13] = sin * transform3->translation.x - cos * transform3->translation.y,
+            [14] = -transform3->translation.z,
+            [15] = 1.0F
         }
     };
 }
@@ -74,20 +70,16 @@ void FG_SetModelMat4(const FG_Transform3 *restrict transform3,
     float sin = SDL_sinf(transform3->rotation);
 
     *modelmat = (FG_Mat4){
-        .cols[0]   = {
-            .x = cos * transform3->scale.x,
-            .y = sin * transform3->scale.x
-        },
-        .cols[1]   = {
-            .x = -sin * transform3->scale.y,
-            .y = cos * transform3->scale.y
-        },
-        .cols[2].z = 1.0F,
-        .cols[3]   = {
-            .x = transform3->translation.x,
-            .y = transform3->translation.y,
-            .z = transform3->translation.z,
-            .w = 1.0F
+        .m = {
+            [0]  = cos * transform3->scale.x,
+            [1]  = sin * transform3->scale.x,
+            [4]  = -sin * transform3->scale.y,
+            [5]  = cos * transform3->scale.y,
+            [10] = 1.0F,
+            [12] = transform3->translation.x,
+            [13] = transform3->translation.y,
+            [14] = transform3->translation.z,
+            [15] = 1.0F
         }
     };
 }
@@ -100,11 +92,11 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
     Uint8 j = 0;
     Uint8 k = 0;
 
-    for (i = 0; i != FG_LINALG_DIMS_VEC4; ++i) {
-        for (j = 0; j != FG_LINALG_DIMS_VEC4; ++j) {
-            out->data[4 * j + i] = 0.0F;
-            for (k = 0; k != FG_LINALG_DIMS_VEC4; ++k) {
-                out->data[4 * j + i] += lhs->data[4 * k + i] * rhs->data[4 * j + k];
+    for (i = 0; i != FG_DIMS_VEC4; ++i) {
+        for (j = 0; j != FG_DIMS_VEC4; ++j) {
+            out->m[4 * j + i] = 0.0F;
+            for (k = 0; k != FG_DIMS_VEC4; ++k) {
+                out->m[4 * j + i] += lhs->m[4 * k + i] * rhs->m[4 * j + k];
             }
         }
     }
