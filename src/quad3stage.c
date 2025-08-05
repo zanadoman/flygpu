@@ -162,7 +162,8 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
-                       float                        view_z,
+                       float                        near,
+                       float                        far,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
@@ -187,10 +188,15 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     }
 
     for (i = 0, self->count = 0; i != self->capacity; ++i) {
-        if (info->instances[i].transform.translation.z < view_z) {
+        if (
+            far < info->instances[i].transform.translation.z &&
+            info->instances[i].transform.translation.z < near
+        ) {
             self->instances[self->count++] = info->instances + i;
         }
     }
+
+    if (!self->count) return true;
 
     SDL_qsort(
         self->instances, self->count, sizeof(*self->instances), FG_CompareQuad3s);
@@ -247,6 +253,8 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
     Uint32 i = 0;
     Uint32 j = 0;
+
+    if (!self->count) return;
 
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);

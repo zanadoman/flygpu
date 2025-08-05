@@ -261,6 +261,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             self->quad3stage,
             cpypass,
             cameras[i]->transform.translation.z,
+            cameras[i]->transform.translation.z - cameras[i]->perspective.far,
             &vpmat,
             &info->quad3s_info
         )) {
