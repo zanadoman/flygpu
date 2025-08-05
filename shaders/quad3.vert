@@ -21,10 +21,10 @@
 
 #version 460
 
-layout(location = 0) in vec4 mvp0;
-layout(location = 1) in vec4 mvp1;
-layout(location = 2) in vec4 mvp2;
-layout(location = 3) in vec4 mvp3;
+layout(location = 0) in vec4 MVP0;
+layout(location = 1) in vec4 MVP1;
+layout(location = 2) in vec4 MVP2;
+layout(location = 3) in vec4 MVP3;
 layout(location = 4) in vec4 inColorTL;
 layout(location = 5) in vec4 inColorBL;
 layout(location = 6) in vec4 inColorBR;
@@ -47,7 +47,7 @@ const vec2 positions[4] = vec2[](
 void main()
 {
     uint i = indices[gl_VertexIndex];
-    gl_Position  = mat4(mvp0, mvp1, mvp2, mvp3) * vec4(positions[i], 0.0, 1.0);
+    gl_Position  = mat4(MVP0, MVP1, MVP2, MVP3) * vec4(positions[i], 0.0, 1.0);
     fragColor    = vec4[](inColorTL, inColorBL, inColorBR, inColorTR)[i];
     fragTexCoord = vec2[](inTexCoordTL, vec2(inTexCoordTL.x, inTexCoordBR.y),
                           inTexCoordBR, vec2(inTexCoordBR.x, inTexCoordTL.y))[i];
