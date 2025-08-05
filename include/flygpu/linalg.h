@@ -68,8 +68,14 @@ typedef enum
     FG_DIMS_VEC2 = sizeof(FG_Vec2) / sizeof(float),
     FG_DIMS_VEC3 = sizeof(FG_Vec3) / sizeof(float),
     FG_DIMS_VEC4 = sizeof(FG_Vec4) / sizeof(float),
+    FG_DIMS_MAT3 = FG_DIMS_VEC3 * FG_DIMS_VEC3,
     FG_DIMS_MAT4 = FG_DIMS_VEC4 * FG_DIMS_VEC4
 } FG_Dims;
+
+typedef struct
+{
+    float m[FG_DIMS_MAT3];
+} FG_Mat3;
 
 typedef struct
 {
@@ -82,6 +88,8 @@ typedef struct
     float   rotation;
     FG_Vec2 scale;
 } FG_Transform3;
+
+void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 

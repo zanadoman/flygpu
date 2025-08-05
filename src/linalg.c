@@ -25,6 +25,20 @@
 
 #include <SDL3/SDL_stdinc.h>
 
+void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
+{
+    float cos = SDL_cosf(rotation);
+    float sin = SDL_sinf(rotation);
+
+    *tbnmat = (FG_Mat3){
+        .m[0] = cos,
+        .m[1] = sin,
+        .m[3] = -sin,
+        .m[4] = cos,
+        .m[8] = 1.0F
+    };
+}
+
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat)
 {
     float focal = 1.0F / SDL_tanf(perspective->fov / 2.0F);
