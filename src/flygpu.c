@@ -82,17 +82,6 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    self->depthtex_info.format               = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    self->depthtex_info.usage                = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    self->depthtex_info.layer_count_or_depth = 1;
-    self->depthtex_info.num_levels           = 1;
-
-    self->depthtarg_info.clear_depth = 1.0F;
-    self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
-    self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
-
-    self->viewport.max_depth = 1.0F;
-
     FG_RendererCreateTexture(
         self,
         &(SDL_Surface){
@@ -107,6 +96,17 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         FG_DestroyRenderer(self);
         return NULL;
     }
+
+    self->depthtex_info.format               = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+    self->depthtex_info.usage                = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    self->depthtex_info.layer_count_or_depth = 1;
+    self->depthtex_info.num_levels           = 1;
+
+    self->depthtarg_info.clear_depth = 1.0F;
+    self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
+    self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
+
+    self->viewport.max_depth = 1.0F;
 
     self->quad3stage = FG_CreateQuad3Stage(
         self->device,
