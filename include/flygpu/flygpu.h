@@ -92,7 +92,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
 
 void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture);
 
-void FG_DestroyRenderer(FG_Renderer *self);
+bool FG_DestroyRenderer(FG_Renderer *self);
 
 #ifdef __cplusplus
 }

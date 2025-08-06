@@ -299,9 +299,9 @@ void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture)
     SDL_ReleaseGPUTexture(self->device, texture);
 }
 
-void FG_DestroyRenderer(FG_Renderer *self)
+bool FG_DestroyRenderer(FG_Renderer *self)
 {
-    if (!self) return;
+    if (!self) return true;
     if (self->device) {
         SDL_ReleaseGPUFence(self->device, self->fence);
         FG_DestroyQuad3Stage(self->quad3stage);
@@ -309,9 +309,10 @@ void FG_DestroyRenderer(FG_Renderer *self)
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         SDL_ReleaseGPUTexture(self->device, self->normal);
         SDL_ReleaseGPUTexture(self->device, self->albedo);
-        SDL_WaitForGPUIdle(self->device);
+        if (!SDL_WaitForGPUIdle(self->device)) return false;
         SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
         SDL_DestroyGPUDevice(self->device);
     }
     SDL_free(self);
+    return true;
 }

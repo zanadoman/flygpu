@@ -21,8 +21,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* NOLINTBEGIN(clang-analyzer-unix.Malloc) */
-
 #include "../include/flygpu/flygpu.h"
 
 #include <SDL3/SDL_error.h>
@@ -225,10 +223,11 @@ Sint32 main(void)
     for (i = 0; i != SDL_arraysize(IMAGES); ++i) {
         FG_RendererDestroyTexture(renderer, textures[i]);
     }
-    FG_DestroyRenderer(renderer);
+    if (!FG_DestroyRenderer(renderer)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
 }
-
-/* NOLINTEND(clang-analyzer-unix.Malloc) */

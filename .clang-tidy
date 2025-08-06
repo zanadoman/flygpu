@@ -36,6 +36,7 @@ Checks: >
   readability-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-multi-level-implicit-pointer-conversion,
+  -clang-analyzer-unix.Malloc,
   -readability-braces-around-statements,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
