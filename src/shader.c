@@ -27,6 +27,8 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
 
+#include <stddef.h>
+
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              const char         *path,
                              SDL_GPUShaderStage  stage,
