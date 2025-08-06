@@ -52,7 +52,7 @@ Sint32 main(void)
                 .br = { 1.0F, 1.0F, 1.0F, 1.0F },
                 .tr = { 1.0F, 1.0F, 1.0F, 1.0F }
             },
-            .texcoords = {
+            .coords    = {
                 .tl = { 0.0F, 0.0F },
                 .br = { 1.0F, 1.0F }
             }
@@ -69,7 +69,7 @@ Sint32 main(void)
                 .br = { 0.0F, 1.0F, 0.0F, 1.0F },
                 .tr = { 0.0F, 0.0F, 1.0F, 1.0F }
             },
-            .texcoords = {
+            .coords    = {
                 .tl = { 0.0F, 0.0F },
                 .br = { 10.0F, 5.0F }
             }
@@ -85,7 +85,7 @@ Sint32 main(void)
                 .br = { 1.0F, 0.0F, 0.0F, 1.0F },
                 .tr = { 0.0F, 0.0F, 1.0F, 1.0F }
             },
-            .texcoords = {
+            .coords    = {
                 .tl = { 0.0F, 1.0F },
                 .br = { 1.0F, 0.0F }
             }

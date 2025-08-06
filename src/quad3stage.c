@@ -35,7 +35,7 @@
 typedef struct {
     FG_Mat4      mvpmat;
     FG_QuadColor color;
-    FG_Rect      texcoords;
+    FG_Rect      coords;
 } FG_Quad3VertIn;
 
 typedef struct
@@ -81,8 +81,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
         { .location = 5, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.bl) },
         { .location = 6, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.br) },
         { .location = 7, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tr) },
-        { .location = 8, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, texcoords.tl) },
-        { .location = 9, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, texcoords.br) }
+        { .location = 8, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, coords.tl) },
+        { .location = 9, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2, .offset = offsetof(FG_Quad3VertIn, coords.br) }
     };
     SDL_GPUGraphicsPipelineCreateInfo  info        = {
         .vertex_input_state  = {
@@ -225,7 +225,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         FG_SetModelMat4(&self->instances[i]->transform, &modelmat);
         FG_MulMat4s(vpmat, &modelmat, &transmem->mvpmat);
         transmem->color = self->instances[i]->color;
-        transmem->texcoords = self->instances[i]->texcoords;
+        transmem->coords = self->instances[i]->coords;
         if (self->instances[i]->albedo != self->batches[j].albedo) {
             ++j;
             self->batches[j].albedo = self->instances[i]->albedo;

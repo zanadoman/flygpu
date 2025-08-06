@@ -187,7 +187,7 @@ Sint32 main(void)
                 }
             },
             .albedo    = textures[RandInt(0, SDL_arraysize(IMAGES))],
-            .texcoords = {
+            .coords    = {
                 .tl = {
                     .x = RandFloat(0.0F, 2.0F),
                     .y = RandFloat(0.0F, 2.0F)
