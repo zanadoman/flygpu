@@ -33,7 +33,8 @@ typedef struct FG_Quad3Stage FG_Quad3Stage;
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
                                    SDL_GPUTextureFormat  swapctarg_fmt,
-                                   SDL_GPUTexture       *albedo);
+                                   SDL_GPUTexture       *albedo,
+                                   SDL_GPUTexture       *normal);
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,

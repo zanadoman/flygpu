@@ -40,6 +40,7 @@ struct FG_Renderer
     SDL_Window                      *window;
     SDL_GPUDevice                   *device;
     SDL_GPUTexture                  *albedo;
+    SDL_GPUTexture                  *normal;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint8                            padding0[4];
     SDL_GPUTransferBuffer           *transbuf;
@@ -55,7 +56,12 @@ Sint32 FG_CompareCameras(const void *lhs, const void *rhs);
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 {
-    FG_Renderer *self = SDL_calloc(1, sizeof(*self));
+    FG_Renderer *self    = SDL_calloc(1, sizeof(*self));
+    SDL_Surface  surface = {
+        .format = SDL_PIXELFORMAT_ABGR8888,
+        .w      = 1,
+        .h      = 1
+    };
 
     if (!self) return NULL;
 
@@ -82,17 +88,18 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    FG_RendererCreateTexture(
-        self,
-        &(SDL_Surface){
-            .format = SDL_PIXELFORMAT_ABGR8888,
-            .w      = 1,
-            .h      = 1,
-            .pixels = &(Uint32){ 0xFFFFFFFF }
-        },
-        &self->albedo
-    );
+    surface.pixels = &(Uint32){ 0xFFFFFFFF };
+
+    FG_RendererCreateTexture(self, &surface, &self->albedo);
     if (!self->albedo) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    surface.pixels = &(Uint32){ 0x00008080 };
+
+    FG_RendererCreateTexture(self, &surface, &self->normal);
+    if (!self->normal) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -111,7 +118,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->quad3stage = FG_CreateQuad3Stage(
         self->device,
         SDL_GetGPUSwapchainTextureFormat(self->device, self->window),
-        self->albedo
+        self->albedo,
+        self->normal
     );
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
@@ -299,6 +307,7 @@ void FG_DestroyRenderer(FG_Renderer *self)
         FG_DestroyQuad3Stage(self->quad3stage);
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        SDL_ReleaseGPUTexture(self->device, self->normal);
         SDL_ReleaseGPUTexture(self->device, self->albedo);
         SDL_WaitForGPUIdle(self->device);
         SDL_ReleaseWindowFromGPUDevice(self->device, self->window);

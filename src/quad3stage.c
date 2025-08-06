@@ -50,6 +50,7 @@ struct FG_Quad3Stage
 {
     SDL_GPUDevice                    *device;
     SDL_GPUTexture                   *albedo;
+    SDL_GPUTexture                   *normal;
     SDL_GPUShader                    *vertspv;
     SDL_GPUShader                    *fragspv;
     Uint32                            capacity;
@@ -70,7 +71,8 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
                                    SDL_GPUTextureFormat  swapctarg_fmt,
-                                   SDL_GPUTexture       *albedo)
+                                   SDL_GPUTexture       *albedo,
+                                   SDL_GPUTexture       *normal)
 {
     FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
     SDL_GPUVertexAttribute             vertattrs[] = {
@@ -115,6 +117,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
     self->device = device;
 
     self->albedo = albedo;
+
+    self->normal = normal;
 
     self->vertspv = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
@@ -257,6 +261,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     if (!self->count) return;
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
+
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     for (i = 0, j = 0; i != self->count; i += self->batches[j++].count) {
         self->sampler_bind.texture = self->batches[j].albedo;
