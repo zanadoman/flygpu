@@ -39,6 +39,7 @@ struct FG_Renderer
 {
     SDL_Window                      *window;
     SDL_GPUDevice                   *device;
+    SDL_GPUTexture                  *albedo;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint8                            padding0[4];
     SDL_GPUTransferBuffer           *transbuf;
@@ -46,7 +47,6 @@ struct FG_Renderer
     Uint8                            padding1[4];
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
     SDL_GPUViewport                  viewport;
-    SDL_GPUTexture                  *albedo;
     FG_Quad3Stage                   *quad3stage;
     SDL_GPUFence                    *fence;
 };
@@ -297,9 +297,9 @@ void FG_DestroyRenderer(FG_Renderer *self)
     if (self->device) {
         SDL_ReleaseGPUFence(self->device, self->fence);
         FG_DestroyQuad3Stage(self->quad3stage);
-        SDL_ReleaseGPUTexture(self->device, self->albedo);
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        SDL_ReleaseGPUTexture(self->device, self->albedo);
         SDL_WaitForGPUIdle(self->device);
         SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
         SDL_DestroyGPUDevice(self->device);
