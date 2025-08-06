@@ -48,7 +48,7 @@ typedef struct
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                    *device;
-    SDL_GPUTexture                   *nulltex;
+    SDL_GPUTexture                   *albedo;
     const FG_Quad3                  **instances;
     FG_Quad3Batch                    *batches;
     Uint32                            capacity;
@@ -68,8 +68,8 @@ struct FG_Quad3Stage
 Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
-                                   SDL_GPUTextureFormat  colortarg_fmt,
-                                   SDL_GPUTexture       *nulltex)
+                                   SDL_GPUTextureFormat  swapctarg_fmt,
+                                   SDL_GPUTexture       *albedo)
 {
     FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
     SDL_GPUVertexAttribute             vertattrs[] = {
@@ -101,7 +101,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
         },
         .target_info         = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
-                .format = colortarg_fmt
+                .format = swapctarg_fmt
             },
             .num_color_targets         = 1,
             .depth_stencil_format      = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
@@ -113,7 +113,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
     self->device = device;
 
-    self->nulltex = nulltex;
+    self->albedo = albedo;
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
@@ -152,8 +152,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
 
 Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
 {
-    const FG_Quad3 *a = *(FG_Quad3 *const*)lhs;
-    const FG_Quad3 *b = *(FG_Quad3 *const*)rhs;
+    const FG_Quad3 *a = *(FG_Quad3 *const *)lhs;
+    const FG_Quad3 *b = *(FG_Quad3 *const *)rhs;
 
     if (a->albedo < b->albedo) return -1;
     if (b->albedo < a->albedo) return 1;
@@ -170,7 +170,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     FG_Quad3VertIn *transmem = NULL;
     Uint32          size     = info->count * sizeof(*transmem);
     Uint32          i        = 0;
-    FG_Mat4         modelmat = { .m = { 0.0F } };
+    FG_Mat4         modelmat = { { 0.0F } };
     Uint32          j        = 0;
 
     if (!size) return true;
@@ -260,7 +260,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     for (i = 0, j = 0; i != self->count; i += self->batches[j].count, ++j) {
         self->texsampl_bind.texture = self->batches[j].albedo;
-        if (!self->texsampl_bind.texture) self->texsampl_bind.texture = self->nulltex;
+        if (!self->texsampl_bind.texture) self->texsampl_bind.texture = self->albedo;
         SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->texsampl_bind, 1);
         SDL_DrawGPUPrimitives(rndrpass, 6, self->batches[j].count, 0, i);
     }

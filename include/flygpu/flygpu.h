@@ -69,13 +69,14 @@ typedef struct
 {
     const FG_Quad3 *instances;
     Uint32          count;
-    Uint32          padding0;
+    Uint8           padding0[4];
 } FG_Quad3StageDrawInfo;
 
 typedef struct
 {
     const FG_Camera       *cameras;
-    size_t                 camera_count;
+    Uint32                 camera_count;
+    Uint8                  padding0[4];
     FG_Quad3StageDrawInfo  quad3s_info;
 } FG_RendererDrawInfo;
 

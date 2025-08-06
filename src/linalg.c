@@ -31,11 +31,13 @@ void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
     float sin = SDL_sinf(rotation);
 
     *tbnmat = (FG_Mat3){
-        .m[0] = cos,
-        .m[1] = sin,
-        .m[3] = -sin,
-        .m[4] = cos,
-        .m[8] = 1.0F
+        .m = {
+            [0] = cos,
+            [1] = sin,
+            [3] = -sin,
+            [4] = cos,
+            [8] = 1.0F
+        }
     };
 }
 
