@@ -60,8 +60,6 @@ struct FG_Quad3Stage
     SDL_GPUBufferCreateInfo           vertbuf_info;
     Uint8                             padding0[4];
     SDL_GPUBufferBinding              vertbuf_bind;
-    SDL_GPUTransferBufferCreateInfo   transbuf_info;
-    Uint8                             padding1[4];
     SDL_GPUTransferBuffer            *transbuf;
     SDL_GPUTextureSamplerBinding      sampler_bind;
     SDL_GPUGraphicsPipeline          *pipeline;
@@ -172,13 +170,11 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
-    FG_Quad3VertIn *transmem = NULL;
-    Uint32          size     = info->count * sizeof(*transmem);
     Uint32          i        = 0;
+    Uint32          size     = 0;
+    FG_Quad3VertIn *transmem = NULL;
     Uint32          j        = 0;
     FG_Mat4         modelmat = { { 0.0F } };
-
-    if (!size) return true;
 
     if (self->capacity < info->count) {
         self->capacity = info->count;
@@ -192,7 +188,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         if (!self->batches) return false;
     }
 
-    for (i = 0, self->count = 0; i != self->capacity; ++i) {
+    for (i = 0, self->count = 0; i != info->count; ++i) {
         if (far < info->instances[i].transform.translation.z &&
             info->instances[i].transform.translation.z < near
         ) {
@@ -208,6 +204,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     self->batches->albedo = (*self->instances)->albedo;
     self->batches->count  = 0;
 
+    size = self->count * sizeof(*transmem);
+
     if (self->vertbuf_info.size < size) {
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
         self->vertbuf_info.size   = size;
@@ -216,9 +214,10 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         if (!self->vertbuf_bind.buffer) return false;
 
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
-        self->transbuf_info.size = size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(
-            self->device, &self->transbuf_info);
+        self->transbuf = SDL_CreateGPUTransferBuffer(
+            self->device,
+            &(SDL_GPUTransferBufferCreateInfo){ .size = self->vertbuf_info.size }
+        );
         if (!self->transbuf) return false;
     }
 
