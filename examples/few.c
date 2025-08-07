@@ -155,7 +155,7 @@ Sint32 main(void)
         return 1;
     }
 
-    surface = IMG_Load("./assets/big-house.png");
+    surface = IMG_Load("./assets/albedos/big-house.png");
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
@@ -170,7 +170,7 @@ Sint32 main(void)
     }
     SDL_DestroySurface(surface);
 
-    surface = IMG_Load("./assets/block-big.png");
+    surface = IMG_Load("./assets/albedos/block-big.png");
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
@@ -185,7 +185,7 @@ Sint32 main(void)
     }
     SDL_DestroySurface(surface);
 
-    surface = IMG_Load("./assets/pine.png");
+    surface = IMG_Load("./assets/albedos/pine.png");
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return 1;
