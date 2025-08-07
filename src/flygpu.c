@@ -44,8 +44,9 @@ struct FG_Renderer
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint8                            padding0[4];
     SDL_GPUTransferBuffer           *transbuf;
-    SDL_GPUTextureCreateInfo         depthtex_info;
+    SDL_GPUTextureCreateInfo         targbuf_info;
     Uint8                            padding1[4];
+    SDL_GPUTexture                  *geombuf[3];
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
     FG_Quad3Stage                   *quad3stage;
     SDL_GPUFence                    *fence;
@@ -103,10 +104,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    self->depthtex_info.format               = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    self->depthtex_info.usage                = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    self->depthtex_info.layer_count_or_depth = 1;
-    self->depthtex_info.num_levels           = 1;
+    self->targbuf_info.layer_count_or_depth = 1;
+    self->targbuf_info.num_levels           = 1;
 
     self->depthtarg_info.clear_depth      = 1.0F;
     self->depthtarg_info.load_op          = SDL_GPU_LOADOP_CLEAR;
@@ -243,12 +242,31 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     swapctarg_info.load_op = SDL_GPU_LOADOP_LOAD;
 
-    if (self->depthtex_info.width != width || self->depthtex_info.height != height) {
+    if (self->targbuf_info.width != width || self->targbuf_info.height != height) {
+        self->targbuf_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        self->targbuf_info.usage  = SDL_GPU_TEXTUREUSAGE_SAMPLER
+                                  | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+        self->targbuf_info.width  = width;
+        self->targbuf_info.height = height;
+
+        SDL_ReleaseGPUTexture(self->device, self->geombuf[0]);
+        self->geombuf[0] = SDL_CreateGPUTexture(self->device, &self->targbuf_info);
+        if (!self->geombuf[0]) return false;
+
+        self->targbuf_info.format = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
+
+        for (i = 1; i != SDL_arraysize(self->geombuf); ++i) {
+            SDL_ReleaseGPUTexture(self->device, self->geombuf[i]);
+            self->geombuf[i] = SDL_CreateGPUTexture(self->device, &self->targbuf_info);
+            if (!self->geombuf[i]) return false;
+        }
+
+        self->targbuf_info.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+        self->targbuf_info.usage  = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-        self->depthtex_info.width    = width;
-        self->depthtex_info.height   = height;
         self->depthtarg_info.texture = SDL_CreateGPUTexture(
-            self->device, &self->depthtex_info);
+            self->device, &self->targbuf_info);
         if (!self->depthtarg_info.texture) return false;
     }
 
@@ -300,11 +318,16 @@ void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture)
 
 bool FG_DestroyRenderer(FG_Renderer *self)
 {
+    Uint8 i = 0;
+
     if (!self) return true;
     if (self->device) {
         SDL_ReleaseGPUFence(self->device, self->fence);
         FG_DestroyQuad3Stage(self->quad3stage);
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
+        for (i = 0; i != SDL_arraysize(self->geombuf); ++i) {
+            SDL_ReleaseGPUTexture(self->device, self->geombuf[i]);
+        }
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         SDL_ReleaseGPUTexture(self->device, self->normal);
         SDL_ReleaseGPUTexture(self->device, self->albedo);
