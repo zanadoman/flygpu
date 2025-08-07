@@ -21,19 +21,23 @@
 
 #version 460
 
-layout(location = 0) in vec4 MVP0;
-layout(location = 1) in vec4 MVP1;
-layout(location = 2) in vec4 MVP2;
-layout(location = 3) in vec4 MVP3;
-layout(location = 4) in vec4 inColorTL;
-layout(location = 5) in vec4 inColorBL;
-layout(location = 6) in vec4 inColorBR;
-layout(location = 7) in vec4 inColorTR;
-layout(location = 8) in vec2 inTexCoordTL;
-layout(location = 9) in vec2 inTexCoordBR;
+layout(location = 0)  in vec4 MVP0;
+layout(location = 1)  in vec4 MVP1;
+layout(location = 2)  in vec4 MVP2;
+layout(location = 3)  in vec4 MVP3;
+layout(location = 4)  in vec3 TBN0;
+layout(location = 5)  in vec3 TBN1;
+layout(location = 6)  in vec3 TBN2;
+layout(location = 7)  in vec4 inColorTL;
+layout(location = 8)  in vec4 inColorBL;
+layout(location = 9)  in vec4 inColorBR;
+layout(location = 10) in vec4 inColorTR;
+layout(location = 11) in vec2 inTexCoordTL;
+layout(location = 12) in vec2 inTexCoordBR;
 
-layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec2 fragTexCoord;
+layout(location = 0) out mat3 TBN;
+layout(location = 3) out vec4 fragColor;
+layout(location = 4) out vec2 fragTexCoord;
 
 const uint indices[6] = uint[](0, 1, 3, 1, 2, 3);
 
@@ -47,8 +51,14 @@ const vec2 positions[4] = vec2[](
 void main()
 {
     uint i = indices[gl_VertexIndex];
+
     gl_Position  = mat4(MVP0, MVP1, MVP2, MVP3) * vec4(positions[i], 0.0, 1.0);
+    TBN          = mat3(TBN0, TBN1, TBN2);
     fragColor    = vec4[](inColorTL, inColorBL, inColorBR, inColorTR)[i];
-    fragTexCoord = vec2[](inTexCoordTL, vec2(inTexCoordTL.x, inTexCoordBR.y),
-                          inTexCoordBR, vec2(inTexCoordBR.x, inTexCoordTL.y))[i];
+    fragTexCoord = vec2[](
+        inTexCoordTL,
+        vec2(inTexCoordTL.x, inTexCoordBR.y),
+        inTexCoordBR,
+        vec2(inTexCoordBR.x, inTexCoordTL.y)
+    )[i];
 }

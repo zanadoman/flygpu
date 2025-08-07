@@ -21,16 +21,17 @@
 
 #version 460
 
-layout(set = 2, binding = 0) uniform sampler2D texSampler;
+layout(set = 2, binding = 0) uniform sampler2D albedoMap;
 
-layout(location = 0) in vec4 fragColor;
-layout(location = 1) in vec2 fragTexCoord;
+layout(location = 0) in mat3 TBN;
+layout(location = 3) in vec4 fragColor;
+layout(location = 4) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor = texture(texSampler, fragTexCoord);
+    outColor = texture(albedoMap, fragTexCoord);
     if (outColor.a <= 0.0) discard;
     outColor *= fragColor;
 }
