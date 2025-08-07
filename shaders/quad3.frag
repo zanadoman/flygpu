@@ -22,6 +22,7 @@
 #version 460
 
 layout(set = 2, binding = 0) uniform sampler2D albedoMap;
+layout(set = 2, binding = 1) uniform sampler2D normalMap;
 
 layout(location = 0) in mat3 TBN;
 layout(location = 3) in vec4 fragColor;
@@ -29,9 +30,23 @@ layout(location = 4) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
+const vec3 light = normalize(vec3(1.0 / 3.0, 1.0 / 3.0, 1.0));
+
 void main()
 {
-    outColor = texture(albedoMap, fragTexCoord);
-    if (outColor.a <= 0.0) discard;
-    outColor *= fragColor;
+    vec4 albedo = texture(albedoMap, fragTexCoord);
+    if (albedo.a <= 0.0) discard;
+    albedo *= fragColor;
+
+    vec3 normal = texture(normalMap, fragTexCoord).rgb;
+    if (0.5 <= normal.r && normal.r <= 128.0 / 255.0 &&
+        0.5 <= normal.g && normal.g <= 128.0 / 255.0
+    ) {
+        outColor = albedo;
+    } else {
+        outColor = vec4(
+            albedo.rgb * max(dot(normalize(TBN * (normal * 2.0 - 1.0)), light), 0.0),
+            albedo.a
+        );
+    }
 }
