@@ -47,7 +47,6 @@ struct FG_Renderer
     SDL_GPUTextureCreateInfo         depthtex_info;
     Uint8                            padding1[4];
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
-    SDL_GPUViewport                  viewport;
     FG_Quad3Stage                   *quad3stage;
     SDL_GPUFence                    *fence;
 };
@@ -109,11 +108,11 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtex_info.layer_count_or_depth = 1;
     self->depthtex_info.num_levels           = 1;
 
-    self->depthtarg_info.clear_depth = 1.0F;
-    self->depthtarg_info.load_op     = SDL_GPU_LOADOP_CLEAR;
-    self->depthtarg_info.store_op    = SDL_GPU_STOREOP_DONT_CARE;
-
-    self->viewport.max_depth = 1.0F;
+    self->depthtarg_info.clear_depth      = 1.0F;
+    self->depthtarg_info.load_op          = SDL_GPU_LOADOP_CLEAR;
+    self->depthtarg_info.store_op         = SDL_GPU_STOREOP_DONT_CARE;
+    self->depthtarg_info.stencil_load_op  = SDL_GPU_LOADOP_DONT_CARE;
+    self->depthtarg_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
 
     self->quad3stage = FG_CreateQuad3Stage(
         self->device,
@@ -218,6 +217,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     Uint32                  height                      = 0;
     SDL_GPURenderPass      *rndrpass                    = NULL;
     Uint32                  i                           = 0;
+    SDL_GPUViewport         viewport                    = { .max_depth = 1.0F };
     FG_Mat4                 projmat                     = { { 0.0F } };
     FG_Mat4                 viewmat                     = { { 0.0F } };
     FG_Mat4                 vpmat                       = { { 0.0F } };
@@ -253,15 +253,14 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     }
 
     for (i = 0; i != info->camera_count; ++i) {
-        self->viewport.x = (float)width * cameras[i]->viewport.tl.x;
-        self->viewport.y = (float)height * cameras[i]->viewport.tl.y;
-        self->viewport.w = (float)width
-                         * (cameras[i]->viewport.br.x - cameras[i]->viewport.tl.x);
-        self->viewport.h = (float)height
-                         * (cameras[i]->viewport.br.y - cameras[i]->viewport.tl.y);
+        viewport.x = (float)width * cameras[i]->viewport.tl.x;
+        viewport.y = (float)height * cameras[i]->viewport.tl.y;
+        viewport.w = (float)width
+                   * (cameras[i]->viewport.br.x - cameras[i]->viewport.tl.x);
+        viewport.h = (float)height
+                   * (cameras[i]->viewport.br.y - cameras[i]->viewport.tl.y);
 
-        FG_SetProjMat4(
-            &cameras[i]->perspective, self->viewport.w / self->viewport.h, &projmat);
+        FG_SetProjMat4(&cameras[i]->perspective, viewport.w / viewport.h, &projmat);
         FG_SetViewMat4(&cameras[i]->transform, &viewmat);
         FG_MulMat4s(&projmat, &viewmat, &vpmat);
 
@@ -280,7 +279,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
         rndrpass = SDL_BeginGPURenderPass(
             cmdbuf, &swapctarg_info, 1, &self->depthtarg_info);
-        SDL_SetGPUViewport(rndrpass, &self->viewport);
+        SDL_SetGPUViewport(rndrpass, &viewport);
         FG_Quad3StageDraw(self->quad3stage, rndrpass);
         SDL_EndGPURenderPass(rndrpass);
     }
