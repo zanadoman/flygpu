@@ -222,13 +222,13 @@ Sint32 FG_CompareCameras(const void *lhs, const void *rhs)
 
 bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
+    Uint32                  i                           = 0;
     const FG_Camera        *cameras[info->camera_count];
     SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
     SDL_GPUColorTargetInfo  swapctarg_info              = { .texture = NULL };
     Uint32                  width                       = 0;
     Uint32                  height                      = 0;
     SDL_GPURenderPass      *rndrpass                    = NULL;
-    Uint32                  i                           = 0;
     SDL_GPUViewport         viewport                    = { .max_depth = 1.0F };
     FG_Mat4                 projmat                     = { { 0.0F } };
     FG_Mat4                 viewmat                     = { { 0.0F } };
@@ -282,7 +282,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         if (!self->gbuftarg_infos[FG_GBUF_LOCATION_DIFFUSE].texture) return false;
 
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-        self->targbuf_info.format    = FG_DEPTHBUF_FORMAT;
+        self->targbuf_info.format    = FG_DEPTH_FORMAT;
         self->targbuf_info.usage     = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
         self->depthtarg_info.texture = SDL_CreateGPUTexture(
             self->device, &self->targbuf_info);

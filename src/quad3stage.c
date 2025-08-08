@@ -113,7 +113,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
                 [FG_GBUF_LOCATION_DIFFUSE]  = { .format = FG_GBUF_FORMAT_DIFFUSE }
             },
             .num_color_targets         = FG_GBUF_LOCATION_COUNT,
-            .depth_stencil_format      = FG_DEPTHBUF_FORMAT,
+            .depth_stencil_format      = FG_DEPTH_FORMAT,
             .has_depth_stencil_target  = true
         }
     };
