@@ -111,7 +111,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    surface.pixels = &(Uint32){ 0x00FFFFFF };
+    surface.pixels = &(Uint32){ 0x000A0A0A };
 
     FG_RendererCreateTexture(self, &surface, &self->specular);
     if (!self->specular) {
