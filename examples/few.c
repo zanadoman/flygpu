@@ -200,6 +200,21 @@ Sint32 main(void)
     }
     SDL_DestroySurface(surface);
 
+    surface = IMG_Load("./assets/speculars/example.png");
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!FG_RendererCreateTexture(renderer, surface, &quad3s[1].specular)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s\n", SDL_GetError());
+        return 1;
+    }
+    if (!quad3s[1].specular) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return 1;
+    }
+    SDL_DestroySurface(surface);
+
     surface = IMG_Load("./assets/albedos/pine.png");
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -241,6 +256,7 @@ Sint32 main(void)
     }
 
     FG_RendererDestroyTexture(renderer, quad3s[2].albedo);
+    FG_RendererDestroyTexture(renderer, quad3s[1].specular);
     FG_RendererDestroyTexture(renderer, quad3s[1].normal);
     FG_RendererDestroyTexture(renderer, quad3s[1].albedo);
     FG_RendererDestroyTexture(renderer, quad3s[0].albedo);

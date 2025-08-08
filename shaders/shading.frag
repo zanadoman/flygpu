@@ -23,13 +23,14 @@
 
 layout(set = 2, binding = 0) uniform sampler2D positionSampler;
 layout(set = 2, binding = 1) uniform sampler2D normalSampler;
-layout(set = 2, binding = 2) uniform sampler2D diffuseSampler;
+layout(set = 2, binding = 2) uniform sampler2D specularSampler;
+layout(set = 2, binding = 3) uniform sampler2D albedoSampler;
 
 layout(location = 0) in vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outColor;
 
-const float shininess = 64.0;
+const float shininess = 32.0;
 
 const float constant  = 1.0;
 const float linear    = 0.09;
@@ -44,11 +45,11 @@ void main()
     vec3 normal = texture(normalSampler, fragTexCoord).xyz;
     if (normal == vec3(0.0)) discard;
 
-    vec3  position = texture(positionSampler, fragTexCoord).xyz;
-    vec3  albedo   = texture(diffuseSampler, fragTexCoord).rgb;
-    float specular = texture(diffuseSampler, fragTexCoord).a;
+    vec3 position = texture(positionSampler, fragTexCoord).xyz;
+    vec3 specular = texture(specularSampler, fragTexCoord).rgb;
+    vec3 albedo   = texture(albedoSampler, fragTexCoord).rgb;
 
-    vec3  lightDir = lightPosition - position;
+    vec3 lightDir = lightPosition - position;
     if (lightDir == vec3(0.0)) discard;
     float distance = length(lightDir);
     lightDir       = normalize(lightDir);
@@ -56,11 +57,11 @@ void main()
     float NdotL   = max(dot(normal, lightDir), 0.0);
     vec3  diffuse = albedo * NdotL;
 
-    vec3  viewDir = normalize(-position);
-    vec3  halfDir = normalize(lightDir + viewDir);
-    float NdotH   = max(dot(normal, halfDir), 0.0);
-    specular      = pow(NdotH, shininess) * specular;
+    vec3  viewDir  = normalize(-position);
+    vec3  halfDir  = normalize(lightDir + viewDir);
+    float NdotH    = max(dot(normal, halfDir), 0.0);
+    specular      *= pow(NdotH, shininess);
 
-    outColor = ambient * albedo + lightColor * (diffuse + vec3(specular))
+    outColor = ambient * albedo + lightColor * (diffuse + specular)
              * (1.0 / (constant + linear * distance + quadratic * distance * distance));
 }

@@ -35,7 +35,7 @@ struct FG_ShadingStage
     SDL_GPUDevice                *device;
     SDL_GPUShader                *vertspv;
     SDL_GPUShader                *fragspv;
-    SDL_GPUTextureSamplerBinding  sampler_binds[FG_GBUF_LOCATION_COUNT];
+    SDL_GPUTextureSamplerBinding  sampler_binds[FG_GBUF_COUNT];
     SDL_GPUGraphicsPipeline      *pipeline;
 };
 
