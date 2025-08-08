@@ -37,6 +37,7 @@ typedef struct
 {
     SDL_GPUTexture *albedo;
     SDL_GPUTexture *normal;
+    SDL_GPUTexture *specular;
     Uint32          count;
     Uint8           padding0[4];
 } FG_Quad3Batch;
@@ -66,7 +67,7 @@ struct FG_Quad3Stage
     Uint8                          padding0[4];
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUTextureSamplerBinding   sampler_binds[2];
+    SDL_GPUTextureSamplerBinding   sampler_binds[3];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
@@ -185,6 +186,8 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
     if (b->albedo < a->albedo) return 1;
     if (a->normal < b->normal) return -1;
     if (b->normal < a->normal) return 1;
+    if (a->specular < b->specular) return -1;
+    if (b->specular < a->specular) return 1;
     return 0;
 }
 
@@ -227,8 +230,9 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     SDL_qsort(
         self->instances, self->count, sizeof(*self->instances), FG_CompareQuad3s);
 
-    self->batches->albedo = (*self->instances)->albedo;
-    self->batches->normal = (*self->instances)->normal;
+    self->batches->albedo   = (*self->instances)->albedo;
+    self->batches->normal   = (*self->instances)->normal;
+    self->batches->specular = (*self->instances)->specular;
     self->batches->count  = 0;
 
     size = self->count * sizeof(*transmem);
@@ -259,11 +263,13 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         transmem->color  = self->instances[i]->color;
         transmem->coords = self->instances[i]->coords;
         if (self->instances[i]->albedo != self->batches[j].albedo ||
-            self->instances[i]->normal != self->batches[j].normal
+            self->instances[i]->normal != self->batches[j].normal ||
+            self->instances[i]->specular != self->batches[j].specular
         ) {
             ++j;
             self->batches[j].albedo = self->instances[i]->albedo;
             self->batches[j].normal = self->instances[i]->normal;
+            self->batches[j].specular = self->instances[i]->specular;
             self->batches[j].count  = 1;
         }
         else ++self->batches[j].count;
@@ -302,6 +308,10 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
         self->sampler_binds[1].texture = self->batches[j].normal;
         if (!self->sampler_binds[1].texture) {
             self->sampler_binds[1].texture = self->normal;
+        }
+        self->sampler_binds[2].texture = self->batches[j].specular;
+        if (!self->sampler_binds[2].texture) {
+            self->sampler_binds[2].texture = self->specular;
         }
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
