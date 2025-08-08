@@ -25,11 +25,11 @@ layout(location = 0) out vec2 fragTexCoord;
 
 const uint indices[6] = uint[](0, 1, 3, 1, 2, 3);
 
-const vec2 positions[4] = vec2[](
-    vec2(-1.0, 1.0),
-    vec2(-1.0, -1.0),
-    vec2(1.0, -1.0),
-    vec2(1.0, 1.0)
+const vec4 positions[4] = vec4[](
+    vec4(-1.0, 1.0, 0.0, 1.0),
+    vec4(-1.0, -1.0, 0.0, 1.0),
+    vec4(1.0, -1.0, 0.0, 1.0),
+    vec4(1.0, 1.0, 0.0, 1.0)
 );
 
 const vec2 fragTexCoords[4] = vec2[](
@@ -42,6 +42,6 @@ const vec2 fragTexCoords[4] = vec2[](
 void main()
 {
     uint i       = indices[gl_VertexIndex];
-    gl_Position  = vec4(positions[i], 0.0, 1.0);
+    gl_Position  = positions[i];
     fragTexCoord = fragTexCoords[i];
 }

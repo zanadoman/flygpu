@@ -21,10 +21,10 @@
 
 #version 460
 
-layout(location = 0)  in vec4 MODEL0;
-layout(location = 1)  in vec4 MODEL1;
-layout(location = 2)  in vec4 MODEL2;
-layout(location = 3)  in vec4 MODEL3;
+layout(location = 0)  in vec4 MV0;
+layout(location = 1)  in vec4 MV1;
+layout(location = 2)  in vec4 MV2;
+layout(location = 3)  in vec4 MV3;
 layout(location = 4)  in vec4 MVP0;
 layout(location = 5)  in vec4 MVP1;
 layout(location = 6)  in vec4 MVP2;
@@ -57,7 +57,7 @@ void main()
     uint i       = indices[gl_VertexIndex];
     gl_Position  = mat4(MVP0, MVP1, MVP2, MVP3) * positions[i];
     TBN          = mat3(TBN0, TBN1, TBN2);
-    fragPosition = (mat4(MODEL0, MODEL1, MODEL2, MODEL3) * positions[i]).xyz;
+    fragPosition = (mat4(MV0, MV1, MV2, MV3) * positions[i]).xyz;
     fragColor    = vec4[](inColorTL, inColorBL, inColorBR, inColorTR)[i];
     fragTexCoord = vec2[](
         inTexCoord.xy,

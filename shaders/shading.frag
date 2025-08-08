@@ -29,11 +29,38 @@ layout(location = 0) in vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outColor;
 
-const vec3 light = normalize(vec3(1.0 / 3.0, 1.0 / 3.0, 1.0));
+const float shininess = 64.0;
+
+const float constant  = 1.0;
+const float linear    = 0.09;
+const float quadratic = 0.032;
+
+const vec3 ambient       = vec3(0.1);
+const vec3 lightPosition = vec3(0.0, 0.0, 0.0);
+const vec3 lightColor    = vec3(1.0);
 
 void main()
 {
-    vec4 diffuse = texture(diffuseSampler, fragTexCoord);
-    if (diffuse.a <= 0.0) discard;
-    outColor = diffuse.rgb * max(dot(texture(normalSampler, fragTexCoord).xyz, light), 0.0);
+    vec3 normal = texture(normalSampler, fragTexCoord).xyz;
+    if (normal == vec3(0.0)) discard;
+
+    vec3  position = texture(positionSampler, fragTexCoord).xyz;
+    vec3  albedo   = texture(diffuseSampler, fragTexCoord).rgb;
+    float specular = texture(diffuseSampler, fragTexCoord).a;
+
+    vec3  lightDir = lightPosition - position;
+    if (lightDir == vec3(0.0)) discard;
+    float distance = length(lightDir);
+    lightDir       = normalize(lightDir);
+
+    float NdotL   = max(dot(normal, lightDir), 0.0);
+    vec3  diffuse = albedo * NdotL;
+
+    vec3  viewDir = normalize(-position);
+    vec3  halfDir = normalize(lightDir + viewDir);
+    float NdotH   = max(dot(normal, halfDir), 0.0);
+    specular      = pow(NdotH, shininess) * specular;
+
+    outColor = ambient * albedo + lightColor * (diffuse + vec3(specular))
+             * (1.0 / (constant + linear * distance + quadratic * distance * distance));
 }

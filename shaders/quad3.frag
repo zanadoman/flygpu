@@ -39,5 +39,5 @@ void main()
     if (albedo.a <= 0.0) discard;
     outPosition = fragPosition;
     outNormal   = normalize(TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0 - 1.0));
-    outDiffuse  = vec4((fragColor * albedo).rgb, 0.2);
+    outDiffuse  = vec4((fragColor * albedo).rgb, 0.5);
 }

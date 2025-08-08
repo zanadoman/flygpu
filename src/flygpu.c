@@ -309,6 +309,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             cpypass,
             cameras[i]->transform.translation.z,
             cameras[i]->transform.translation.z - cameras[i]->perspective.far,
+            &viewmat,
             &vpmat,
             &info->quad3s_info
         )) {

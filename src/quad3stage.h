@@ -41,6 +41,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
                        float                        near,
                        float                        far,
+                       const FG_Mat4               *viewmat,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info);
 
