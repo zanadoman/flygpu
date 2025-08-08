@@ -93,10 +93,10 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
         { .location = 8,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, tbnmat.m[0 * FG_DIMS_VEC3]) },
         { .location = 9,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, tbnmat.m[1 * FG_DIMS_VEC3]) },
         { .location = 10, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, tbnmat.m[2 * FG_DIMS_VEC3]) },
-        { .location = 11, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tl) },
-        { .location = 12, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.bl) },
-        { .location = 13, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.br) },
-        { .location = 14, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tr) },
+        { .location = 11, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, color.tl) },
+        { .location = 12, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, color.bl) },
+        { .location = 13, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, color.br) },
+        { .location = 14, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3VertIn, color.tr) },
         { .location = 15, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, coords.tl) }
     };
     SDL_GPUGraphicsPipelineCreateInfo  info                         = {

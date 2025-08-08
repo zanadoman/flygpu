@@ -162,26 +162,22 @@ Sint32 main(void)
                 .tl = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
-                    .z = RandFloat(0.0F, 1.0F),
-                    .w = RandFloat(0.0F, 1.0F)
+                    .z = RandFloat(0.0F, 1.0F)
                 },
                 .bl = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
-                    .z = RandFloat(0.0F, 1.0F),
-                    .w = RandFloat(0.0F, 1.0F)
+                    .z = RandFloat(0.0F, 1.0F)
                 },
                 .br = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
-                    .z = RandFloat(0.0F, 1.0F),
-                    .w = RandFloat(0.0F, 1.0F)
+                    .z = RandFloat(0.0F, 1.0F)
                 },
                 .tr = {
                     .x = RandFloat(0.0F, 1.0F),
                     .y = RandFloat(0.0F, 1.0F),
-                    .z = RandFloat(0.0F, 1.0F),
-                    .w = RandFloat(0.0F, 1.0F)
+                    .z = RandFloat(0.0F, 1.0F)
                 }
             },
             .albedo    = textures[RandInt(0, SDL_arraysize(IMAGES))],

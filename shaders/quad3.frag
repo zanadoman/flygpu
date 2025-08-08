@@ -27,7 +27,7 @@ layout(set = 2, binding = 2) uniform sampler2D specularSampler;
 
 layout(location = 0) in mat3 TBN;
 layout(location = 3) in vec3 fragPosition;
-layout(location = 4) in vec4 fragColor;
+layout(location = 4) in vec3 fragColor;
 layout(location = 5) in vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outPosition;
@@ -41,6 +41,6 @@ void main()
     if (albedo.a <= 0.0) discard;
     outPosition = fragPosition;
     outNormal   = normalize(TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0 - 1.0));
-    outSpecular = fragColor.rgb * texture(specularSampler, fragTexCoord).rgb;
-    outAlbedo   = fragColor.rgb * albedo.rgb;
+    outSpecular = fragColor * texture(specularSampler, fragTexCoord).rgb;
+    outAlbedo   = fragColor * albedo.rgb;
 }
