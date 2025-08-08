@@ -21,32 +21,23 @@
 
 #version 460
 
-layout(set = 2, binding = 0) uniform sampler2D albedoMap;
-layout(set = 2, binding = 1) uniform sampler2D normalMap;
+layout(set = 2, binding = 0) uniform sampler2D albedoSampler;
+layout(set = 2, binding = 1) uniform sampler2D normalSampler;
 
 layout(location = 0) in mat3 TBN;
-layout(location = 3) in vec4 fragColor;
-layout(location = 4) in vec2 fragTexCoord;
+layout(location = 3) in vec3 fragPosition;
+layout(location = 4) in vec4 fragColor;
+layout(location = 5) in vec2 fragTexCoord;
 
-layout(location = 0) out vec4 outColor;
-
-const vec3 light = normalize(vec3(1.0 / 3.0, 1.0 / 3.0, 1.0));
+layout(location = 0) out vec3 outPosition;
+layout(location = 1) out vec3 outNormal;
+layout(location = 2) out vec4 outDiffuse;
 
 void main()
 {
-    vec4 albedo = texture(albedoMap, fragTexCoord);
+    vec4 albedo = texture(albedoSampler, fragTexCoord);
     if (albedo.a <= 0.0) discard;
-    albedo *= fragColor;
-
-    vec3 normal = texture(normalMap, fragTexCoord).rgb;
-    if (0.5 <= normal.r && normal.r <= 128.0 / 255.0 &&
-        0.5 <= normal.g && normal.g <= 128.0 / 255.0
-    ) {
-        outColor = albedo;
-    } else {
-        outColor = vec4(
-            albedo.rgb * max(dot(normalize(TBN * (normal * 2.0 - 1.0)), light), 0.0),
-            albedo.a
-        );
-    }
+    outPosition = fragPosition;
+    outNormal   = normalize(TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0 - 1.0));
+    outDiffuse  = vec4((fragColor * albedo).rgb, 0.2);
 }

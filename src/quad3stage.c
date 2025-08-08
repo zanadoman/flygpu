@@ -69,10 +69,9 @@ struct FG_Quad3Stage
 
 Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
-                                   SDL_GPUTextureFormat  swapctarg_fmt,
-                                   SDL_GPUTexture       *albedo,
-                                   SDL_GPUTexture       *normal)
+FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
+                                   SDL_GPUTexture *albedo,
+                                   SDL_GPUTexture *normal)
 {
     FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
     Uint8                              i           = 0;
@@ -107,11 +106,13 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice        *device,
             .enable_depth_write = true
         },
         .target_info         = {
-            .color_target_descriptions = &(SDL_GPUColorTargetDescription){
-                .format = swapctarg_fmt
+            .color_target_descriptions = (SDL_GPUColorTargetDescription[FG_GBUF_LOCATION_COUNT]){
+                [FG_GBUF_LOCATION_POSITION] = { .format = FG_GBUF_FORMAT_POSITION },
+                [FG_GBUF_LOCATION_NORMAL]   = { .format = FG_GBUF_FORMAT_NORMAL },
+                [FG_GBUF_LOCATION_DIFFUSE]  = { .format = FG_GBUF_FORMAT_DIFFUSE }
             },
-            .num_color_targets         = 1,
-            .depth_stencil_format      = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
+            .num_color_targets         = FG_GBUF_LOCATION_COUNT,
+            .depth_stencil_format      = FG_DEPTHBUF_FORMAT,
             .has_depth_stencil_target  = true
         }
     };

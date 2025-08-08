@@ -21,29 +21,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_QUAD3STAGE_H
-#define FLYGPU_QUAD3STAGE_H
-
-#include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
+#ifndef FLYGPU_SHADINGSTAGE_H
+#define FLYGPU_SHADINGSTAGE_H
 
 #include <SDL3/SDL_gpu.h>
 
-typedef struct FG_Quad3Stage FG_Quad3Stage;
+typedef struct FG_ShadingStage FG_ShadingStage;
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
-                                   SDL_GPUTexture *albedo,
-                                   SDL_GPUTexture *normal);
+FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
+                                       SDL_GPUTextureFormat  swapctarg_format);
 
-bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
-                       SDL_GPUCopyPass             *cpypass,
-                       float                        near,
-                       float                        far,
-                       const FG_Mat4               *vpmat,
-                       const FG_Quad3StageDrawInfo *info);
+void FG_ShadingStageCopy(FG_ShadingStage        *self,
+                         SDL_GPUColorTargetInfo *gbuftarg_infos);
 
-void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass);
+void FG_ShadingStageDraw(FG_ShadingStage *self, SDL_GPURenderPass *rndrpass);
 
-void FG_DestroyQuad3Stage(FG_Quad3Stage *self);
+void FG_DestroyShadingStage(FG_ShadingStage *self);
 
-#endif /* FLYGPU_QUAD3STAGE_H */
+#endif /* FLYGPU_SHADINGSTAGE_H */

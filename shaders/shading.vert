@@ -1,5 +1,3 @@
-/* clang-format off */
-
 /*
   FlyGPU
   Copyright (C) 2025 Domán Zana
@@ -21,29 +19,29 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_SHADER_H
-#define FLYGPU_SHADER_H
+#version 460
 
-#include <SDL3/SDL_gpu.h>
-#include <SDL3/SDL_stdinc.h>
+layout(location = 0) out vec2 fragTexCoord;
 
-typedef enum
+const uint indices[6] = uint[](0, 1, 3, 1, 2, 3);
+
+const vec2 positions[4] = vec2[](
+    vec2(-1.0, 1.0),
+    vec2(-1.0, -1.0),
+    vec2(1.0, -1.0),
+    vec2(1.0, 1.0)
+);
+
+const vec2 fragTexCoords[4] = vec2[](
+    vec2(0.0, 0.0),
+    vec2(0.0, 1.0),
+    vec2(1.0, 1.0),
+    vec2(1.0, 0.0)
+);
+
+void main()
 {
-    FG_GBUF_LOCATION_POSITION,
-    FG_GBUF_LOCATION_NORMAL,
-    FG_GBUF_LOCATION_DIFFUSE,
-    FG_GBUF_LOCATION_COUNT
-} FG_GBufLocation;
-
-#define FG_GBUF_FORMAT_POSITION SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT
-#define FG_GBUF_FORMAT_NORMAL   SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT
-#define FG_GBUF_FORMAT_DIFFUSE  SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
-
-#define FG_DEPTHBUF_FORMAT SDL_GPU_TEXTUREFORMAT_D16_UNORM
-
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
-                             const char         *path,
-                             SDL_GPUShaderStage  stage,
-                             Uint32              samplers);
-
-#endif /* FLYGPU_SHADER_H */
+    uint i       = indices[gl_VertexIndex];
+    gl_Position  = vec4(positions[i], 0.0, 1.0);
+    fragTexCoord = fragTexCoords[i];
+}
