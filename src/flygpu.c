@@ -51,7 +51,7 @@ struct FG_Renderer
     SDL_GPUTransferBuffer           *transbuf;
     SDL_GPUTextureCreateInfo         targbuf_info;
     Uint8                            padding1[4];
-    SDL_GPUColorTargetInfo           gbuftarg_infos[FG_GBUF_LOCATION_COUNT];
+    SDL_GPUColorTargetInfo           gbuftarg_infos[FG_GBUF_COUNT];
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
     FG_Quad3Stage                   *quad3stage;
     FG_ShadingStage                 *shadingstage;
@@ -273,27 +273,16 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
         self->targbuf_info.width  = width;
         self->targbuf_info.height = height;
 
+        self->targbuf_info.format = FG_GBUF_FORMAT;
+        self->targbuf_info.usage  = SDL_GPU_TEXTUREUSAGE_SAMPLER
+                                  | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+
         for (i = 0; i != SDL_arraysize(self->gbuftarg_infos); ++i) {
             SDL_ReleaseGPUTexture(self->device, self->gbuftarg_infos[i].texture);
+            self->gbuftarg_infos[i].texture = SDL_CreateGPUTexture(
+                self->device, &self->targbuf_info);
+            if (!self->gbuftarg_infos[i].texture) return false;
         }
-
-        self->targbuf_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER
-                                 | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
-
-        self->targbuf_info.format                               = FG_GBUF_FORMAT_POSITION;
-        self->gbuftarg_infos[FG_GBUF_LOCATION_POSITION].texture = SDL_CreateGPUTexture(
-            self->device, &self->targbuf_info);
-        if (!self->gbuftarg_infos[FG_GBUF_LOCATION_POSITION].texture) return false;
-
-        self->targbuf_info.format                             = FG_GBUF_FORMAT_NORMAL;
-        self->gbuftarg_infos[FG_GBUF_LOCATION_NORMAL].texture = SDL_CreateGPUTexture(
-            self->device, &self->targbuf_info);
-        if (!self->gbuftarg_infos[FG_GBUF_LOCATION_NORMAL].texture) return false;
-
-        self->targbuf_info.format                              = FG_GBUF_FORMAT_DIFFUSE;
-        self->gbuftarg_infos[FG_GBUF_LOCATION_DIFFUSE].texture = SDL_CreateGPUTexture(
-            self->device, &self->targbuf_info);
-        if (!self->gbuftarg_infos[FG_GBUF_LOCATION_DIFFUSE].texture) return false;
 
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
         self->targbuf_info.format    = FG_DEPTH_FORMAT;

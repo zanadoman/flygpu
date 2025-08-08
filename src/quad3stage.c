@@ -77,9 +77,10 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
                                    SDL_GPUTexture *normal,
                                    SDL_GPUTexture *specular)
 {
-    FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
-    Uint8                              i           = 0;
-    SDL_GPUVertexAttribute             vertattrs[] = {
+    Uint8                              i                            = 0;
+    SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT];
+    FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
+    SDL_GPUVertexAttribute             vertattrs[]                  = {
         { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[0 * FG_DIMS_VEC4]) },
         { .location = 1,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[1 * FG_DIMS_VEC4]) },
         { .location = 2,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[2 * FG_DIMS_VEC4]) },
@@ -97,7 +98,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
         { .location = 14, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, color.tr) },
         { .location = 15, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, coords.tl) }
     };
-    SDL_GPUGraphicsPipelineCreateInfo  info        = {
+    SDL_GPUGraphicsPipelineCreateInfo  info                         = {
         .vertex_input_state  = {
             .vertex_buffer_descriptions = &(SDL_GPUVertexBufferDescription){
                 .pitch      = sizeof(FG_Quad3VertIn),
@@ -113,16 +114,16 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
             .enable_depth_write = true
         },
         .target_info         = {
-            .color_target_descriptions = (SDL_GPUColorTargetDescription[FG_GBUF_LOCATION_COUNT]){
-                [FG_GBUF_LOCATION_POSITION] = { .format = FG_GBUF_FORMAT_POSITION },
-                [FG_GBUF_LOCATION_NORMAL]   = { .format = FG_GBUF_FORMAT_NORMAL },
-                [FG_GBUF_LOCATION_DIFFUSE]  = { .format = FG_GBUF_FORMAT_DIFFUSE }
-            },
-            .num_color_targets         = FG_GBUF_LOCATION_COUNT,
+            .color_target_descriptions = targbuf_descs,
+            .num_color_targets         = SDL_arraysize(targbuf_descs),
             .depth_stencil_format      = FG_DEPTH_FORMAT,
             .has_depth_stencil_target  = true
         }
     };
+
+    for (i = 0; i != SDL_arraysize(targbuf_descs); ++i) {
+        targbuf_descs[i] = (SDL_GPUColorTargetDescription){ .format = FG_GBUF_FORMAT };
+    }
 
     if (!self) return NULL;
 
