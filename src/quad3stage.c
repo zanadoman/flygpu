@@ -52,28 +52,30 @@ typedef struct
 
 struct FG_Quad3Stage
 {
-    SDL_GPUDevice                    *device;
-    SDL_GPUTexture                   *albedo;
-    SDL_GPUTexture                   *normal;
-    SDL_GPUShader                    *vertspv;
-    SDL_GPUShader                    *fragspv;
-    Uint32                            capacity;
-    Uint32                            count;
-    const FG_Quad3                  **instances;
-    FG_Quad3Batch                    *batches;
-    SDL_GPUBufferCreateInfo           vertbuf_info;
-    Uint8                             padding0[4];
-    SDL_GPUBufferBinding              vertbuf_bind;
-    SDL_GPUTransferBuffer            *transbuf;
-    SDL_GPUTextureSamplerBinding      sampler_binds[2];
-    SDL_GPUGraphicsPipeline          *pipeline;
+    SDL_GPUDevice                 *device;
+    SDL_GPUTexture                *albedo;
+    SDL_GPUTexture                *normal;
+    SDL_GPUTexture                *specular;
+    SDL_GPUShader                 *vertspv;
+    SDL_GPUShader                 *fragspv;
+    Uint32                         capacity;
+    Uint32                         count;
+    const FG_Quad3               **instances;
+    FG_Quad3Batch                 *batches;
+    SDL_GPUBufferCreateInfo        vertbuf_info;
+    Uint8                          padding0[4];
+    SDL_GPUBufferBinding           vertbuf_bind;
+    SDL_GPUTransferBuffer         *transbuf;
+    SDL_GPUTextureSamplerBinding   sampler_binds[2];
+    SDL_GPUGraphicsPipeline       *pipeline;
 };
 
 Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
                                    SDL_GPUTexture *albedo,
-                                   SDL_GPUTexture *normal)
+                                   SDL_GPUTexture *normal,
+                                   SDL_GPUTexture *specular)
 {
     FG_Quad3Stage                     *self        = SDL_calloc(1, sizeof(*self));
     Uint8                              i           = 0;
@@ -129,6 +131,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
     self->albedo = albedo;
 
     self->normal = normal;
+
+    self->specular = specular;
 
     self->vertspv = FG_LoadShader(
         self->device, "./shaders/quad3.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);

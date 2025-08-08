@@ -45,6 +45,7 @@ struct FG_Renderer
     SDL_GPUDevice                   *device;
     SDL_GPUTexture                  *albedo;
     SDL_GPUTexture                  *normal;
+    SDL_GPUTexture                  *specular;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint8                            padding0[4];
     SDL_GPUTransferBuffer           *transbuf;
@@ -94,7 +95,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    surface.pixels = &(Uint32){ 0xFFFFFFFF };
+    surface.pixels = &(Uint32){ 0x00FFFFFF };
 
     FG_RendererCreateTexture(self, &surface, &self->albedo);
     if (!self->albedo) {
@@ -106,6 +107,14 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
     FG_RendererCreateTexture(self, &surface, &self->normal);
     if (!self->normal) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    surface.pixels = &(Uint32){ 0x00FFFFFF };
+
+    FG_RendererCreateTexture(self, &surface, &self->specular);
+    if (!self->specular) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -123,7 +132,12 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.stencil_load_op  = SDL_GPU_LOADOP_DONT_CARE;
     self->depthtarg_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3stage = FG_CreateQuad3Stage(self->device, self->albedo, self->normal);
+    self->quad3stage = FG_CreateQuad3Stage(
+        self->device,
+        self->albedo,
+        self->normal,
+        self->specular
+    );
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -369,6 +383,7 @@ bool FG_DestroyRenderer(FG_Renderer *self)
             SDL_ReleaseGPUTexture(self->device, self->gbuftarg_infos[i].texture);
         }
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        SDL_ReleaseGPUTexture(self->device, self->specular);
         SDL_ReleaseGPUTexture(self->device, self->normal);
         SDL_ReleaseGPUTexture(self->device, self->albedo);
         if (!SDL_WaitForGPUIdle(self->device)) return false;
