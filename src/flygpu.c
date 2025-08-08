@@ -36,6 +36,7 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 struct FG_Renderer

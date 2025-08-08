@@ -33,7 +33,7 @@ extern "C" {
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
 
-#include <stddef.h>
+#include <stdbool.h>
 
 typedef struct
 {
