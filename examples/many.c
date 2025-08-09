@@ -98,7 +98,7 @@ Sint32 main(void)
     FG_RendererDrawInfo  info                            = {
         .cameras       = &camera,
         .camera_count  = 1,
-        .quad3s_info = {
+        .quad3_info    = {
             .instances = quad3s,
             .count     = QUAD3_COUNT
         }

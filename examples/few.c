@@ -131,7 +131,7 @@ Sint32 main(void)
     FG_RendererDrawInfo  info       = {
         .cameras      = cameras,
         .camera_count = SDL_arraysize(cameras),
-        .quad3s_info  = {
+        .quad3_info   = {
             .instances = quad3s,
             .count     = SDL_arraysize(quad3s)
         }
