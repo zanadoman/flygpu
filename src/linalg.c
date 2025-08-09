@@ -63,21 +63,6 @@ void FG_SetViewMat4(const FG_Transform3 *restrict transform3,
     };
 }
 
-void FG_SetTransMat4(const FG_Vec3 *restrict translation, FG_Mat4 *restrict transmat)
-{
-    *transmat = (FG_Mat4){
-        .m = {
-            [0]  = 1.0F,
-            [5]  = 1.0F,
-            [10] = 1.0F,
-            [12] = translation->x,
-            [13] = translation->y,
-            [14] = translation->z,
-            [15] = 1.0F
-        }
-    };
-}
-
 void FG_SetModelMat4(const FG_Transform3 *restrict transform3,
                      FG_Mat4             *restrict modelmat)
 {

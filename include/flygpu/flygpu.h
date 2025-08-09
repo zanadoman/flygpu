@@ -79,6 +79,7 @@ typedef struct
     FG_Vec3 translation;
     float   radius;
     FG_Vec3 color;
+    float   intensity;
 } FG_Light;
 
 typedef struct

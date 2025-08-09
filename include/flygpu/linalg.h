@@ -93,8 +93,6 @@ void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *pr
 
 void FG_SetViewMat4(const FG_Transform3 *transform3, FG_Mat4 *viewmat);
 
-void FG_SetTransMat4(const FG_Vec3 *translation, FG_Mat4 *transmat);
-
 void FG_SetModelMat4(const FG_Transform3 *transform3, FG_Mat4 *modelmat);
 
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
