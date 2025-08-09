@@ -76,10 +76,25 @@ typedef struct
 
 typedef struct
 {
-    const FG_Camera       *cameras;
-    Uint32                 camera_count;
-    Uint8                  padding0[4];
-    FG_Quad3StageDrawInfo  quad3s_info;
+    FG_Vec3 translation;
+    float   radius;
+    FG_Vec3 color;
+} FG_Light;
+
+typedef struct
+{
+    const FG_Light *instances;
+    Uint32          count;
+    Uint8           padding0[4];
+} FG_ShadingStageDrawInfo;
+
+typedef struct
+{
+    const FG_Camera         *cameras;
+    Uint32                   camera_count;
+    Uint8                    padding0[4];
+    FG_Quad3StageDrawInfo    quad3_info;
+    FG_ShadingStageDrawInfo  shading_info;
 } FG_RendererDrawInfo;
 
 typedef struct FG_Renderer FG_Renderer;

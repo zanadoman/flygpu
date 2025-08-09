@@ -314,7 +314,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             cameras[i]->transform.translation.z - cameras[i]->perspective.far,
             &viewmat,
             &vpmat,
-            &info->quad3s_info
+            &info->quad3_info
         )) {
             return false;
         }
