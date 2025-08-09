@@ -101,7 +101,7 @@ void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 
 void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
 
-void FG_MulMat4Vec4(const FG_Mat4 *lhs, const FG_Vec4 *rhs, FG_Vec4 *out);
+void FG_MulMat4Vec3(const FG_Mat4 *lhs, const FG_Vec3 *rhs, FG_Vec3 *out);
 
 #ifdef __cplusplus
 }

@@ -134,16 +134,11 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
     }
 }
 
-void FG_MulMat4Vec4(const FG_Mat4 *lhs, const FG_Vec4 *rhs, FG_Vec4 *out)
+void FG_MulMat4Vec3(const FG_Mat4 *lhs, const FG_Vec3 *rhs, FG_Vec3 *out)
 {
-    *out = (FG_Vec4){
-        .x = lhs->m[0] * rhs->x + lhs->m[4] * rhs->y
-           + lhs->m[8] * rhs->z + lhs->m[12] * rhs->w,
-        .y = lhs->m[1] * rhs->x + lhs->m[5] * rhs->y
-           + lhs->m[9] * rhs->z + lhs->m[13] * rhs->w,
-        .z = lhs->m[2] * rhs->x + lhs->m[6] * rhs->y
-           + lhs->m[10] * rhs->z + lhs->m[14] * rhs->w,
-        .w = lhs->m[3] * rhs->x + lhs->m[7] * rhs->y
-           + lhs->m[11] * rhs->z + lhs->m[15] * rhs->w
+    *out = (FG_Vec3){
+        .x = lhs->m[0] * rhs->x + lhs->m[4] * rhs->y + lhs->m[8] * rhs->z + lhs->m[12],
+        .y = lhs->m[1] * rhs->x + lhs->m[5] * rhs->y + lhs->m[9] * rhs->z + lhs->m[13],
+        .z = lhs->m[2] * rhs->x + lhs->m[6] * rhs->y + lhs->m[10] * rhs->z + lhs->m[14]
     };
 }
