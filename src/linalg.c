@@ -25,22 +25,6 @@
 
 #include <SDL3/SDL_stdinc.h>
 
-void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
-{
-    float cos = SDL_cosf(rotation);
-    float sin = SDL_sinf(rotation);
-
-    *tbnmat = (FG_Mat3){
-        .m = {
-            [0] = cos,
-            [1] = sin,
-            [3] = -sin,
-            [4] = cos,
-            [8] = 1.0F
-        }
-    };
-}
-
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat)
 {
     float focal = 1.0F / SDL_tanf(perspective->fov / 2.0F);
@@ -79,6 +63,21 @@ void FG_SetViewMat4(const FG_Transform3 *restrict transform3,
     };
 }
 
+void FG_SetTransMat4(const FG_Vec3 *restrict translation, FG_Mat4 *restrict transmat)
+{
+    *transmat = (FG_Mat4){
+        .m = {
+            [0]  = 1.0F,
+            [5]  = 1.0F,
+            [10] = 1.0F,
+            [12] = translation->x,
+            [13] = translation->y,
+            [14] = translation->z,
+            [15] = 1.0F
+        }
+    };
+}
+
 void FG_SetModelMat4(const FG_Transform3 *restrict transform3,
                      FG_Mat4             *restrict modelmat)
 {
@@ -100,6 +99,22 @@ void FG_SetModelMat4(const FG_Transform3 *restrict transform3,
     };
 }
 
+void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
+{
+    float cos = SDL_cosf(rotation);
+    float sin = SDL_sinf(rotation);
+
+    *tbnmat = (FG_Mat3){
+        .m = {
+            [0] = cos,
+            [1] = sin,
+            [3] = -sin,
+            [4] = cos,
+            [8] = 1.0F
+        }
+    };
+}
+
 void FG_MulMat4s(const FG_Mat4 *restrict lhs,
                  const FG_Mat4 *restrict rhs,
                  FG_Mat4       *restrict out)
@@ -110,10 +125,27 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
 
     for (i = 0; i != FG_DIMS_VEC4; ++i) {
         for (j = 0; j != FG_DIMS_VEC4; ++j) {
-            out->m[4 * j + i] = 0.0F;
+            out->m[j * FG_DIMS_VEC4 + i] = 0.0F;
             for (k = 0; k != FG_DIMS_VEC4; ++k) {
-                out->m[4 * j + i] += lhs->m[4 * k + i] * rhs->m[4 * j + k];
+                out->m[j * FG_DIMS_VEC4 + i] += lhs->m[k * FG_DIMS_VEC4 + i]
+                                              * rhs->m[j * FG_DIMS_VEC4 + k];
             }
         }
     }
+}
+
+void FG_MulMat4Vec4(const FG_Mat4 *restrict lhs,
+                    const FG_Vec4 *restrict rhs,
+                    FG_Vec4       *restrict out)
+{
+    *out = (FG_Vec4){
+        .x = lhs->m[0] * rhs->x + lhs->m[4] * rhs->y
+           + lhs->m[8] * rhs->z + lhs->m[12] * rhs->w,
+        .y = lhs->m[1] * rhs->x + lhs->m[5] * rhs->y
+           + lhs->m[9] * rhs->z + lhs->m[13] * rhs->w,
+        .z = lhs->m[2] * rhs->x + lhs->m[6] * rhs->y
+           + lhs->m[10] * rhs->z + lhs->m[14] * rhs->w,
+        .w = lhs->m[3] * rhs->x + lhs->m[7] * rhs->y
+           + lhs->m[11] * rhs->z + lhs->m[15] * rhs->w
+    };
 }
