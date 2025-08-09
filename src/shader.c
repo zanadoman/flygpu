@@ -32,12 +32,16 @@
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              const char         *path,
                              SDL_GPUShaderStage  stage,
-                             Uint32              samplers)
+                             Uint32              samplers,
+                             Uint32              ssbos,
+                             Uint32              ubos)
 {
     SDL_GPUShaderCreateInfo  info   = {
-        .format       = SDL_GPU_SHADERFORMAT_SPIRV,
-        .stage        = stage,
-        .num_samplers = samplers
+        .format              = SDL_GPU_SHADERFORMAT_SPIRV,
+        .stage               = stage,
+        .num_samplers        = samplers,
+        .num_storage_buffers = ssbos,
+        .num_uniform_buffers = ubos
     };
     void                    *code   = SDL_LoadFile(path, &info.code_size);
     SDL_GPUShader           *shader = NULL;

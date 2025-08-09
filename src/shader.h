@@ -35,6 +35,8 @@
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              const char         *path,
                              SDL_GPUShaderStage  stage,
-                             Uint32              samplers);
+                             Uint32              samplers,
+                             Uint32              ssbos,
+                             Uint32              ubos);
 
 #endif /* FLYGPU_SHADER_H */
