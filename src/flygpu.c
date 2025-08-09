@@ -44,8 +44,8 @@ struct FG_Renderer
     SDL_Window                      *window;
     SDL_GPUDevice                   *device;
     SDL_GPUTexture                  *albedo;
-    SDL_GPUTexture                  *normal;
     SDL_GPUTexture                  *specular;
+    SDL_GPUTexture                  *normal;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
     Uint8                            padding0[4];
     SDL_GPUTransferBuffer           *transbuf;
@@ -103,18 +103,18 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
-    surface.pixels = &(Uint32){ 0x00FF8080 };
-
-    FG_RendererCreateTexture(self, &surface, &self->normal);
-    if (!self->normal) {
-        FG_DestroyRenderer(self);
-        return NULL;
-    }
-
     surface.pixels = &(Uint32){ 0x000A0A0A };
 
     FG_RendererCreateTexture(self, &surface, &self->specular);
     if (!self->specular) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    surface.pixels = &(Uint32){ 0x00FF8080 };
+
+    FG_RendererCreateTexture(self, &surface, &self->normal);
+    if (!self->normal) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -135,8 +135,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->quad3stage = FG_CreateQuad3Stage(
         self->device,
         self->albedo,
-        self->normal,
-        self->specular
+        self->specular,
+        self->normal
     );
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
@@ -372,8 +372,8 @@ bool FG_DestroyRenderer(FG_Renderer *self)
             SDL_ReleaseGPUTexture(self->device, self->gbuftarg_infos[i].texture);
         }
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
-        SDL_ReleaseGPUTexture(self->device, self->specular);
         SDL_ReleaseGPUTexture(self->device, self->normal);
+        SDL_ReleaseGPUTexture(self->device, self->specular);
         SDL_ReleaseGPUTexture(self->device, self->albedo);
         if (!SDL_WaitForGPUIdle(self->device)) return false;
         SDL_ReleaseWindowFromGPUDevice(self->device, self->window);

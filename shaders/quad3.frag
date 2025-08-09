@@ -22,8 +22,8 @@
 #version 460
 
 layout(set = 2, binding = 0) uniform sampler2D albedoSampler;
-layout(set = 2, binding = 1) uniform sampler2D normalSampler;
-layout(set = 2, binding = 2) uniform sampler2D specularSampler;
+layout(set = 2, binding = 1) uniform sampler2D specularSampler;
+layout(set = 2, binding = 2) uniform sampler2D normalSampler;
 
 layout(location = 0) in mat3 TBN;
 layout(location = 3) in vec3 fragPosition;
