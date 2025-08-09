@@ -134,9 +134,7 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
     }
 }
 
-void FG_MulMat4Vec4(const FG_Mat4 *restrict lhs,
-                    const FG_Vec4 *restrict rhs,
-                    FG_Vec4       *restrict out)
+void FG_MulMat4Vec4(const FG_Mat4 *lhs, const FG_Vec4 *rhs, FG_Vec4 *out)
 {
     *out = (FG_Vec4){
         .x = lhs->m[0] * rhs->x + lhs->m[4] * rhs->y
