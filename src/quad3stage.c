@@ -44,7 +44,7 @@ typedef struct
 
 typedef struct
 {
-    FG_Mat4      mvmat;
+    FG_Mat4      modelmat;
     FG_Mat4      mvpmat;
     FG_Mat3      tbnmat;
     FG_QuadColor color;
@@ -82,10 +82,10 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice  *device,
     SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT];
     FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
     SDL_GPUVertexAttribute             vertattrs[]                  = {
-        { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[0 * FG_DIMS_VEC4]) },
-        { .location = 1,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[1 * FG_DIMS_VEC4]) },
-        { .location = 2,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[2 * FG_DIMS_VEC4]) },
-        { .location = 3,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvmat.m[3 * FG_DIMS_VEC4]) },
+        { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, modelmat.m[0 * FG_DIMS_VEC4]) },
+        { .location = 1,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, modelmat.m[1 * FG_DIMS_VEC4]) },
+        { .location = 2,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, modelmat.m[2 * FG_DIMS_VEC4]) },
+        { .location = 3,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, modelmat.m[3 * FG_DIMS_VEC4]) },
         { .location = 4,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[0 * FG_DIMS_VEC4]) },
         { .location = 5,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[1 * FG_DIMS_VEC4]) },
         { .location = 6,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3VertIn, mvpmat.m[2 * FG_DIMS_VEC4]) },
@@ -197,7 +197,6 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
                        float                        near,
                        float                        far,
-                       const FG_Mat4               *viewmat,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
@@ -205,7 +204,6 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     Uint32          size     = 0;
     FG_Quad3VertIn *transmem = NULL;
     Uint32          j        = 0;
-    FG_Mat4         modelmat = { { 0.0F } };
 
     if (self->capacity < info->count) {
         self->capacity = info->count;
@@ -258,9 +256,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     if (!transmem) return false;
 
     for (i = 0, j = 0; i != self->count; ++i, ++transmem) {
-        FG_SetModelMat4(&self->instances[i]->transform, &modelmat);
-        FG_MulMat4s(viewmat, &modelmat, &transmem->mvmat);
-        FG_MulMat4s(vpmat, &modelmat, &transmem->mvpmat);
+        FG_SetModelMat4(&self->instances[i]->transform, &transmem->modelmat);
+        FG_MulMat4s(vpmat, &transmem->modelmat, &transmem->mvpmat);
         FG_SetTBNMat3(self->instances[i]->transform.rotation, &transmem->tbnmat);
         transmem->color  = self->instances[i]->color;
         transmem->coords = self->instances[i]->coords;
