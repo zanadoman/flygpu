@@ -1,67 +1,95 @@
-/*
-  FlyGPU
-  Copyright (C) 2025 Domán Zana
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-*/
-
 #version 460
+
+struct AmbientLight
+{
+    vec3 direction;
+    uint padding0;
+    vec3 color;
+    uint padding1;
+};
+
+struct OmniLight
+{
+    vec3  position;
+    float radius;
+    vec3  color;
+    uint  padding1;
+};
 
 layout(set = 2, binding = 0) uniform sampler2D positionSampler;
 layout(set = 2, binding = 1) uniform sampler2D normalSampler;
 layout(set = 2, binding = 2) uniform sampler2D specularSampler;
 layout(set = 2, binding = 3) uniform sampler2D albedoSampler;
 
+layout(set = 2, binding = 4, std140) readonly buffer AmbientBuffer
+{
+    AmbientLight lights[];
+} ambientBuffer;
+
+layout(set = 2, binding = 5, std140) readonly buffer OmniBuffer
+{
+    OmniLight lights[];
+} omniBuffer;
+
+layout(set = 3, binding = 0, std140) uniform UniformBufferObject
+{
+    vec3 origo;
+    uint ambientCount;
+    uint omniCount;
+} ubo;
+
 layout(location = 0) in vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outColor;
 
-const float shininess = 32.0;
+vec3  fragNormal;
+vec3  fragSpecular;
+vec3  fragAlbedo;
+vec3  viewDir;
+vec3  lightDir;
+float attenuation;
 
-const float constant  = 1.0;
-const float linear    = 0.09;
-const float quadratic = 0.032;
-
-const vec3 ambient       = vec3(0.1);
-const vec3 lightPosition = vec3(0.0, 0.0, 0.0);
-const vec3 lightColor    = vec3(1.0);
+void accumulate(const vec3 lightColor)
+{
+    outColor += (fragAlbedo
+              * max(dot(fragNormal, lightDir), 0.0F)
+              * lightColor
+              + fragSpecular
+              * pow(max(dot(fragNormal, normalize(lightDir + viewDir)), 0.0F), 32.0F)
+              * lightColor)
+              * attenuation;
+}
 
 void main()
 {
-    vec3 normal = texture(normalSampler, fragTexCoord).xyz;
-    if (normal == vec3(0.0)) discard;
+    fragNormal = texture(normalSampler, fragTexCoord).xyz;
+    if (fragNormal == vec3(0.0F)) discard;
 
-    vec3 position = texture(positionSampler, fragTexCoord).xyz;
-    vec3 specular = texture(specularSampler, fragTexCoord).rgb;
-    vec3 albedo   = texture(albedoSampler, fragTexCoord).rgb;
+    const vec3 fragPosition = texture(positionSampler, fragTexCoord).xyz;
+               fragNormal   = normalize(fragNormal);
+               fragSpecular = texture(specularSampler, fragTexCoord).rgb;
+               fragAlbedo   = texture(albedoSampler, fragTexCoord).rgb;
+               viewDir      = normalize(ubo.origo - fragPosition);
 
-    vec3 lightDir = lightPosition - position;
-    if (lightDir == vec3(0.0)) discard;
-    float distance = length(lightDir);
-    lightDir       = normalize(lightDir);
+    outColor = vec3(0.0F);
 
-    float NdotL   = max(dot(normal, lightDir), 0.0);
-    vec3  diffuse = albedo * NdotL;
+    attenuation = 1.0F;
+    for (uint i = 0; i != ubo.ambientCount; ++i) {
+        lightDir = normalize(-ambientBuffer.lights[i].direction);
+        accumulate(ambientBuffer.lights[i].color);
+    }
 
-    vec3  viewDir  = normalize(-position);
-    vec3  halfDir  = normalize(lightDir + viewDir);
-    float NdotH    = max(dot(normal, halfDir), 0.0);
-    specular      *= pow(NdotH, shininess);
+    for (uint i = 0; i != ubo.omniCount; ++i) {
+        lightDir = omniBuffer.lights[i].position - fragPosition;
+        if (lightDir.z <= 0.0F) continue;
 
-    outColor = ambient * albedo + lightColor * (diffuse + specular)
-             * (1.0 / (constant + linear * distance + quadratic * distance * distance));
+        const float distance = length(lightDir);
+        if (omniBuffer.lights[i].radius <= distance) continue;
+        lightDir /= distance;
+
+        attenuation = distance / omniBuffer.lights[i].radius;
+        attenuation = 1.0F - attenuation * attenuation;
+
+        accumulate(omniBuffer.lights[i].color);
+    }
 }
