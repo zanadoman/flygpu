@@ -16,11 +16,11 @@ layout(location = 3) out vec3 outAlbedo;
 
 void main()
 {
-    vec4 albedo = texture(albedoSampler, fragTexCoord);
-    if (albedo.a <= 0.0) discard;
+    const vec4 albedo = texture(albedoSampler, fragTexCoord);
+    if (albedo.a <= 0.0F) discard;
 
     outPosition = fragPosition;
-    outNormal   = TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0 - 1.0);
+    outNormal   = TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0F - 1.0F);
     outSpecular = fragColor * texture(specularSampler, fragTexCoord).rgb;
     outAlbedo   = fragColor * albedo.rgb;
 }

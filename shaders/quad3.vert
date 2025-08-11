@@ -25,15 +25,15 @@ layout(location = 5) out vec2 fragTexCoord;
 const uint indices[6] = uint[](0, 1, 3, 1, 2, 3);
 
 const vec4 positions[4] = vec4[](
-    vec4(-0.5, 0.5, 0.0, 1.0),
-    vec4(-0.5, -0.5, 0.0, 1.0),
-    vec4(0.5, -0.5, 0.0, 1.0),
-    vec4(0.5, 0.5, 0.0, 1.0)
+    vec4(-0.5F, 0.5F, 0.0F, 1.0F),
+    vec4(-0.5F, -0.5F, 0.0F, 1.0F),
+    vec4(0.5F, -0.5F, 0.0F, 1.0F),
+    vec4(0.5F, 0.5F, 0.0F, 1.0F)
 );
 
 void main()
 {
-    uint i = indices[gl_VertexIndex];
+    const uint i = indices[gl_VertexIndex];
 
     gl_Position  = mat4(MVP0, MVP1, MVP2, MVP3) * positions[i];
     TBN          = mat3(TBN0, TBN1, TBN2);
