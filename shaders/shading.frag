@@ -13,7 +13,7 @@ struct OmniLight
     vec3  position;
     float radius;
     vec3  color;
-    uint  padding1;
+    uint  padding0;
 };
 
 layout(set = 2, binding = 0) uniform sampler2D positionSampler;
