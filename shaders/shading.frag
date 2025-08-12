@@ -65,17 +65,19 @@ void main()
     fragNormal = texture(normalSampler, fragTexCoord).xyz;
     if (fragNormal == vec3(0.0F)) discard;
 
+    outColor = vec3(0.0F);
+
     const vec3 fragPosition = texture(positionSampler, fragTexCoord).xyz;
                fragNormal   = normalize(fragNormal);
                fragSpecular = texture(specularSampler, fragTexCoord).rgb;
                fragAlbedo   = texture(albedoSampler, fragTexCoord).rgb;
                viewDir      = normalize(ubo.origo - fragPosition);
 
-    outColor = vec3(0.0F);
-
     attenuation = 1.0F;
+
     for (uint i = 0; i != ubo.ambientCount; ++i) {
         lightDir = normalize(-ambientBuffer.lights[i].direction);
+
         accumulate(ambientBuffer.lights[i].color);
     }
 
