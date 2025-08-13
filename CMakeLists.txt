@@ -12,9 +12,9 @@ add_library(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} SDL3)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/shaders/)
-file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.*)
+file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.*.glsl)
 foreach(SOURCE ${SHADERS})
-  get_filename_component(SHADER ${SOURCE} NAME)
+  get_filename_component(SHADER ${SOURCE} NAME_WLE)
   set(SPIRV ${CMAKE_BINARY_DIR}/shaders/${SHADER}.spv)
   add_custom_command(
     OUTPUT ${SPIRV}
