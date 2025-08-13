@@ -28,9 +28,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include <SDL3/SDL_stdinc.h>
-
-#define FG_PI 3.14159F
+#define FG_PI 3.1415927410125732421875F
 
 #define FG_DegsToRads(d) ((d) / 180.0F * FG_PI)
 #define FG_RadsToDegs(r) ((r) * 180.0F / FG_PI)
@@ -91,15 +89,13 @@ typedef struct
 
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 
-void FG_SetViewMat4(const FG_Transform3 *transform3, FG_Mat4 *viewmat);
+void FG_SetViewMat4(const FG_Transform3 *transform, FG_Mat4 *viewmat);
 
-void FG_SetModelMat4(const FG_Transform3 *transform3, FG_Mat4 *modelmat);
+void FG_SetModelMat4(const FG_Transform3 *transform, FG_Mat4 *modelmat);
 
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 
 void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
-
-void FG_MulMat4Vec3(const FG_Mat4 *lhs, const FG_Vec3 *rhs, FG_Vec3 *out);
 
 #ifdef __cplusplus
 }
