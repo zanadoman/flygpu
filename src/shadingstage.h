@@ -24,17 +24,29 @@
 #ifndef FLYGPU_SHADINGSTAGE_H
 #define FLYGPU_SHADINGSTAGE_H
 
+#include "../include/flygpu/flygpu.h"
+
 #include <SDL3/SDL_gpu.h>
+
+#include <stdbool.h>
 
 typedef struct FG_ShadingStage FG_ShadingStage;
 
 FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
-                                       SDL_GPUTextureFormat  swapctarg_format);
+                                       SDL_GPUTextureFormat  targbuf_fmt);
 
-void FG_ShadingStageCopy(FG_ShadingStage        *self,
-                         SDL_GPUColorTargetInfo *gbuftarg_infos);
+void FG_ShadingStageUpdate(FG_ShadingStage        *self,
+                           SDL_GPUColorTargetInfo *gbuftarg_infos);
 
-void FG_ShadingStageDraw(FG_ShadingStage *self, SDL_GPURenderPass *rndrpass);
+bool FG_ShadingStageCopy(FG_ShadingStage               *self,
+                         SDL_GPUCopyPass               *cpypass,
+                         Uint32                         mask,
+                         const FG_ShadingStageDrawInfo *info);
+
+void FG_ShadingStageDraw(FG_ShadingStage      *self,
+                         SDL_GPUCommandBuffer *cmdbuf,
+                         SDL_GPURenderPass    *rndrpass,
+                         const FG_Vec3        *origo);
 
 void FG_DestroyShadingStage(FG_ShadingStage *self);
 
