@@ -190,7 +190,7 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
 
     if (!self->ubo.counts[dst]) return true;
 
-    ssbo_size = count * size;
+    ssbo_size = self->ubo.counts[dst] * size;
 
     if (self->ssbo_infos[dst].size < ssbo_size) {
         SDL_ReleaseGPUBuffer(self->device, self->ssbos[dst]);
@@ -280,10 +280,8 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
 
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
-    for (i = 0; i != SDL_arraysize(self->transbufs); ++i) {
+    for (i = 0; i != SDL_arraysize(self->ssbo_infos); ++i) {
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[i]);
-    }
-    for (i = 0; i != SDL_arraysize(self->ssbos); ++i) {
         SDL_ReleaseGPUBuffer(self->device, self->ssbos[i]);
     }
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
