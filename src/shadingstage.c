@@ -33,21 +33,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define FG_LIGHT_VARIANTS 2
+
 struct FG_ShadingStage
 {
     SDL_GPUDevice                 *device;
     SDL_GPUShader                 *vertspv;
     SDL_GPUShader                 *fragspv;
-    Uint32                         capacity[2];
-    const void                   **lights[2];
+    Uint32                         capacity[FG_LIGHT_VARIANTS];
+    const void                   **lights[FG_LIGHT_VARIANTS];
     SDL_GPUTextureSamplerBinding   sampler_binds[FG_GBUF_COUNT];
-    SDL_GPUBufferCreateInfo        ssbo_infos[2];
-    SDL_GPUBuffer                 *ssbos[2];
-    SDL_GPUTransferBuffer         *transbufs[2];
+    SDL_GPUBufferCreateInfo        ssbo_infos[FG_LIGHT_VARIANTS];
+    SDL_GPUBuffer                 *ssbos[FG_LIGHT_VARIANTS];
+    SDL_GPUTransferBuffer         *transbufs[FG_LIGHT_VARIANTS];
     struct
     {
         FG_Vec3 origo;
-        Uint32  counts[2];
+        Uint32  counts[FG_LIGHT_VARIANTS];
     }                              ubo;
     Uint8                          padding0[4];
     SDL_GPUGraphicsPipeline       *pipeline;
@@ -119,7 +121,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         }
     }
 
-    for (i = 0; i != SDL_arraysize(self->ssbo_infos); ++i) {
+    for (i = 0; i != FG_LIGHT_VARIANTS; ++i) {
         self->ssbo_infos[i].usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
         self->ssbo_infos[i].size  = 1;
 
@@ -219,7 +221,7 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
         if (!self->transbufs[dst]) return false;
     }
 
-    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbufs[dst], false);
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbufs[dst], true);
     if (!transmem) return false;
 
     for (i = 0; i != self->ubo.counts[dst]; ++i, transmem += size) {
@@ -290,14 +292,14 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
 
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
-    for (i = 0; i != SDL_arraysize(self->ssbo_infos); ++i) {
+    for (i = 0; i != FG_LIGHT_VARIANTS; ++i) {
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[i]);
         SDL_ReleaseGPUBuffer(self->device, self->ssbos[i]);
+        SDL_free(self->lights[i]);
     }
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
         SDL_ReleaseGPUSampler(self->device, self->sampler_binds[i].sampler);
     }
-    for (i = 0; i != SDL_arraysize(self->lights); ++i) SDL_free(self->lights[i]);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
     SDL_ReleaseGPUShader(self->device, self->vertspv);
     SDL_free(self);
