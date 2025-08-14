@@ -23,11 +23,14 @@
 
 #include "shadingstage.h"
 
+#include "../include/flygpu/flygpu.h"
+#include "../include/flygpu/linalg.h"
 #include "shader.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 struct FG_ShadingStage
@@ -36,18 +39,40 @@ struct FG_ShadingStage
     SDL_GPUShader                *vertspv;
     SDL_GPUShader                *fragspv;
     SDL_GPUTextureSamplerBinding  sampler_binds[FG_GBUF_COUNT];
+    SDL_GPUBufferCreateInfo       ssbo_infos[2];
+    SDL_GPUBuffer                *ssbos[2];
+    SDL_GPUTransferBuffer        *transbufs[2];
+    struct
+    {
+        FG_Vec3 origo;
+        Uint32  counts[2];
+    }                             ubo;
+    Uint8                         padding0[4];
     SDL_GPUGraphicsPipeline      *pipeline;
 };
 
+static bool FG_FilterAmbientLight(Uint32 mask, const void *light);
+
+static bool FG_FilterOmniLight(Uint32 mask, const void *light);
+
+static bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
+                                   SDL_GPUCopyPass  *cpypass,
+                                   Uint8             dst,
+                                   const void       *src,
+                                   Uint32            count,
+                                   Uint8             size,
+                                   Uint32            mask,
+                                   bool            (*filter)(Uint32, const void *));
+
 FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
-                                       SDL_GPUTextureFormat  swapctarg_format)
+                                       SDL_GPUTextureFormat  targbuf_fmt)
 {
     FG_ShadingStage                   *self = SDL_calloc(1, sizeof(*self));
     Uint8                              i    = 0;
     SDL_GPUGraphicsPipelineCreateInfo  info = {
         .target_info = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
-                .format = swapctarg_format
+                .format = targbuf_fmt
             },
             .num_color_targets         = 1
         }
@@ -58,7 +83,13 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
     self->device = device;
 
     self->vertspv = FG_LoadShader(
-        self->device, "./shaders/shading.vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0);
+        self->device,
+        "./shaders/viewport.vert.spv",
+        SDL_GPU_SHADERSTAGE_VERTEX,
+        0,
+        0,
+        0
+    );
     if (!self->vertspv) {
         FG_DestroyShadingStage(self);
         return NULL;
@@ -68,7 +99,9 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         self->device,
         "./shaders/shading.frag.spv",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
-        SDL_arraysize(self->sampler_binds)
+        SDL_arraysize(self->sampler_binds),
+        SDL_arraysize(self->ssbos),
+        1
     );
     if (!self->fragspv) {
         FG_DestroyShadingStage(self);
@@ -79,6 +112,26 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         self->sampler_binds[i].sampler = SDL_CreateGPUSampler(
             self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
         if (!self->sampler_binds[i].sampler) {
+            FG_DestroyShadingStage(self);
+            return NULL;
+        }
+    }
+
+    for (i = 0; i != SDL_arraysize(self->ssbo_infos); ++i) {
+        self->ssbo_infos[i].usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
+        self->ssbo_infos[i].size  = 1;
+
+        self->ssbos[i] = SDL_CreateGPUBuffer(self->device, self->ssbo_infos + i);
+        if (!self->ssbos[i]) {
+            FG_DestroyShadingStage(self);
+            return NULL;
+        }
+
+        self->transbufs[i] = SDL_CreateGPUTransferBuffer(
+            self->device,
+            &(SDL_GPUTransferBufferCreateInfo){ .size = self->ssbo_infos[i].size }
+        );
+        if (!self->transbufs[i]) {
             FG_DestroyShadingStage(self);
             return NULL;
         }
@@ -96,8 +149,8 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
     return self;
 }
 
-void FG_ShadingStageCopy(FG_ShadingStage        *self,
-                         SDL_GPUColorTargetInfo *gbuftarg_infos)
+void FG_ShadingStageUpdate(FG_ShadingStage        *self,
+                           SDL_GPUColorTargetInfo *gbuftarg_infos)
 {
     Uint8 i = 0;
 
@@ -106,12 +159,119 @@ void FG_ShadingStageCopy(FG_ShadingStage        *self,
     }
 }
 
-void FG_ShadingStageDraw(FG_ShadingStage *self, SDL_GPURenderPass *rndrpass)
+bool FG_FilterAmbientLight(Uint32 mask, const void *light) {
+    const FG_AmbientLight *ambient = (const FG_AmbientLight *)light;
+
+    return ambient->mask & mask && ambient->direction.z < 0.0F;
+}
+
+bool FG_FilterOmniLight(Uint32 mask, const void *light) {
+    const FG_OmniLight *omni = (const FG_OmniLight *)light;
+
+    return omni->mask & mask && 0.0F < omni->radius;
+}
+
+bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
+                            SDL_GPUCopyPass  *cpypass,
+                            Uint8             dst,
+                            const void       *src,
+                            Uint32            count,
+                            Uint8             size,
+                            Uint32            mask,
+                            bool            (*filter)(Uint32, const void *))
 {
-    SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
+    Uint32  i         = 0;
+    Uint32  ssbo_size = 0;
+    Uint8  *transmem  = NULL;
+
+    for (i = 0, self->ubo.counts[dst] = 0; i != count; ++i) {
+        if (filter(mask, (const Uint8 *)src + i * size)) ++self->ubo.counts[dst];
+    }
+
+    if (!self->ubo.counts[dst]) return true;
+
+    ssbo_size = count * size;
+
+    if (self->ssbo_infos[dst].size < ssbo_size) {
+        SDL_ReleaseGPUBuffer(self->device, self->ssbos[dst]);
+        self->ssbo_infos[dst].size = ssbo_size;
+        self->ssbos[dst]           = SDL_CreateGPUBuffer(
+            self->device, &self->ssbo_infos[dst]);
+        if (!self->ssbos[dst]) return false;
+
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[dst]);
+        self->transbufs[dst] = SDL_CreateGPUTransferBuffer(
+            self->device,
+            &(SDL_GPUTransferBufferCreateInfo){ .size = self->ssbo_infos[dst].size }
+        );
+        if (!self->transbufs[dst]) return false;
+    }
+
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbufs[dst], false);
+    if (!transmem) return false;
+
+    for (i = 0; i != count; ++i) {
+        if (!filter(mask, (const Uint8 *)src + i * size)) continue;
+        SDL_memcpy(transmem, (const Uint8 *)src + i * size, size);
+        transmem += size;
+    }
+
+    SDL_UnmapGPUTransferBuffer(self->device, self->transbufs[dst]);
+
+    SDL_UploadToGPUBuffer(
+        cpypass,
+        &(SDL_GPUTransferBufferLocation){ .transfer_buffer = self->transbufs[dst] },
+        &(SDL_GPUBufferRegion){
+            .buffer = self->ssbos[dst],
+            .size   = self->ssbo_infos[dst].size
+        },
+        false
+    );
+
+    return true;
+}
+
+bool FG_ShadingStageCopy(FG_ShadingStage               *self,
+                         SDL_GPUCopyPass               *cpypass,
+                         Uint32                         mask,
+                         const FG_ShadingStageDrawInfo *info)
+{
+    return FG_ShadingStageSubCopy(
+        self,
+        cpypass,
+        0,
+        info->ambients,
+        info->ambient_count,
+        sizeof(*info->ambients),
+        mask,
+        FG_FilterAmbientLight
+    ) &&
+    FG_ShadingStageSubCopy(
+        self,
+        cpypass,
+        1,
+        info->omnis,
+        info->omni_count,
+        sizeof(*info->omnis),
+        mask,
+        FG_FilterOmniLight
+    );
+}
+
+void FG_ShadingStageDraw(FG_ShadingStage      *self,
+                         SDL_GPUCommandBuffer *cmdbuf,
+                         SDL_GPURenderPass    *rndrpass,
+                         const FG_Vec3        *origo)
+{
+    self->ubo.origo = *origo;
+
     SDL_BindGPUFragmentSamplers(
         rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
-    SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, 0);
+    SDL_BindGPUFragmentStorageBuffers(
+        rndrpass, 0, self->ssbos, SDL_arraysize(self->ssbos));
+    SDL_PushGPUFragmentUniformData(cmdbuf, 0, &self->ubo, sizeof(self->ubo));
+    SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
+    SDL_DrawGPUPrimitives(rndrpass, 3, 1, 0, 0);
 }
 
 void FG_DestroyShadingStage(FG_ShadingStage *self)
@@ -120,6 +280,12 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
 
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
+    for (i = 0; i != SDL_arraysize(self->transbufs); ++i) {
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[i]);
+    }
+    for (i = 0; i != SDL_arraysize(self->ssbos); ++i) {
+        SDL_ReleaseGPUBuffer(self->device, self->ssbos[i]);
+    }
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
         SDL_ReleaseGPUSampler(self->device, self->sampler_binds[i].sampler);
     }
