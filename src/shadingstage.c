@@ -35,20 +35,22 @@
 
 struct FG_ShadingStage
 {
-    SDL_GPUDevice                *device;
-    SDL_GPUShader                *vertspv;
-    SDL_GPUShader                *fragspv;
-    SDL_GPUTextureSamplerBinding  sampler_binds[FG_GBUF_COUNT];
-    SDL_GPUBufferCreateInfo       ssbo_infos[2];
-    SDL_GPUBuffer                *ssbos[2];
-    SDL_GPUTransferBuffer        *transbufs[2];
+    SDL_GPUDevice                 *device;
+    SDL_GPUShader                 *vertspv;
+    SDL_GPUShader                 *fragspv;
+    Uint32                         capacity[2];
+    const void                   **lights[2];
+    SDL_GPUTextureSamplerBinding   sampler_binds[FG_GBUF_COUNT];
+    SDL_GPUBufferCreateInfo        ssbo_infos[2];
+    SDL_GPUBuffer                 *ssbos[2];
+    SDL_GPUTransferBuffer         *transbufs[2];
     struct
     {
         FG_Vec3 origo;
         Uint32  counts[2];
-    }                             ubo;
-    Uint8                         padding0[4];
-    SDL_GPUGraphicsPipeline      *pipeline;
+    }                              ubo;
+    Uint8                          padding0[4];
+    SDL_GPUGraphicsPipeline       *pipeline;
 };
 
 static bool FG_FilterAmbientLight(Uint32 mask, const void *light);
@@ -180,12 +182,22 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
                             Uint32            mask,
                             bool            (*filter)(Uint32, const void *))
 {
-    Uint32  i         = 0;
-    Uint32  ssbo_size = 0;
-    Uint8  *transmem  = NULL;
+    const Uint8 *it        = src;
+    const void  *end       = it + count * size;
+    Uint32       ssbo_size = 0;
+    Uint8       *transmem  = NULL;
+    Uint32       i         = 0;
 
-    for (i = 0, self->ubo.counts[dst] = 0; i != count; ++i) {
-        if (filter(mask, (const Uint8 *)src + i * size)) ++self->ubo.counts[dst];
+    if (self->capacity[dst] < count) {
+        self->capacity[dst] = count;
+
+        self->lights[dst] = SDL_realloc(
+            self->lights[dst], self->capacity[dst] * sizeof(**self->lights));
+        if (!self->lights[dst]) return false;
+    }
+
+    for (it = src, self->ubo.counts[dst] = 0; it != end; it += size) {
+        if (filter(mask, it)) self->lights[dst][self->ubo.counts[dst]++] = it;
     }
 
     if (!self->ubo.counts[dst]) return true;
@@ -210,10 +222,8 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbufs[dst], false);
     if (!transmem) return false;
 
-    for (i = 0; i != count; ++i) {
-        if (!filter(mask, (const Uint8 *)src + i * size)) continue;
-        SDL_memcpy(transmem, (const Uint8 *)src + i * size, size);
-        transmem += size;
+    for (i = 0; i != self->ubo.counts[dst]; ++i, transmem += size) {
+        SDL_memcpy(transmem, self->lights[dst][i], size);
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbufs[dst]);
@@ -287,6 +297,7 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
         SDL_ReleaseGPUSampler(self->device, self->sampler_binds[i].sampler);
     }
+    for (i = 0; i != SDL_arraysize(self->lights); ++i) SDL_free(self->lights[i]);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
     SDL_ReleaseGPUShader(self->device, self->vertspv);
     SDL_free(self);
