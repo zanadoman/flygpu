@@ -47,14 +47,12 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
-
 #ifdef USE_MATERIALS
 #include <SDL3/SDL_surface.h>
 #include <SDL3_image/SDL_image.h>
 #endif /* USE_MATERIALS */
 
 #include <stdbool.h>
-
 #ifdef USE_MATERIALS
 #include <stddef.h>
 #endif /* USE_MATERIALS */
@@ -66,12 +64,11 @@ static FG_Camera           *CAMERAS;
 static FG_Quad3            *QUAD3S;
 static FG_AmbientLight     *AMBIENTS;
 static FG_OmniLight        *OMNIS;
+#ifdef USE_MATERIALS
+static FG_Material          MATERIALS[SDL_arraysize(MATERIAL_INFOS)];
+#endif /* USE_MATERIALS */
 static const bool          *KEYS;
 static float                DELTA;
-
-#ifdef USE_MATERIALS
-static FG_Material MATERIALS[SDL_arraysize(MATERIAL_INFOS)];
-#endif /* USE_MATERIALS */
 
 #define Check(x)                                                      \
 do {                                                                  \
@@ -160,45 +157,6 @@ do {                                                                            
     KEYS = SDL_GetKeyboardState(NULL);                                             \
 } while (0)
 
-#define loop while (PollEvents())
-
-#define Update()                             \
-do {                                         \
-    static Uint64 last;                      \
-    Uint64        now;                       \
-    INFO.cameras               = CAMERAS;    \
-    INFO.quad3_info.instances  = QUAD3S;     \
-    INFO.shading_info.ambients = AMBIENTS;   \
-    INFO.shading_info.omnis    = OMNIS;      \
-    Check(FG_RendererDraw(RENDERER, &INFO)); \
-    now = SDL_GetTicks();                    \
-    DELTA = (float)(now - last);             \
-    last = now;                              \
-    SDL_Log("DELTA: %.0f\n", (double)DELTA); \
-} while (0)
-
-#define Quit()                                   \
-do {                                             \
-    SDL_free(OMNIS);                             \
-    SDL_free(AMBIENTS);                          \
-    SDL_free(QUAD3S);                            \
-    SDL_free(CAMERAS);                           \
-    if (!FG_DestroyRenderer(RENDERER)) return 1; \
-    SDL_DestroyWindow(WINDOW);                   \
-    SDL_Quit();                                  \
-    return 0;                                    \
-} while (0)
-
-#define Action(x, y) (float)(KEYS[SDL_SCANCODE_##x] - KEYS[SDL_SCANCODE_##y])
-
-#define MoveCamera(i, ms, rs, mr, ml, mu, md, mb, mf, rl, rr)                              \
-do {                                                                     \
-    CAMERAS[i].transform.translation.x += (ms) * Action(mr, ml) * DELTA; \
-    CAMERAS[i].transform.translation.y += (ms) * Action(mu, md) * DELTA; \
-    CAMERAS[i].transform.translation.z += (ms) * Action(mb, mf) * DELTA; \
-    CAMERAS[i].transform.rotation      += (rs) * Action(rl, rr) * DELTA; \
-} while (0)
-
 #ifdef USE_MATERIALS
 #define InitMaterials()                                                          \
 do {                                                                             \
@@ -228,7 +186,26 @@ do {                                                                            
         }                                                                        \
     }                                                                            \
 } while (0)
+#endif /* USE_MATERIALS */
 
+#define loop while (PollEvents())
+
+#define Update()                             \
+do {                                         \
+    static Uint64 last;                      \
+    Uint64        now;                       \
+    INFO.cameras               = CAMERAS;    \
+    INFO.quad3_info.instances  = QUAD3S;     \
+    INFO.shading_info.ambients = AMBIENTS;   \
+    INFO.shading_info.omnis    = OMNIS;      \
+    Check(FG_RendererDraw(RENDERER, &INFO)); \
+    now = SDL_GetTicks();                    \
+    DELTA = (float)(now - last);             \
+    last = now;                              \
+    SDL_Log("DELTA: %.0f\n", (double)DELTA); \
+} while (0)
+
+#ifdef USE_MATERIALS
 #define DestroyMaterials()                                          \
 do {                                                                \
     Uint32 i = 0;                                                   \
@@ -240,9 +217,32 @@ do {                                                                \
 } while (0)
 #endif /* USE_MATERIALS */
 
-static bool PollEvents(void);
+#define Quit()                                   \
+do {                                             \
+    SDL_free(OMNIS);                             \
+    SDL_free(AMBIENTS);                          \
+    SDL_free(QUAD3S);                            \
+    SDL_free(CAMERAS);                           \
+    if (!FG_DestroyRenderer(RENDERER)) return 1; \
+    SDL_DestroyWindow(WINDOW);                   \
+    SDL_Quit();                                  \
+    return 0;                                    \
+} while (0)
 
-bool PollEvents(void) {
+#define Action(x, y) (float)(KEYS[SDL_SCANCODE_##x] - KEYS[SDL_SCANCODE_##y])
+
+#define MoveCamera(i, ms, rs, mr, ml, mu, md, mb, mf, rl, rr)            \
+do {                                                                     \
+    CAMERAS[i].transform.translation.x += (ms) * Action(mr, ml) * DELTA; \
+    CAMERAS[i].transform.translation.y += (ms) * Action(mu, md) * DELTA; \
+    CAMERAS[i].transform.translation.z += (ms) * Action(mb, mf) * DELTA; \
+    CAMERAS[i].transform.rotation      += (rs) * Action(rl, rr) * DELTA; \
+} while (0)
+
+bool PollEvents(void);
+
+bool PollEvents(void)
+{
     SDL_Event event = { .type = SDL_EVENT_FIRST };
 
     while (SDL_PollEvent(&event)) if (event.type == SDL_EVENT_QUIT) return false;
