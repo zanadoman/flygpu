@@ -24,26 +24,14 @@
 #ifndef EXAMPLES_COMMON_H
 #define EXAMPLES_COMMON_H
 
-#ifndef WIDTH
-#define WIDTH 800
-#endif /* WIDTH */
-
-#ifndef HEIGHT
-#define HEIGHT 600
-#endif /* HEIGHT */
-
-#ifndef VSYNC
-#define VSYNC false
-#endif /* VSYNC */
-
 #include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
@@ -57,196 +45,237 @@
 #include <stddef.h>
 #endif /* USE_MATERIALS */
 
-static FG_RendererDrawInfo  INFO;
-static SDL_Window          *WINDOW;
-static FG_Renderer         *RENDERER;
-static FG_Camera           *CAMERAS;
-static FG_Quad3            *QUAD3S;
-static FG_AmbientLight     *AMBIENTS;
-static FG_OmniLight        *OMNIS;
-#ifdef USE_MATERIALS
-static FG_Material          MATERIALS[SDL_arraysize(MATERIAL_INFOS)];
-#endif /* USE_MATERIALS */
-static const bool          *KEYS;
-static float                DELTA;
+#define EX_PI 3.1415927410125732421875F
 
-#define Check(x)                                                      \
+#define EX_DegsToRads(d) ((d) / 180.0F * EX_PI)
+
+#define EX_RadsToDegs(r) ((r) * 180.0F / EX_PI)
+
+#define EX_DEF_CAMERA (FG_Camera){               \
+    .viewport.br     = { .x = 1.0F, .y = 1.0F }, \
+    .perspective     = {                         \
+        .fov  = EX_DegsToRads(60.0F),            \
+        .near = 0.1F,                            \
+        .far  = 100.0F                           \
+    },                                           \
+    .transform.scale = { .x = 1.0F, .y = 1.0F }, \
+    .mask            = 0xFFFFFFFF                \
+}
+
+#define EX_DEF_QUAD3 (FG_Quad3){                   \
+    .transform.scale = { .x = 1.0F, .y = 1.0F },   \
+    .color           = {                           \
+        .tl = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
+        .bl = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
+        .br = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
+        .tr = { .x = 1.0F, .y = 1.0F, .z = 1.0F }  \
+    },                                             \
+    .coords.br       = { .x = 1.0F, .y = 1.0F }    \
+}
+
+#define EX_DEF_AMBIENT (FG_AmbientLight){              \
+    .direction = { .x = 0.0F, .y = 0.0F, .z = -1.0F }, \
+    .color     = { .x = 1.0F, .y = 1.0F, .z = 1.0F },  \
+    .mask      = 0xFFFFFFFF                            \
+}
+
+#define EX_DEF_OMNI (FG_OmniLight){                \
+    .radius = 1.0F,                                \
+    .color  = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
+    .mask   = 0xFFFFFFFF                           \
+}
+
+#define EX_Check(r)                                                   \
 do {                                                                  \
-    if (!(x)) {                                                       \
+    if (!(r)) {                                                       \
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError()); \
         return 1;                                                     \
     }                                                                 \
 } while (0)
 
-#define DefaultCamera(camera)              \
-do {                                       \
-    (camera) = (FG_Camera){                \
-        .viewport.br     = { 1.0F, 1.0F }, \
-        .perspective     = {               \
-            .fov  = FG_DegsToRads(60.0F),  \
-            .near = 0.1F,                  \
-            .far  = 100.0F                 \
-        },                                 \
-        .transform.scale = { 1.0F, 1.0F }, \
-        .mask            = 0xFFFFFFFF      \
-    };                                     \
-} while (0)
-
-#define DefaultQuad3(quad3)                \
-do {                                       \
-    (quad3) = (FG_Quad3){                  \
-        .transform.scale = { 1.0F, 1.0F }, \
-        .color           = {               \
-            { 1.0F, 1.0F, 1.0F },          \
-            { 1.0F, 1.0F, 1.0F },          \
-            { 1.0F, 1.0F, 1.0F },          \
-            { 1.0F, 1.0F, 1.0F }           \
-        },                                 \
-        .coords.br       = { 1.0F, 1.0F }  \
-    };                                     \
-} while (0)
-
-#define DefaultAmbient(ambient)             \
-do {                                        \
-    (ambient) = (FG_AmbientLight){          \
-        .direction = { 0.0F, 0.0F, -1.0F }, \
-        .color     = { 1.0F, 1.0F, 1.0F },  \
-        .mask      = 0xFFFFFFFF             \
-    };                                      \
-} while (0)
-
-#define DefaultOmni(omni)               \
-do {                                    \
-    (omni) = (FG_OmniLight){            \
-        .radius = 1.0F,                 \
-        .color  = { 1.0F, 1.0F, 1.0F }, \
-        .mask   = 0xFFFFFFFF            \
-    };                                  \
-} while (0)
-
-#define Init()                                                                     \
-do {                                                                               \
-    Uint32 i = 0;                                                                  \
-    if (INFO.camera_count) {                                                       \
-        CAMERAS = SDL_calloc(INFO.camera_count, sizeof(*CAMERAS));                 \
-        Check(CAMERAS);                                                            \
-        for (i = 0; i != INFO.camera_count; ++i) DefaultCamera(CAMERAS[i]);        \
-    }                                                                              \
-    if (INFO.quad3_info.count) {                                                   \
-        QUAD3S = SDL_calloc(INFO.quad3_info.count, sizeof(*QUAD3S));               \
-        Check(QUAD3S);                                                             \
-        for (i = 0; i != INFO.quad3_info.count; ++i) DefaultQuad3(QUAD3S[i]);      \
-    }                                                                              \
-    if (INFO.shading_info.ambient_count) {                                         \
-        AMBIENTS = SDL_calloc(INFO.shading_info.ambient_count, sizeof(*AMBIENTS)); \
-        Check(AMBIENTS);                                                           \
-        for (i = 0; i != INFO.shading_info.ambient_count; ++i) {                   \
-            DefaultAmbient(AMBIENTS[i]);                                           \
-        }                                                                          \
-    }                                                                              \
-    if (INFO.shading_info.omni_count) {                                            \
-        OMNIS = SDL_calloc(INFO.shading_info.omni_count, sizeof(*OMNIS));          \
-        Check(OMNIS);                                                              \
-        for (i = 0; i != INFO.shading_info.omni_count; ++i) DefaultOmni(OMNIS[i]); \
-    }                                                                              \
-    Check(SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS));                    \
-    WINDOW = SDL_CreateWindow("FlyGPU", WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);      \
-    Check(WINDOW);                                                                 \
-    RENDERER = FG_CreateRenderer(WINDOW, VSYNC);                                   \
-    Check(RENDERER);                                                               \
-    KEYS = SDL_GetKeyboardState(NULL);                                             \
-} while (0)
-
+static SDL_Window          *EX_WINDOW;
+static FG_Renderer         *EX_RENDERER;
 #ifdef USE_MATERIALS
-#define InitMaterials()                                                          \
-do {                                                                             \
-    Uint32       i       = 0;                                                    \
-    SDL_Surface *surface = NULL;                                                 \
-    for (i = 0; i != SDL_arraysize(MATERIAL_INFOS); ++i) {                       \
-        if (MATERIAL_INFOS[i][0]) {                                              \
-            surface = IMG_Load(MATERIAL_INFOS[i][0]);                            \
-            Check(surface);                                                      \
-            FG_RendererCreateTexture(RENDERER, surface, &MATERIALS[i].albedo);   \
-            Check(MATERIALS[i].albedo);                                          \
-            SDL_DestroySurface(surface);                                         \
-        }                                                                        \
-        if (MATERIAL_INFOS[i][1]) {                                              \
-            surface = IMG_Load(MATERIAL_INFOS[i][1]);                            \
-            Check(surface);                                                      \
-            FG_RendererCreateTexture(RENDERER, surface, &MATERIALS[i].specular); \
-            Check(MATERIALS[i].specular);                                        \
-            SDL_DestroySurface(surface);                                         \
-        }                                                                        \
-        if (MATERIAL_INFOS[i][2]) {                                              \
-            surface = IMG_Load(MATERIAL_INFOS[i][2]);                            \
-            Check(surface);                                                      \
-            FG_RendererCreateTexture(RENDERER, surface, &MATERIALS[i].normal);   \
-            Check(MATERIALS[i].normal);                                          \
-            SDL_DestroySurface(surface);                                         \
-        }                                                                        \
-    }                                                                            \
-} while (0)
+static FG_Material          EX_MATERIALS[SDL_arraysize(MATERIAL_INFOS)];
 #endif /* USE_MATERIALS */
+static Uint32               EX_CAMERA_COUNT                              = CAMERA_COUNT;
+static FG_Camera           *EX_CAMERAS;
+static Uint32               EX_QUAD3_COUNT                               = QUAD3_COUNT;
+static FG_Quad3            *EX_QUAD3S;
+static Uint32               EX_AMBIENT_COUNT                             = AMBIENT_COUNT;
+static FG_AmbientLight     *EX_AMBIENTS;
+static Uint32               EX_OMNI_COUNT                                = OMNI_COUNT;
+static FG_OmniLight        *EX_OMNIS;
+static const bool          *EX_KEYS;
+static float                EX_DELTA;
 
-#define loop while (PollEvents())
+Sint32 EX_RandInt(Sint32 min, Sint32 max);
 
-#define Update()                             \
-do {                                         \
-    static Uint64 last;                      \
-    Uint64        now;                       \
-    INFO.cameras               = CAMERAS;    \
-    INFO.quad3_info.instances  = QUAD3S;     \
-    INFO.shading_info.ambients = AMBIENTS;   \
-    INFO.shading_info.omnis    = OMNIS;      \
-    Check(FG_RendererDraw(RENDERER, &INFO)); \
-    now = SDL_GetTicks();                    \
-    DELTA = (float)(now - last);             \
-    last = now;                              \
-    SDL_Log("DELTA: %.0f\n", (double)DELTA); \
-} while (0)
+float EX_RandFloat(float min, float max);
 
+bool EX_Init(Sint32 argc, char *argv[]);
+
+bool EX_PollQuit(void);
+
+bool EX_Update(void);
+
+bool EX_Quit(void);
+
+Sint32 EX_RandInt(Sint32 min, Sint32 max)
+{
+    return min + SDL_rand(max - min);
+}
+
+float EX_RandFloat(float min, float max)
+{
+    return min + SDL_randf() * (max - min);
+}
+
+bool EX_Init(Sint32 argc, char *argv[])
+{
+    Uint32       i       = 0;
 #ifdef USE_MATERIALS
-#define DestroyMaterials()                                          \
-do {                                                                \
-    Uint32 i = 0;                                                   \
-    for (i = 0; i != SDL_arraysize(MATERIAL_INFOS); ++i) {          \
-        FG_RendererDestroyTexture(RENDERER, MATERIALS[i].normal);   \
-        FG_RendererDestroyTexture(RENDERER, MATERIALS[i].specular); \
-        FG_RendererDestroyTexture(RENDERER, MATERIALS[i].albedo);   \
-    }                                                               \
-} while (0)
+    SDL_Surface *surface = NULL;
 #endif /* USE_MATERIALS */
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) return false;
+    EX_WINDOW = SDL_CreateWindow("FlyGPU", 800, 600, SDL_WINDOW_RESIZABLE);
+    if (!EX_WINDOW) return false;
+    EX_RENDERER = FG_CreateRenderer(
+        EX_WINDOW, 1 < argc && !SDL_strcmp(argv[1], "--vsync"));
+    if (!EX_RENDERER) return false;
+#ifdef USE_MATERIALS
+    for (i = 0; i != SDL_arraysize(MATERIAL_INFOS); ++i) {
+        if (MATERIAL_INFOS[i][0]) {
+            surface = IMG_Load(MATERIAL_INFOS[i][0]);
+            if (!surface) return false;
+            FG_RendererCreateTexture(EX_RENDERER, surface, &EX_MATERIALS[i].albedo);
+            if (!EX_MATERIALS[i].albedo) return false;
+            SDL_DestroySurface(surface);
+        }
+        if (MATERIAL_INFOS[i][1]) {
+            surface = IMG_Load(MATERIAL_INFOS[i][1]);
+            if (!surface) return false;
+            FG_RendererCreateTexture(EX_RENDERER, surface, &EX_MATERIALS[i].specular);
+            if (!EX_MATERIALS[i].specular) return false;
+            SDL_DestroySurface(surface);
+        }
+        if (MATERIAL_INFOS[i][2]) {
+            surface = IMG_Load(MATERIAL_INFOS[i][2]);
+            if (!surface) return false;
+            FG_RendererCreateTexture(EX_RENDERER, surface, &EX_MATERIALS[i].normal);
+            if (!EX_MATERIALS[i].normal) return false;
+            SDL_DestroySurface(surface);
+        }
+    }
+#endif /* USE_MATERIALS */
+    if (EX_CAMERA_COUNT) {
+        EX_CAMERAS = SDL_calloc(EX_CAMERA_COUNT, sizeof(*EX_CAMERAS));
+        if (!EX_CAMERAS) return false;
+        for (i = 0; i != EX_CAMERA_COUNT; ++i) EX_CAMERAS[i] = EX_DEF_CAMERA;
+    }
+    if (EX_QUAD3_COUNT) {
+        EX_QUAD3S = SDL_calloc(EX_QUAD3_COUNT, sizeof(*EX_QUAD3S));
+        if (!EX_QUAD3S) return false;
+        for (i = 0; i != EX_QUAD3_COUNT; ++i) EX_QUAD3S[i] = EX_DEF_QUAD3;
+    }
+    if (EX_AMBIENT_COUNT) {
+        EX_AMBIENTS = SDL_calloc(EX_AMBIENT_COUNT, sizeof(*EX_AMBIENTS));
+        if (!EX_AMBIENTS) return false;
+        for (i = 0; i != EX_AMBIENT_COUNT; ++i) EX_AMBIENTS[i] = EX_DEF_AMBIENT;
+    }
+    if (EX_OMNI_COUNT) {
+        EX_OMNIS = SDL_calloc(EX_OMNI_COUNT, sizeof(*EX_OMNIS));
+        if (!EX_OMNIS) return false;
+        for (i = 0; i != EX_OMNI_COUNT; ++i) EX_OMNIS[i] = EX_DEF_OMNI;
+    }
+    EX_KEYS = SDL_GetKeyboardState(NULL);
+    return true;
+}
 
-#define Quit()                                   \
-do {                                             \
-    SDL_free(OMNIS);                             \
-    SDL_free(AMBIENTS);                          \
-    SDL_free(QUAD3S);                            \
-    SDL_free(CAMERAS);                           \
-    if (!FG_DestroyRenderer(RENDERER)) return 1; \
-    SDL_DestroyWindow(WINDOW);                   \
-    SDL_Quit();                                  \
-    return 0;                                    \
-} while (0)
-
-#define Action(x, y) (float)(KEYS[SDL_SCANCODE_##x] - KEYS[SDL_SCANCODE_##y])
-
-#define MoveCamera(i, ms, rs, mr, ml, mu, md, mb, mf, rl, rr)            \
-do {                                                                     \
-    CAMERAS[i].transform.translation.x += (ms) * Action(mr, ml) * DELTA; \
-    CAMERAS[i].transform.translation.y += (ms) * Action(mu, md) * DELTA; \
-    CAMERAS[i].transform.translation.z += (ms) * Action(mb, mf) * DELTA; \
-    CAMERAS[i].transform.rotation      += (rs) * Action(rl, rr) * DELTA; \
-} while (0)
-
-bool PollEvents(void);
-
-bool PollEvents(void)
+bool EX_PollQuit(void)
 {
     SDL_Event event = { .type = SDL_EVENT_FIRST };
+    while (SDL_PollEvent(&event)) if (event.type == SDL_EVENT_QUIT) return true;
+    return false;
+}
 
-    while (SDL_PollEvent(&event)) if (event.type == SDL_EVENT_QUIT) return false;
+#define EX_Input(x) EX_KEYS[SDL_SCANCODE_##x]
 
+#define EX_Inputs(x, y) (float)(EX_KEYS[SDL_SCANCODE_##x] - EX_KEYS[SDL_SCANCODE_##y])
+
+#define EX_SpawnT(T, U)                                                      \
+FG_##T *EX_Spawn##T(void);                                                   \
+FG_##T *EX_Spawn##T(void)                                                    \
+{                                                                            \
+    Uint32 i = EX_##U##_COUNT++;                                             \
+    EX_##U##S = SDL_realloc(EX_##U##S, EX_##U##_COUNT * sizeof(*EX_##U##S)); \
+    if (!EX_##U##S) return NULL;                                             \
+    EX_##U##S[i] = EX_DEF_##U;                                               \
+    return EX_##U##S + i;                                                    \
+}
+
+EX_SpawnT(Camera, CAMERA)
+EX_SpawnT(Quad3, QUAD3)
+EX_SpawnT(AmbientLight, AMBIENT)
+EX_SpawnT(OmniLight, OMNI)
+
+#define EX_MoveCamera(i, ms, rs, mr, ml, mu, md, mb, mf, rl, rr)                  \
+do {                                                                              \
+    EX_CAMERAS[i].transform.translation.x += (ms) * EX_Inputs(mr, ml) * EX_DELTA; \
+    EX_CAMERAS[i].transform.translation.y += (ms) * EX_Inputs(mu, md) * EX_DELTA; \
+    EX_CAMERAS[i].transform.translation.z += (ms) * EX_Inputs(mb, mf) * EX_DELTA; \
+    EX_CAMERAS[i].transform.rotation      += (rs) * EX_Inputs(rl, rr) * EX_DELTA; \
+} while (0)
+
+bool EX_Update(void)
+{
+    static Uint64 last;
+    Uint64        now  = 0;
+    if (!FG_RendererDraw(
+        EX_RENDERER,
+        &(FG_RendererDrawInfo){
+            .cameras      = EX_CAMERAS,
+            .camera_count = EX_CAMERA_COUNT,
+            .quad3_info = {
+                .instances = EX_QUAD3S,
+                .count     = EX_QUAD3_COUNT
+            },
+            .shading_info = {
+                .ambients      = EX_AMBIENTS,
+                .ambient_count = EX_AMBIENT_COUNT,
+                .omnis         = EX_OMNIS,
+                .omni_count    = EX_OMNI_COUNT
+            }
+        }
+    )) {
+        return false;
+    }
+    now      = SDL_GetTicks();
+    EX_DELTA = (float)(now - last);
+    last     = now;
+    SDL_Log("DELTA: %.0f\n", (double)EX_DELTA);
+    return true;
+}
+
+bool EX_Quit(void)
+{
+#ifdef USE_MATERIALS
+    Uint32 i = 0;
+#endif /* USE_MATERIALS */
+    SDL_free(EX_OMNIS);
+    SDL_free(EX_AMBIENTS);
+    SDL_free(EX_QUAD3S);
+    SDL_free(EX_CAMERAS);
+#ifdef USE_MATERIALS
+    for (i = 0; i != SDL_arraysize(MATERIAL_INFOS); ++i) {
+        FG_RendererDestroyTexture(EX_RENDERER, EX_MATERIALS[i].normal);
+        FG_RendererDestroyTexture(EX_RENDERER, EX_MATERIALS[i].specular);
+        FG_RendererDestroyTexture(EX_RENDERER, EX_MATERIALS[i].albedo);
+    }
+#endif /* USE_MATERIALS */
+    if (!FG_DestroyRenderer(EX_RENDERER)) return false;
+    SDL_DestroyWindow(EX_WINDOW);
+    SDL_Quit();
     return true;
 }
 
