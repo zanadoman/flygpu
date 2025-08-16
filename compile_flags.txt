@@ -1,7 +1,5 @@
 -ffast-math
--flto
 -fuse-ld=lld
--march=native
 -O3
 -Qunused-arguments
 -std=c99

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 4.0.3)
 set(CMAKE_C_COMPILER clang)
 file(READ ${CMAKE_SOURCE_DIR}/compile_flags.txt CMAKE_C_FLAGS)
 string(REPLACE \n \  CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+set(CMAKE_C_FLAGS_DEBUG "-save-temps -Wno-gnu-line-marker")
+set(CMAKE_C_FLAGS_RELEASE "-flto -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_CLANG_TIDY clang-tidy;-p;${CMAKE_BINARY_DIR}/)
 
