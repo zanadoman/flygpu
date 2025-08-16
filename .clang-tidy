@@ -35,6 +35,7 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
   -bugprone-multi-level-implicit-pointer-conversion,
   -clang-analyzer-unix.Malloc,
   -readability-braces-around-statements,
