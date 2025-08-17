@@ -6,8 +6,11 @@ layout(set = 2, binding = 2) uniform sampler2D normalSampler;
 
 layout(location = 0) in mat3 TBN;
 layout(location = 3) in vec3 fragPosition;
-layout(location = 4) in vec3 fragColor;
-layout(location = 5) in vec2 fragTexCoord;
+layout(location = 4) in vec3 fragColorTL;
+layout(location = 5) in vec3 fragColorBL;
+layout(location = 6) in vec3 fragColorBR;
+layout(location = 7) in vec3 fragColorTR;
+layout(location = 8) in vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;
@@ -18,6 +21,13 @@ void main()
 {
     const vec4 albedo = texture(albedoSampler, fragTexCoord);
     if (albedo.a <= 0.0F) discard;
+
+    vec2 fragColorCoord = fract(fragTexCoord);
+    vec3 fragColor      = mix(
+        mix(fragColorTL, fragColorTR, fragColorCoord.x),
+        mix(fragColorBL, fragColorBR, fragColorCoord.x),
+        fragColorCoord.y
+    );
 
     outPosition = fragPosition;
     outNormal   = TBN * (texture(normalSampler, fragTexCoord).rgb * 2.0F - 1.0F);
