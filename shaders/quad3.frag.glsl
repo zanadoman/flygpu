@@ -22,8 +22,8 @@ void main()
     const vec4 albedo = texture(albedoSampler, fragTexCoord);
     if (albedo.a <= 0.0F) discard;
 
-    vec2 fragColorCoord = fract(fragTexCoord);
-    vec3 fragColor      = mix(
+    const vec2 fragColorCoord = fract(fragTexCoord);
+    const vec3 fragColor      = mix(
         mix(fragColorTL, fragColorTR, fragColorCoord.x),
         mix(fragColorBL, fragColorBR, fragColorCoord.x),
         fragColorCoord.y
