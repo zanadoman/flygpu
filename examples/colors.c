@@ -170,4 +170,3 @@ Sint32 main(Sint32 argc, char *argv[])
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
