@@ -28,11 +28,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define FG_PI 3.1415927410125732421875F
-
-#define FG_DegsToRads(d) ((d) / 180.0F * FG_PI)
-#define FG_RadsToDegs(r) ((r) * 180.0F / FG_PI)
-
 typedef struct
 {
     float fov;

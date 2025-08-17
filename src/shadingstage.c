@@ -115,7 +115,13 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
 
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
         self->sampler_binds[i].sampler = SDL_CreateGPUSampler(
-            self->device, &(SDL_GPUSamplerCreateInfo){ .props = 0 });
+            self->device,
+            &(SDL_GPUSamplerCreateInfo){
+                .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+                .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+                .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
+            }
+        );
         if (!self->sampler_binds[i].sampler) {
             FG_DestroyShadingStage(self);
             return NULL;
