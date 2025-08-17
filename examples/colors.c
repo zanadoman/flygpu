@@ -64,7 +64,8 @@ Sint32 main(Sint32 argc, char *argv[])
                 .br = { .x = 1.0F, .y = 1.0F, .z = 1.0F },
                 .tr = { .x = 1.0F, .y = 1.0F, .z = 1.0F }
             },
-            .coords.br = { .x = 2.0F, .y = 2.0F }
+            .coords.br = { .x = 2.0F, .y = 2.0F },
+            .mask      = 1
         },
         [1] = {
             .transform = {
@@ -77,7 +78,8 @@ Sint32 main(Sint32 argc, char *argv[])
                 .br = { .x = 0.0F, .y = 1.0F, .z = 0.0F },
                 .tr = { .x = 0.0F, .y = 0.0F, .z = 1.0F }
             },
-            .coords.br = { .x = 2.0F, .y = 2.0F }
+            .coords.br = { .x = 2.0F, .y = 2.0F },
+            .mask      = 1
         },
         [2] = {
             .transform = {
@@ -90,7 +92,8 @@ Sint32 main(Sint32 argc, char *argv[])
                 .br = { .x = 0.0F, .y = 0.0F, .z = 1.0F },
                 .tr = { .x = 1.0F, .y = 0.0F, .z = 0.0F }
             },
-            .coords.br = { .x = 2.0F, .y = 2.0F }
+            .coords.br = { .x = 2.0F, .y = 2.0F },
+            .mask      = 1
         },
         [3] = {
             .transform = {
@@ -103,7 +106,8 @@ Sint32 main(Sint32 argc, char *argv[])
                 .br = { .x = 0.0F, .y = 1.0F, .z = 0.0F },
                 .tr = { .x = 1.0F, .y = 0.0F, .z = 0.0F }
             },
-            .coords.br = { .x = 2.0F, .y = 2.0F }
+            .coords.br = { .x = 2.0F, .y = 2.0F },
+            .mask      = 1
         }
     };
     FG_AmbientLight      ambient  = {

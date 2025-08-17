@@ -92,7 +92,8 @@ Sint32 main(Sint32 argc, char *argv[])
             .tr = { .x = 1.0F, .y = 1.0F, .z = 1.0F }
         },
         .material  = materials,
-        .coords.br = { .x = 1.0F, .y = 1.0F }
+        .coords.br = { .x = 1.0F, .y = 1.0F },
+        .mask      = 1
     };
     FG_AmbientLight      ambient                                  = {
         .direction.z = -1.0F,
