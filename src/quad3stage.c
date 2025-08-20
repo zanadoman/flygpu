@@ -63,7 +63,7 @@ struct FG_Quad3Stage
     Uint8                          padding0[4];
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUTextureSamplerBinding   sampler_binds[3];
+    SDL_GPUTextureSamplerBinding   sampler_binds[4];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
@@ -74,6 +74,11 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
     Uint8                              i                            = 0;
     SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT];
     FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
+    SDL_GPUSamplerCreateInfo           sampler_info                 = {
+        .min_filter  = SDL_GPU_FILTER_LINEAR,
+        .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+        .max_lod     = 1000.0F
+    };
     SDL_GPUVertexAttribute             vertattrs[]                  = {
         { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4]) },
         { .location = 1,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[1 * FG_DIMS_VEC4]) },
@@ -147,19 +152,29 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
-        self->sampler_binds[i].sampler = SDL_CreateGPUSampler(
-            self->device,
-            &(SDL_GPUSamplerCreateInfo){
-                .min_filter  = SDL_GPU_FILTER_LINEAR,
-                .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
-                .max_lod     = 1000.0F
-            }
-        );
-        if (!self->sampler_binds[i].sampler) {
-            FG_DestroyQuad3Stage(self);
-            return NULL;
-        }
+    self->sampler_binds[0].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
+    if (!self->sampler_binds[0].sampler) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
+    }
+
+    self->sampler_binds[1].sampler = SDL_CreateGPUSampler(
+        self->device, &(SDL_GPUSamplerCreateInfo){ 0 });
+    if (!self->sampler_binds[1].sampler) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
+    }
+
+    self->sampler_binds[2].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
+    if (!self->sampler_binds[2].sampler) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
+    }
+
+    self->sampler_binds[3].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
+    if (!self->sampler_binds[3].sampler) {
+        FG_DestroyQuad3Stage(self);
+        return NULL;
     }
 
     info.vertex_shader   = self->vertspv;
@@ -186,6 +201,7 @@ Sint32 FG_CompareQuad3s(const void *lhs, const void *rhs)
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
+                       Uint32                       mask,
                        float                        near,
                        float                        far,
                        const FG_Mat4               *vpmat,
@@ -209,7 +225,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     }
 
     for (i = 0, self->count = 0; i != info->count; ++i) {
-        if (far < info->instances[i].transform.translation.z &&
+        if (info->instances[i].mask & mask &&
+            far < info->instances[i].transform.translation.z &&
             info->instances[i].transform.translation.z < near
         ) {
             self->instances[self->count++] = info->instances + i;
@@ -281,27 +298,31 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
     if (!self->count) return;
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
-
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     for (i = 0, j = 0; i != self->count; i += self->batches[j++].count) {
         if (self->batches[j].material) {
-            self->sampler_binds[0].texture = self->batches[j].material->albedo;
-            if (!self->sampler_binds[0].texture) {
+            if (self->batches[j].material->albedo) {
+                self->sampler_binds[0].texture = self->batches[j].material->albedo;
+                self->sampler_binds[1].texture = self->batches[j].material->albedo;
+            }
+            else {
                 self->sampler_binds[0].texture = self->material->albedo;
+                self->sampler_binds[1].texture = self->material->albedo;
             }
-            self->sampler_binds[1].texture = self->batches[j].material->specular;
-            if (!self->sampler_binds[1].texture) {
-                self->sampler_binds[1].texture = self->material->specular;
+            if (self->batches[j].material->specular) {
+                self->sampler_binds[2].texture = self->batches[j].material->specular;
             }
-            self->sampler_binds[2].texture = self->batches[j].material->normal;
-            if (!self->sampler_binds[2].texture) {
-                self->sampler_binds[2].texture = self->material->normal;
+            else self->sampler_binds[2].texture = self->material->specular;
+            if (self->batches[j].material->normal) {
+                self->sampler_binds[3].texture = self->batches[j].material->normal;
             }
+            else self->sampler_binds[3].texture = self->material->normal;
         }
         else {
             self->sampler_binds[0].texture = self->material->albedo;
-            self->sampler_binds[1].texture = self->material->specular;
-            self->sampler_binds[2].texture = self->material->normal;
+            self->sampler_binds[1].texture = self->material->albedo;
+            self->sampler_binds[2].texture = self->material->specular;
+            self->sampler_binds[3].texture = self->material->normal;
         }
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));

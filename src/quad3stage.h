@@ -37,6 +37,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
+                       Uint32                       mask,
                        float                        near,
                        float                        far,
                        const FG_Mat4               *vpmat,
