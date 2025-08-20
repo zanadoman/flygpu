@@ -175,8 +175,8 @@ Sint32 main(Sint32 argc, char *argv[])
 
     do {
         for (i = 0; i != SDL_arraysize(quad3s); ++i) {
-            quad3s[i].coords.tl.x = 1.0F / 7.0F * (float)((SDL_GetTicks() + 700
-                                  / SDL_arraysize(quad3s) * i) / 200 % 7);
+            quad3s[i].coords.tl.x = (float)((SDL_GetTicks() + 700
+                                  / SDL_arraysize(quad3s) * i) / 200 % 7) * 1.0F / 7.0F;
             quad3s[i].coords.br.x = quad3s[i].coords.tl.x + 1.0F / 7.0F;
         }
 
