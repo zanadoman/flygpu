@@ -6,5 +6,4 @@
 -Werror
 -Weverything
 -Wno-unsafe-buffer-usage
--Wno-unused-macros
 -Wno-vla
