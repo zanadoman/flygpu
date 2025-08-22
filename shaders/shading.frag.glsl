@@ -24,12 +24,12 @@ layout(set = 2, binding = 3) uniform sampler2D albedoSampler;
 layout(set = 2, binding = 4, std140) readonly buffer AmbientBuffer
 {
     AmbientLight lights[];
-} ambientBuffer;
+} ambient;
 
 layout(set = 2, binding = 5, std140) readonly buffer OmniBuffer
 {
     OmniLight lights[];
-} omniBuffer;
+} omni;
 
 layout(set = 3, binding = 0, std140) uniform UniformBufferObject
 {
@@ -76,22 +76,22 @@ void main()
     attenuation = 1.0F;
 
     for (uint i = 0; i != ubo.ambientCount; ++i) {
-        lightDir = normalize(-ambientBuffer.lights[i].direction);
+        lightDir = normalize(-ambient.lights[i].direction);
 
-        accumulate(ambientBuffer.lights[i].color);
+        accumulate(ambient.lights[i].color);
     }
 
     for (uint i = 0; i != ubo.omniCount; ++i) {
-        lightDir = omniBuffer.lights[i].position - fragPosition;
+        lightDir = omni.lights[i].position - fragPosition;
         if (lightDir.z <= 0.0F) continue;
 
         const float distance = length(lightDir);
-        if (omniBuffer.lights[i].radius <= distance) continue;
+        if (omni.lights[i].radius <= distance) continue;
         lightDir /= distance;
 
-        attenuation = distance / omniBuffer.lights[i].radius;
+        attenuation = distance / omni.lights[i].radius;
         attenuation = 1.0F - attenuation * attenuation;
 
-        accumulate(omniBuffer.lights[i].color);
+        accumulate(omni.lights[i].color);
     }
 }
