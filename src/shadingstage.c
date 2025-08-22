@@ -105,7 +105,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         "./shaders/shading.frag.spv",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
         SDL_arraysize(self->sampler_binds),
-        SDL_arraysize(self->ssbos),
+        FG_LIGHT_VARIANTS,
         1
     );
     if (!self->fragspv) {
@@ -170,13 +170,15 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
     }
 }
 
-bool FG_FilterAmbientLight(Uint32 mask, const void *light) {
+bool FG_FilterAmbientLight(Uint32 mask, const void *light)
+{
     const FG_AmbientLight *ambient = (const FG_AmbientLight *)light;
 
     return ambient->mask & mask && ambient->direction.z < 0.0F;
 }
 
-bool FG_FilterOmniLight(Uint32 mask, const void *light) {
+bool FG_FilterOmniLight(Uint32 mask, const void *light)
+{
     const FG_OmniLight *omni = (const FG_OmniLight *)light;
 
     return omni->mask & mask && 0.0F < omni->radius;
@@ -214,10 +216,10 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
     ssbo_size = self->ubo.counts[dst] * size;
 
     if (self->ssbo_infos[dst].size < ssbo_size) {
-        SDL_ReleaseGPUBuffer(self->device, self->ssbos[dst]);
         self->ssbo_infos[dst].size = ssbo_size;
-        self->ssbos[dst]           = SDL_CreateGPUBuffer(
-            self->device, &self->ssbo_infos[dst]);
+
+        SDL_ReleaseGPUBuffer(self->device, self->ssbos[dst]);
+        self->ssbos[dst] = SDL_CreateGPUBuffer(self->device, self->ssbo_infos + dst);
         if (!self->ssbos[dst]) return false;
 
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[dst]);
@@ -286,8 +288,7 @@ void FG_ShadingStageDraw(FG_ShadingStage      *self,
 
     SDL_BindGPUFragmentSamplers(
         rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
-    SDL_BindGPUFragmentStorageBuffers(
-        rndrpass, 0, self->ssbos, SDL_arraysize(self->ssbos));
+    SDL_BindGPUFragmentStorageBuffers(rndrpass, 0, self->ssbos, FG_LIGHT_VARIANTS);
     SDL_PushGPUFragmentUniformData(cmdbuf, 0, &self->ubo, sizeof(self->ubo));
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_DrawGPUPrimitives(rndrpass, 3, 1, 0, 0);
