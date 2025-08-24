@@ -28,7 +28,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "linalg.h" /* IWYU pragma: export */
+#include "linalg.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
@@ -47,6 +47,7 @@ typedef struct
     FG_Perspective perspective;
     FG_Transform3  transform;
     Sint32         priority;
+    Uint32         mask;
 } FG_Camera;
 
 typedef struct
@@ -59,12 +60,19 @@ typedef struct
 
 typedef struct
 {
-    FG_Transform3   transform;
-    FG_QuadColor    color;
     SDL_GPUTexture *albedo;
     SDL_GPUTexture *specular;
     SDL_GPUTexture *normal;
-    FG_Rect         coords;
+} FG_Material;
+
+typedef struct
+{
+    FG_Transform3      transform;
+    FG_QuadColor       color;
+    const FG_Material *material;
+    FG_Rect            coords;
+    Uint32             mask;
+    Uint8              padding0[4];
 } FG_Quad3;
 
 typedef struct
@@ -76,17 +84,28 @@ typedef struct
 
 typedef struct
 {
-    FG_Vec3 translation;
-    float   radius;
+    FG_Vec3 direction;
+    Uint8   padding0[4];
     FG_Vec3 color;
-    float   intensity;
-} FG_Light;
+    Uint32  mask;
+} FG_AmbientLight;
 
 typedef struct
 {
-    const FG_Light *instances;
-    Uint32          count;
-    Uint8           padding0[4];
+    FG_Vec3 translation;
+    float   radius;
+    FG_Vec3 color;
+    Uint32  mask;
+} FG_OmniLight;
+
+typedef struct
+{
+    const FG_AmbientLight *ambients;
+    Uint32                 ambient_count;
+    Uint8                  padding0[4];
+    const FG_OmniLight    *omnis;
+    Uint32                 omni_count;
+    Uint8                  padding1[4];
 } FG_ShadingStageDrawInfo;
 
 typedef struct

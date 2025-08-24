@@ -75,9 +75,9 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
     SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT];
     FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
     SDL_GPUSamplerCreateInfo           sampler_info                 = {
-        .min_filter  = SDL_GPU_FILTER_LINEAR,
-        .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
-        .max_lod     = 1000.0F
+        .min_filter   = SDL_GPU_FILTER_LINEAR,
+        .mipmap_mode  = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+        .max_lod      = 1000.0F
     };
     SDL_GPUVertexAttribute             vertattrs[]                  = {
         { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4]) },
@@ -152,6 +152,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
+    sampler_info.mip_lod_bias = -1.0F;
+
     self->sampler_binds[0].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
     if (!self->sampler_binds[0].sampler) {
         FG_DestroyQuad3Stage(self);
@@ -164,6 +166,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
+
+    sampler_info.mip_lod_bias = 0.0F;
 
     self->sampler_binds[2].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
     if (!self->sampler_binds[2].sampler) {
@@ -244,8 +248,9 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     size = self->count * sizeof(*transmem);
 
     if (self->vertbuf_info.size < size) {
+        self->vertbuf_info.size = size;
+
         SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
-        self->vertbuf_info.size   = size;
         self->vertbuf_bind.buffer = SDL_CreateGPUBuffer(
             self->device, &self->vertbuf_info);
         if (!self->vertbuf_bind.buffer) return false;
