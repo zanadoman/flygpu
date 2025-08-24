@@ -38,7 +38,7 @@ layout(set = 3, binding = 0, std140) uniform UniformBufferObject
     uint omniCount;
 } ubo;
 
-layout(location = 0) in vec2 fragTexCoord;
+layout(location = 0) in noperspective vec2 fragTexCoord;
 
 layout(location = 0) out vec3 outColor;
 
