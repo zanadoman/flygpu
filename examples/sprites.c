@@ -148,7 +148,7 @@ Sint32 main(Sint32 argc, char *argv[])
                                             + (float)k * 1.0F / SDL_arraysize(SPRITES);
                 it->transform.translation.y = -0.5F + 0.5F / SDL_arraysize(SPRITES)
                                             + (float)j * 1.0F / SDL_arraysize(SPRITES);
-                it->transform.translation.z = -1.0F - (float)i * 0.25F;
+                it->transform.translation.z = -1.0F - (float)i * 0.0001F;
                 it->transform.scale.x       = 1.0F / (SDL_arraysize(SPRITES) + 1);
                 it->transform.scale.y       = it->transform.scale.x;
                 it->color                   = (FG_QuadColor){
