@@ -58,7 +58,7 @@ struct FG_Quad3Stage
     SDL_GPUShader                 *vertspv;
     SDL_GPUShader                 *fragspv;
     Uint32                         capacity;
-    Uint32                         count;
+    Uint8                          padding0[4];
     const FG_Quad3               **instances;
     FG_Quad3Batch                 *batches;
     Uint32                         head;
@@ -225,6 +225,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        const FG_Quad3StageDrawInfo *info)
 {
     Uint32         i        = 0;
+    Uint32         count    = 0;
     Uint32         size     = 0;
     FG_Quad3In    *transmem = NULL;
     FG_Quad3Batch *batch    = NULL;
@@ -245,18 +246,18 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     for (i = 0; i != self->capacity; ++i) self->batches[i].capacity = 0;
     self->head = self->capacity;
 
-    for (i = 0, self->count = 0; i != info->count; ++i) {
+    for (i = 0; i != info->count; ++i) {
         if (info->instances[i].mask & mask &&
             far < info->instances[i].transform.translation.z &&
             info->instances[i].transform.translation.z < near
         ) {
-            self->instances[self->count] = info->instances + i;
-            ++FG_GetBatch(self, self->instances[self->count]->material)->capacity;
-            ++self->count;
+            self->instances[count] = info->instances + i;
+            ++FG_GetBatch(self, self->instances[count]->material)->capacity;
+            ++count;
         }
     }
 
-    if (!self->count) return true;
+    if (self->head == self->capacity) return true;
 
     for (batch = self->batches + self->head;
          batch->next != self->capacity;
@@ -266,7 +267,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                                           + self->batches[batch->next].capacity;
     }
 
-    size = self->count * sizeof(*transmem);
+    size = count * sizeof(*transmem);
 
     if (self->vertbuf_info.size < size) {
         self->vertbuf_info.size = size;
@@ -287,7 +288,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
-    for (i = 0; i != self->count; ++i) {
+    for (i = 0; i != count; ++i) {
         batch = FG_GetBatch(self, self->instances[i]->material);
         j = batch->offset + batch->count++;
         FG_SetModelMat4(&self->instances[i]->transform, &transmem[j].modelmat);
@@ -316,7 +317,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
     const FG_Quad3Batch *batch = self->batches + self->head;
 
-    if (!self->count) return;
+    if (self->head == self->capacity) return;
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
