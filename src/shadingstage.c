@@ -172,16 +172,14 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
 
 bool FG_FilterAmbientLight(Uint32 mask, const void *light)
 {
-    const FG_AmbientLight *ambient = (const FG_AmbientLight *)light;
-
-    return ambient->mask & mask && ambient->direction.z < 0.0F;
+    return ((const FG_AmbientLight *)light)->mask & mask &&
+           ((const FG_AmbientLight *)light)->direction.z < 0.0F;
 }
 
 bool FG_FilterOmniLight(Uint32 mask, const void *light)
 {
-    const FG_OmniLight *omni = (const FG_OmniLight *)light;
-
-    return omni->mask & mask && 0.0F < omni->radius;
+    return ((const FG_OmniLight *)light)->mask & mask &&
+           0.0F < ((const FG_OmniLight *)light)->radius;
 }
 
 bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,

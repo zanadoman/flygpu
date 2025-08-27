@@ -62,7 +62,7 @@ struct FG_Quad3Stage
     SDL_GPUShader                 *fragspv;
     Uint32                         capacity;
     Uint8                          padding0[4];
-    const FG_Quad3               **instances;
+    const FG_Quad3               **quad3s;
     FG_Quad3Batch                 *batches_begin;
     const FG_Quad3Batch           *batches_end;
     FG_Quad3Batch                 *batches_head;
@@ -237,9 +237,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     Uint32         j        = 0;
 
     if (self->capacity < info->count) {
-        self->instances = SDL_realloc(
-            self->instances, info->count * sizeof(*self->instances));
-        if (!self->instances) return false;
+        self->quad3s = SDL_realloc(self->quad3s, info->count * sizeof(*self->quad3s));
+        if (!self->quad3s) return false;
 
         self->batches_begin = SDL_realloc(
             self->batches_begin, info->count * sizeof(*self->batches_begin));
@@ -265,8 +264,8 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
             far < info->instances[i].transform.translation.z &&
             info->instances[i].transform.translation.z < near
         ) {
-            self->instances[count] = info->instances + i;
-            ++FG_GetBatch(self, self->instances[count]->material)->capacity;
+            self->quad3s[count] = info->instances + i;
+            ++FG_GetBatch(self, self->quad3s[count]->material)->capacity;
             ++count;
         }
     }
@@ -299,13 +298,13 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     if (!transmem) return false;
 
     for (i = 0; i != count; ++i) {
-        batch = FG_GetBatch(self, self->instances[i]->material);
-        j = batch->offset + batch->count++;
-        FG_SetModelMat4(&self->instances[i]->transform, &transmem[j].modelmat);
+        batch = FG_GetBatch(self, self->quad3s[i]->material);
+        j     = batch->offset + batch->count++;
+        FG_SetModelMat4(&self->quad3s[i]->transform, &transmem[j].modelmat);
         FG_MulMat4s(vpmat, &transmem[j].modelmat, &transmem[j].mvpmat);
-        FG_SetTBNMat3(self->instances[i]->transform.rotation, &transmem[j].tbnmat);
-        transmem[j].color  = self->instances[i]->color;
-        transmem[j].coords = self->instances[i]->coords;
+        FG_SetTBNMat3(self->quad3s[i]->transform.rotation, &transmem[j].tbnmat);
+        transmem[j].color  = self->quad3s[i]->color;
+        transmem[j].coords = self->quad3s[i]->coords;
     }
 
     SDL_UnmapGPUTransferBuffer(self->device, self->transbuf);
@@ -374,7 +373,7 @@ void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
     SDL_free(self->batches_begin);
-    SDL_free(self->instances);
+    SDL_free(self->quad3s);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
     SDL_ReleaseGPUShader(self->device, self->vertspv);
     SDL_free(self);
