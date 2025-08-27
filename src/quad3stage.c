@@ -33,14 +33,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef struct
+typedef struct FG_Quad3Batch FG_Quad3Batch;
+
+struct FG_Quad3Batch
 {
     const FG_Material *material;
     Uint32             capacity;
     Uint32             count;
     Uint32             offset;
-    Uint32             next;
-} FG_Quad3Batch;
+    Uint8              padding0[4];
+    FG_Quad3Batch     *next;
+};
 
 typedef struct
 {
@@ -60,9 +63,11 @@ struct FG_Quad3Stage
     Uint32                         capacity;
     Uint8                          padding0[4];
     const FG_Quad3               **instances;
-    FG_Quad3Batch                 *batches;
-    Uint32                         head;
+    FG_Quad3Batch                 *batches_begin;
+    const FG_Quad3Batch           *batches_end;
+    FG_Quad3Batch                 *batches_head;
     SDL_GPUBufferCreateInfo        vertbuf_info;
+    Uint8                          padding1[4];
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
     SDL_GPUTextureSamplerBinding   sampler_binds[4];
@@ -198,19 +203,19 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 FG_Quad3Batch *FG_GetBatch(FG_Quad3Stage *self, const FG_Material *material)
 {
     Uint32 i             = 0;
-    FG_Quad3Batch *batch = self->batches + (Uint64)material % self->capacity;
+    FG_Quad3Batch *batch = self->batches_begin + (Uint64)material % self->capacity;
 
     for (i = 0; i != self->capacity; ++i) {
         if (!batch->capacity) {
-            batch->material = material;
-            batch->count    = 0;
-            batch->offset   = 0;
-            batch->next     = self->head;
-            self->head      = (Uint32)(batch - self->batches);
+            batch->material    = material;
+            batch->count       = 0;
+            batch->offset      = 0;
+            batch->next        = self->batches_head;
+            self->batches_head = batch;
             return batch;
         }
         if (batch->material == material) return batch;
-        if (++batch == self->batches + self->capacity) batch = self->batches;
+        if (++batch == self->batches_end) batch = self->batches_begin;
     }
 
     return NULL;
@@ -238,13 +243,18 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
             self->instances, self->capacity * sizeof(*self->instances));
         if (!self->instances) return false;
 
-        self->batches = SDL_realloc(
-            self->batches, self->capacity * sizeof(*self->batches));
-        if (!self->batches) return false;
+        self->batches_begin = SDL_realloc(
+            self->batches_begin, self->capacity * sizeof(*self->batches_begin));
+        if (!self->batches_begin) return false;
+
+        self->batches_end = self->batches_begin + self->capacity;
     }
 
-    for (i = 0; i != self->capacity; ++i) self->batches[i].capacity = 0;
-    self->head = self->capacity;
+    for (batch = self->batches_begin; batch != self->batches_end; ++batch) {
+        batch->capacity = 0;
+    }
+
+    self->batches_head = NULL;
 
     for (i = 0; i != info->count; ++i) {
         if (info->instances[i].mask & mask &&
@@ -257,14 +267,10 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
         }
     }
 
-    if (self->head == self->capacity) return true;
+    if (!self->batches_head) return true;
 
-    for (batch = self->batches + self->head;
-         batch->next != self->capacity;
-         batch = self->batches + batch->next
-    ) {
-        self->batches[batch->next].offset = batch->offset
-                                          + self->batches[batch->next].capacity;
+    for (batch = self->batches_head; batch->next; batch = batch->next) {
+        batch->next->offset = batch->offset + batch->next->capacity;
     }
 
     size = count * sizeof(*transmem);
@@ -315,13 +321,13 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
 
 void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
 {
-    const FG_Quad3Batch *batch = self->batches + self->head;
+    const FG_Quad3Batch *batch = self->batches_head;
 
-    if (self->head == self->capacity) return;
+    if (!batch) return;
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
-    while (true) {
+    do {
         if (batch->material) {
             if (batch->material->albedo) {
                 self->sampler_binds[0].texture = batch->material->albedo;
@@ -349,9 +355,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage *self, SDL_GPURenderPass *rndrpass)
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
         SDL_DrawGPUPrimitives(rndrpass, 6, batch->count, 0, batch->offset);
-        if (batch->next == self->capacity) break;
-        batch = self->batches + batch->next;
-    }
+    } while ((batch = batch->next));
 }
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
@@ -365,7 +369,7 @@ void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
     }
     SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
-    SDL_free(self->batches);
+    SDL_free(self->batches_begin);
     SDL_free(self->instances);
     SDL_ReleaseGPUShader(self->device, self->fragspv);
     SDL_ReleaseGPUShader(self->device, self->vertspv);
