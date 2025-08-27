@@ -237,22 +237,26 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     Uint32         j        = 0;
 
     if (self->capacity < info->count) {
-        self->capacity = info->count;
-
         self->instances = SDL_realloc(
-            self->instances, self->capacity * sizeof(*self->instances));
+            self->instances, info->count * sizeof(*self->instances));
         if (!self->instances) return false;
 
         self->batches_begin = SDL_realloc(
-            self->batches_begin, self->capacity * sizeof(*self->batches_begin));
+            self->batches_begin, info->count * sizeof(*self->batches_begin));
         if (!self->batches_begin) return false;
 
-        self->batches_end = self->batches_begin + self->capacity;
+        self->batches_end = self->batches_begin + info->count;
+
+        for (batch = self->batches_begin + self->capacity;
+             batch != self->batches_end;
+             ++batch) {
+            batch->capacity = 0;
+        }
+
+        self->capacity = info->count;
     }
 
-    for (batch = self->batches_begin; batch != self->batches_end; ++batch) {
-        batch->capacity = 0;
-    }
+    for (batch = self->batches_head; batch; batch = batch->next) batch->capacity = 0;
 
     self->batches_head = NULL;
 
