@@ -33,7 +33,7 @@
 #define FG_DEPTH_FORMAT SDL_GPU_TEXTUREFORMAT_D16_UNORM
 
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
-                             const char         *path,
+                             const char         *name,
                              SDL_GPUShaderStage  stage,
                              Uint32              samplers,
                              Uint32              ssbos,

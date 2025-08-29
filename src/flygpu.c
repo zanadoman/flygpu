@@ -72,7 +72,8 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
     self->window = window;
 
-    self->device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, "vulkan");
+    self->device = SDL_CreateGPUDevice(
+        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, NULL);
     if (!self->device) {
         FG_DestroyRenderer(self);
         return NULL;
