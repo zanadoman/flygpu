@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 4.0.3)
+cmake_minimum_required(VERSION 4.1.0)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 set(CMAKE_C_COMPILER clang)
 file(READ ${CMAKE_SOURCE_DIR}/compile_flags.txt CMAKE_C_FLAGS)
@@ -11,24 +15,24 @@ set(CMAKE_C_CLANG_TIDY clang-tidy;-p;${CMAKE_BINARY_DIR}/)
 project(flygpu LANGUAGES C VERSION 0.1.0)
 file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} SDL3)
 
-set(SHADER_DIRECTORY ${CMAKE_BINARY_DIR}/shaders)
-file(MAKE_DIRECTORY ${SHADER_DIRECTORY}/)
+find_program(SHADER_COMPILER dxc REQUIRED)
+set(SHADER_DIR ${CMAKE_BINARY_DIR}/shaders)
+file(MAKE_DIRECTORY ${SHADER_DIR}/)
 file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
 foreach(SOURCE ${SHADERS})
   get_filename_component(SHADER ${SOURCE} NAME_WLE)
-  set(SPIRV ${SHADER_DIRECTORY}/${SHADER}.spv)
-  set(DXIL ${SHADER_DIRECTORY}/${SHADER}.dxil)
+  set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
+  set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND dxc -spirv -T lib_6_8 ${SOURCE} -Fo ${SPIRV}
+    COMMAND ${SHADER_COMPILER} -spirv -T lib_6_8 ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
   add_custom_command(
     OUTPUT ${DXIL}
-    COMMAND dxc -T lib_6_8 ${SOURCE} -Fo ${DXIL}
+    COMMAND ${SHADER_COMPILER} -T lib_6_8 ${SOURCE} -Fo ${DXIL}
     DEPENDS ${SOURCE}
     VERBATIM
   )
@@ -36,12 +40,23 @@ foreach(SOURCE ${SHADERS})
   add_dependencies(${PROJECT_NAME} ${SHADER})
 endforeach()
 
-file(GLOB_RECURSE EXAMPLES ${CMAKE_SOURCE_DIR}/examples/*.c)
-foreach(SOURCE ${EXAMPLES})
-  get_filename_component(EXAMPLE ${SOURCE} NAME_WLE)
-  add_executable(${EXAMPLE} WIN32 ${SOURCE})
-  target_link_libraries(${EXAMPLE} SDL3_image ${PROJECT_NAME})
-endforeach()
-
-file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/assets/)
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/)
+find_package(SDL3 OPTIONAL CONFIG COMPONENTS SDL3)
+find_package(SDL3_image OPTIONAL CONFIG)
+if(TARGET SDL3_image::SDL3_image AND TARGET SDL3::SDL3)
+  file(GLOB_RECURSE EXAMPLES ${CMAKE_SOURCE_DIR}/examples/*.c)
+  foreach(SOURCE ${EXAMPLES})
+    get_filename_component(EXAMPLE ${SOURCE} NAME_WLE)
+    add_executable(${EXAMPLE} WIN32 ${SOURCE})
+    target_link_libraries(
+      ${EXAMPLE} PRIVATE SDL3_image::SDL3_image SDL3::SDL3 ${PROJECT_NAME})
+    add_custom_command(
+      TARGET ${EXAMPLE} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy -t
+        $<TARGET_FILE_DIR:${EXAMPLE}>
+        $<TARGET_RUNTIME_DLLS:${EXAMPLE}>
+      COMMAND_EXPAND_LISTS
+    )
+  endforeach()
+  file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/assets/)
+  file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/)
+endif()
