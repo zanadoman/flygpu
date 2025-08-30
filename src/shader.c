@@ -23,23 +23,25 @@
 
 #include "shader.h"
 
-#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_platform_defines.h> /* IWYU pragma: keep */
 #include <SDL3/SDL_stdinc.h>
 
 #include <stddef.h>
 
-#ifdef _WIN32
+#ifdef SDL_PLATFORM_WINDOWS
 #define FG_SHADER_DIR "shaders\\"
-#else /* WIN32 */
+#else /* SDL_PLATFORM_WINDOWS */
 #define FG_SHADER_DIR "shaders/"
-#endif /* WIN32 */
+#endif /* SDL_PLATFORM_WINDOWS */
 
 #define FG_SHADER_SPIRV ".spv"
 #define FG_SHADER_DXIL  ".dxil"
 
-#define FG_SHADER_EXT SDL_max(SDL_arraysize(FG_SHADER_SPIRV), SDL_arraysize(FG_SHADER_DXIL))
+#define FG_SHADER_EXT \
+    SDL_max(SDL_arraysize(FG_SHADER_SPIRV), SDL_arraysize(FG_SHADER_DXIL))
 
 SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              const char         *name,
@@ -53,29 +55,27 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                                   + SDL_arraysize(FG_SHADER_DIR)
                                   + SDL_strlen(name)
                                   + FG_SHADER_EXT];
-    size_t                   i                     = 0;
-    SDL_GPUShaderFormat      format                = SDL_GetGPUShaderFormats(device);
     SDL_GPUShaderCreateInfo  info                  = {
         .stage               = stage,
         .num_samplers        = samplers,
         .num_storage_buffers = ssbos,
         .num_uniform_buffers = ubos
     };
+    size_t                   i                     = 0;
+    SDL_GPUShaderFormat      format                = SDL_GetGPUShaderFormats(device);
     void                    *code                  = NULL;
     SDL_GPUShader           *shader                = NULL;
 
     *path = 0;
 
     switch (info.stage) {
-    case SDL_GPU_SHADERSTAGE_VERTEX:   info.entrypoint = "vsMain"; break;
-    case SDL_GPU_SHADERSTAGE_FRAGMENT: info.entrypoint = "psMain"; break;
-    default:                                                       return NULL;
+    case SDL_GPU_SHADERSTAGE_VERTEX:   info.entrypoint = "VSMain"; break;
+    case SDL_GPU_SHADERSTAGE_FRAGMENT: info.entrypoint = "PSMain"; break;
     }
 
-    i = SDL_strlcat(path, base, SDL_arraysize(path) - i);
+    i = SDL_strlcat(path, base, SDL_arraysize(path));
     i = SDL_strlcat(path + i, FG_SHADER_DIR, SDL_arraysize(path) - i);
     i = SDL_strlcat(path + i, name, SDL_arraysize(path) - i);
-
     if (format & SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_strlcat(path + i, FG_SHADER_SPIRV, SDL_arraysize(path) - i);
         info.format = SDL_GPU_SHADERFORMAT_SPIRV;
@@ -84,7 +84,6 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
         SDL_strlcat(path + i, FG_SHADER_DXIL, SDL_arraysize(path) - i);
         info.format = SDL_GPU_SHADERFORMAT_DXIL;
     }
-    else return NULL;
 
     code = SDL_LoadFile(path, &info.code_size);
     if (!code) return NULL;
