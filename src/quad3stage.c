@@ -58,8 +58,8 @@ struct FG_Quad3Stage
 {
     SDL_GPUDevice                 *device;
     const FG_Material             *material;
-    SDL_GPUShader                 *vertspv;
-    SDL_GPUShader                 *fragspv;
+    SDL_GPUShader                 *vertshdr;
+    SDL_GPUShader                 *fragshdr;
     Uint32                         capacity;
     Uint8                          padding0[4];
     const FG_Quad3               **quad3s;
@@ -137,14 +137,14 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 
     self->material = material;
 
-    self->vertspv = FG_LoadShader(
+    self->vertshdr = FG_LoadShader(
         self->device, "quad3", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
-    if (!self->vertspv) {
+    if (!self->vertshdr) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
-    self->fragspv = FG_LoadShader(
+    self->fragshdr = FG_LoadShader(
         self->device,
         "quad3",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
@@ -152,7 +152,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
         0,
         0
     );
-    if (!self->fragspv) {
+    if (!self->fragshdr) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
@@ -188,8 +188,8 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
         return NULL;
     }
 
-    info.vertex_shader   = self->vertspv;
-    info.fragment_shader = self->fragspv;
+    info.vertex_shader   = self->vertshdr;
+    info.fragment_shader = self->fragshdr;
 
     self->pipeline = SDL_CreateGPUGraphicsPipeline(self->device, &info);
     if (!self->pipeline) {
@@ -374,7 +374,7 @@ void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
     SDL_ReleaseGPUBuffer(self->device, self->vertbuf_bind.buffer);
     SDL_free(self->batches_begin);
     SDL_free(self->quad3s);
-    SDL_ReleaseGPUShader(self->device, self->fragspv);
-    SDL_ReleaseGPUShader(self->device, self->vertspv);
+    SDL_ReleaseGPUShader(self->device, self->fragshdr);
+    SDL_ReleaseGPUShader(self->device, self->vertshdr);
     SDL_free(self);
 }

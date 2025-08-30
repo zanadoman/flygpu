@@ -38,8 +38,8 @@
 struct FG_ShadingStage
 {
     SDL_GPUDevice                 *device;
-    SDL_GPUShader                 *vertspv;
-    SDL_GPUShader                 *fragspv;
+    SDL_GPUShader                 *vertshdr;
+    SDL_GPUShader                 *fragshdr;
     Uint32                         capacity;
     Uint8                          padding0[4];
     const void                   **lights;
@@ -87,14 +87,14 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
 
     self->device = device;
 
-    self->vertspv = FG_LoadShader(
+    self->vertshdr = FG_LoadShader(
         self->device, "viewport", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
-    if (!self->vertspv) {
+    if (!self->vertshdr) {
         FG_DestroyShadingStage(self);
         return NULL;
     }
 
-    self->fragspv = FG_LoadShader(
+    self->fragshdr = FG_LoadShader(
         self->device,
         "shading",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
@@ -102,7 +102,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         FG_LIGHT_VARIANTS,
         1
     );
-    if (!self->fragspv) {
+    if (!self->fragshdr) {
         FG_DestroyShadingStage(self);
         return NULL;
     }
@@ -142,8 +142,8 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
         }
     }
 
-    info.vertex_shader   = self->vertspv;
-    info.fragment_shader = self->fragspv;
+    info.vertex_shader   = self->vertshdr;
+    info.fragment_shader = self->fragshdr;
 
     self->pipeline = SDL_CreateGPUGraphicsPipeline(self->device, &info);
     if (!self->pipeline) {
@@ -300,7 +300,7 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
         SDL_ReleaseGPUSampler(self->device, self->sampler_binds[i].sampler);
     }
     SDL_free(self->lights);
-    SDL_ReleaseGPUShader(self->device, self->fragspv);
-    SDL_ReleaseGPUShader(self->device, self->vertspv);
+    SDL_ReleaseGPUShader(self->device, self->fragshdr);
+    SDL_ReleaseGPUShader(self->device, self->vertshdr);
     SDL_free(self);
 }
