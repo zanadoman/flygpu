@@ -23,6 +23,7 @@
 
 #include "shader.h"
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_iostream.h>
@@ -71,6 +72,9 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
     switch (info.stage) {
     case SDL_GPU_SHADERSTAGE_VERTEX:   info.entrypoint = "VSMain"; break;
     case SDL_GPU_SHADERSTAGE_FRAGMENT: info.entrypoint = "PSMain"; break;
+    default:
+        SDL_SetError("FlyGPU: Invalid shader stage!");
+        return NULL;
     }
 
     i = SDL_strlcat(path, base, SDL_arraysize(path));
@@ -83,6 +87,10 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
     else if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         SDL_strlcat(path + i, FG_SHADER_DXIL, SDL_arraysize(path) - i);
         info.format = SDL_GPU_SHADERFORMAT_DXIL;
+    }
+    else {
+        SDL_SetError("FlyGPU: Unsupported shader format!");
+        return NULL;
     }
 
     code = SDL_LoadFile(path, &info.code_size);
