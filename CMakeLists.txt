@@ -13,18 +13,26 @@ file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} SDL3)
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/shaders/)
-file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.*.glsl)
+set(SHADER_DIRECTORY ${CMAKE_BINARY_DIR}/shaders)
+file(MAKE_DIRECTORY ${SHADER_DIRECTORY}/)
+file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
 foreach(SOURCE ${SHADERS})
   get_filename_component(SHADER ${SOURCE} NAME_WLE)
-  set(SPIRV ${CMAKE_BINARY_DIR}/shaders/${SHADER}.spv)
+  set(SPIRV ${SHADER_DIRECTORY}/${SHADER}.spv)
+  set(DXIL ${SHADER_DIRECTORY}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND glslangValidator -V ${SOURCE} -o ${SPIRV}
+    COMMAND dxc -spirv -T lib_6_8 ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
-  add_custom_target(${SHADER} ALL DEPENDS ${SPIRV})
+  add_custom_command(
+    OUTPUT ${DXIL}
+    COMMAND dxc -T lib_6_8 ${SOURCE} -Fo ${DXIL}
+    DEPENDS ${SOURCE}
+    VERBATIM
+  )
+  add_custom_target(${SHADER} ALL DEPENDS ${SPIRV} ${DXIL})
   add_dependencies(${PROJECT_NAME} ${SHADER})
 endforeach()
 
