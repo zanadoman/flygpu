@@ -265,7 +265,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
 
 FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage *self, const FG_Material *material)
 {
-    Uint32 i             = 0;
+    Uint32         i     = 0;
     FG_Quad3Batch *batch = self->batches_begin + (Uint64)material % self->capacity;
 
     for (i = 0; i != self->capacity; ++i) {
@@ -292,11 +292,11 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
+    FG_Quad3Batch *batch    = NULL;
     Uint32         i        = 0;
     Uint32         count    = 0;
     Uint32         size     = 0;
     FG_Quad3In    *transmem = NULL;
-    FG_Quad3Batch *batch    = NULL;
     Uint32         j        = 0;
 
     if (self->capacity < info->count) {
@@ -328,8 +328,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
             info->quad3s[i].transform.translation.z < near
         ) {
             self->quad3s[count] = info->quad3s + i;
-            ++FG_GetQuad3Batch(self, self->quad3s[count]->material)->capacity;
-            ++count;
+            ++FG_GetQuad3Batch(self, self->quad3s[count++]->material)->capacity;
         }
     }
 
