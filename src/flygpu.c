@@ -131,7 +131,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->depthtarg_info.stencil_load_op  = SDL_GPU_LOADOP_DONT_CARE;
     self->depthtarg_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
 
-    self->quad3stage = FG_CreateQuad3Stage(self->device, &self->material);
+    self->quad3stage = FG_CreateQuad3Stage(self->device);
     if (!self->quad3stage) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -337,7 +337,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             &self->depthtarg_info
         );
         SDL_SetGPUViewport(rndrpass, &viewport);
-        FG_Quad3StageDraw(self->quad3stage, rndrpass);
+        FG_Quad3StageDraw(self->quad3stage, rndrpass, &self->material);
         SDL_EndGPURenderPass(rndrpass);
 
         rndrpass = SDL_BeginGPURenderPass(cmdbuf, &swapctarg_info, 1, NULL);
