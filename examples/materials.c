@@ -110,7 +110,7 @@ Sint32 main(Sint32 argc, char *argv[])
         .cameras      = &camera,
         .camera_count = 1,
         .quad3_info   = {
-            .instances = &quad3,
+            .quad3s = &quad3,
             .count     = 1
         },
         .shading_info = {

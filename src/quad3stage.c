@@ -260,11 +260,11 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     self->batches_head = NULL;
 
     for (i = 0; i != info->count; ++i) {
-        if (info->instances[i].mask & mask &&
-            far < info->instances[i].transform.translation.z &&
-            info->instances[i].transform.translation.z < near
+        if (info->quad3s[i].mask & mask &&
+            far < info->quad3s[i].transform.translation.z &&
+            info->quad3s[i].transform.translation.z < near
         ) {
-            self->quad3s[count] = info->instances + i;
+            self->quad3s[count] = info->quad3s + i;
             ++FG_GetBatch(self, self->quad3s[count]->material)->capacity;
             ++count;
         }

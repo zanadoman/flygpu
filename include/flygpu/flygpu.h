@@ -77,7 +77,7 @@ typedef struct
 
 typedef struct
 {
-    const FG_Quad3 *instances;
+    const FG_Quad3 *quad3s;
     Uint32          count;
     Uint8           padding0[4];
 } FG_Quad3StageDrawInfo;

@@ -164,7 +164,7 @@ Sint32 main(Sint32 argc, char *argv[])
         }
     }
 
-    info.quad3_info.instances = quad3s;
+    info.quad3_info.quad3s = quad3s;
 
     do {
         camera.transform.translation.x += 0.001F * (float)(keys[SDL_SCANCODE_D]

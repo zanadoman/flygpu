@@ -119,7 +119,7 @@ Sint32 main(Sint32 argc, char *argv[])
         .cameras      = &camera,
         .camera_count = 1,
         .quad3_info   = {
-            .instances = quad3s,
+            .quad3s = quad3s,
             .count     = SDL_arraysize(quad3s)
         },
         .shading_info = {

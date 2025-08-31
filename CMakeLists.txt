@@ -23,13 +23,13 @@ file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
 foreach(SOURCE ${SHADERS})
   get_filename_component(SHADER ${SOURCE} NAME_WLE)
   set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
-  set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${SPIRV}
     COMMAND ${SHADER_COMPILER} -spirv -T lib_6_8 ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
+  set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${DXIL}
     COMMAND ${SHADER_COMPILER} -T lib_6_8 ${SOURCE} -Fo ${DXIL}
