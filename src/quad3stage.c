@@ -81,29 +81,94 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
 {
     Uint8                              i                            = 0;
     SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT] = { 0 };
-    FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
+    FG_Quad3Stage                     *self                         = SDL_calloc(
+        1, sizeof(*self));
     SDL_GPUSamplerCreateInfo           sampler_info                 = {
         .min_filter  = SDL_GPU_FILTER_LINEAR,
         .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
         .max_lod     = 1000.0F
     };
     SDL_GPUVertexAttribute             vertattrs[]                  = {
-        { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4]) },
-        { .location = 1,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[1 * FG_DIMS_VEC4]) },
-        { .location = 2,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[2 * FG_DIMS_VEC4]) },
-        { .location = 3,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[3 * FG_DIMS_VEC4]) },
-        { .location = 4,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, mvpmat.m[0 * FG_DIMS_VEC4]) },
-        { .location = 5,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, mvpmat.m[1 * FG_DIMS_VEC4]) },
-        { .location = 6,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, mvpmat.m[2 * FG_DIMS_VEC4]) },
-        { .location = 7,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, mvpmat.m[3 * FG_DIMS_VEC4]) },
-        { .location = 8,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, tbnmat.m[0 * FG_DIMS_VEC3]) },
-        { .location = 9,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, tbnmat.m[1 * FG_DIMS_VEC3]) },
-        { .location = 10, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, tbnmat.m[2 * FG_DIMS_VEC3]) },
-        { .location = 11, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, color.tl) },
-        { .location = 12, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, color.bl) },
-        { .location = 13, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, color.br) },
-        { .location = 14, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, .offset = offsetof(FG_Quad3In, color.tr) },
-        { .location = 15, .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, coords.tl) }
+        {
+            .location = 0,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 1,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, modelmat.m[1 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 2,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, modelmat.m[2 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 3,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, modelmat.m[3 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 4,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[0 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 5,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[1 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 6,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[2 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 7,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[3 * FG_DIMS_VEC4])
+        },
+        {
+            .location = 8,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[0 * FG_DIMS_VEC3])
+        },
+        {
+            .location = 9,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[1 * FG_DIMS_VEC3])
+        },
+        {
+            .location = 10,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[2 * FG_DIMS_VEC3])
+        },
+        {
+            .location = 11,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, color.tl)
+        },
+        {
+            .location = 12,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, color.bl)
+        },
+        {
+            .location = 13,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, color.br)
+        },
+        {
+            .location = 14,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+            .offset   = offsetof(FG_Quad3In, color.tr)
+        },
+        {
+            .location = 15,
+            .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
+            .offset   = offsetof(FG_Quad3In, coords.tl)
+        }
     };
     SDL_GPUGraphicsPipelineCreateInfo  info                         = {
         .vertex_input_state  = {
@@ -129,7 +194,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
     };
 
     for (i = 0; i != SDL_arraysize(targbuf_descs); ++i) {
-        targbuf_descs[i] = (SDL_GPUColorTargetDescription){ .format = FG_GBUF_FORMAT };
+        targbuf_descs[i].format = FG_GBUF_FORMAT;
     }
 
     if (!self) return NULL;
