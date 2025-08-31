@@ -39,8 +39,8 @@ struct FG_Quad3Batch
 {
     const FG_Material *material;
     Uint32             capacity;
-    Uint32             count;
     Uint32             offset;
+    Uint32             count;
     Uint8              padding0[4];
     FG_Quad3Batch     *next;
 };
@@ -74,17 +74,18 @@ struct FG_Quad3Stage
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
-static FG_Quad3Batch *FG_GetBatch(FG_Quad3Stage *self, const FG_Material *material);
+static FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage     *self,
+                                       const FG_Material *material);
 
 FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *material)
 {
     Uint8                              i                            = 0;
-    SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT];
+    SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT] = { 0 };
     FG_Quad3Stage                     *self                         = SDL_calloc(1, sizeof(*self));
     SDL_GPUSamplerCreateInfo           sampler_info                 = {
-        .min_filter   = SDL_GPU_FILTER_LINEAR,
-        .mipmap_mode  = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
-        .max_lod      = 1000.0F
+        .min_filter  = SDL_GPU_FILTER_LINEAR,
+        .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+        .max_lod     = 1000.0F
     };
     SDL_GPUVertexAttribute             vertattrs[]                  = {
         { .location = 0,  .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, .offset = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4]) },
@@ -200,7 +201,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device, const FG_Material *mat
     return self;
 }
 
-FG_Quad3Batch *FG_GetBatch(FG_Quad3Stage *self, const FG_Material *material)
+FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage *self, const FG_Material *material)
 {
     Uint32 i             = 0;
     FG_Quad3Batch *batch = self->batches_begin + (Uint64)material % self->capacity;
@@ -208,8 +209,8 @@ FG_Quad3Batch *FG_GetBatch(FG_Quad3Stage *self, const FG_Material *material)
     for (i = 0; i != self->capacity; ++i) {
         if (!batch->capacity) {
             batch->material    = material;
-            batch->count       = 0;
             batch->offset      = 0;
+            batch->count       = 0;
             batch->next        = self->batches_head;
             self->batches_head = batch;
             return batch;
@@ -265,7 +266,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
             info->quad3s[i].transform.translation.z < near
         ) {
             self->quad3s[count] = info->quad3s + i;
-            ++FG_GetBatch(self, self->quad3s[count]->material)->capacity;
+            ++FG_GetQuad3Batch(self, self->quad3s[count]->material)->capacity;
             ++count;
         }
     }
@@ -298,7 +299,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     if (!transmem) return false;
 
     for (i = 0; i != count; ++i) {
-        batch = FG_GetBatch(self, self->quad3s[i]->material);
+        batch = FG_GetQuad3Batch(self, self->quad3s[i]->material);
         j     = batch->offset + batch->count++;
         FG_SetModelMat4(&self->quad3s[i]->transform, &transmem[j].modelmat);
         FG_MulMat4s(vpmat, &transmem[j].modelmat, &transmem[j].mvpmat);
