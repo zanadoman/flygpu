@@ -166,8 +166,7 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
 
 bool FG_FilterAmbientLight(Uint32 mask, const void *light)
 {
-    return ((const FG_AmbientLight *)light)->mask & mask &&
-           ((const FG_AmbientLight *)light)->direction.z < 0.0F;
+    return ((const FG_AmbientLight *)light)->mask & mask;
 }
 
 bool FG_FilterOmniLight(Uint32 mask, const void *light)
