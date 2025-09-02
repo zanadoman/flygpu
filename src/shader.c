@@ -70,8 +70,8 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
     *path = 0;
 
     switch (info.stage) {
-    case SDL_GPU_SHADERSTAGE_VERTEX:   info.entrypoint = "VSMain"; break;
-    case SDL_GPU_SHADERSTAGE_FRAGMENT: info.entrypoint = "PSMain"; break;
+    case SDL_GPU_SHADERSTAGE_VERTEX:   info.entrypoint = "vertMain"; break;
+    case SDL_GPU_SHADERSTAGE_FRAGMENT: info.entrypoint = "fragMain"; break;
     default:
         SDL_SetError("FlyGPU: Invalid shader stage!");
         return NULL;
