@@ -288,8 +288,6 @@ FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage *self, const FG_Material *material
 bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
                        SDL_GPUCopyPass             *cpypass,
                        Uint32                       mask,
-                       float                        near,
-                       float                        far,
                        const FG_Mat4               *vpmat,
                        const FG_Quad3StageDrawInfo *info)
 {
@@ -324,10 +322,7 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     self->batches_head = NULL;
 
     for (i = 0; i != info->count; ++i) {
-        if (info->quad3s[i].mask & mask &&
-            far < info->quad3s[i].transform.translation.z &&
-            info->quad3s[i].transform.translation.z < near
-        ) {
+        if (info->quad3s[i].mask & mask) {
             self->quad3s[count] = info->quad3s + i;
             ++FG_GetQuad3Batch(self, self->quad3s[count++]->material)->capacity;
         }

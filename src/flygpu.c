@@ -310,14 +310,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
         cpypass = SDL_BeginGPUCopyPass(cmdbuf);
         if (!FG_Quad3StageCopy(
-            self->quad3stage,
-            cpypass,
-            cameras[i]->mask,
-            cameras[i]->transform.translation.z,
-            cameras[i]->transform.translation.z - cameras[i]->perspective.far,
-            &vpmat,
-            &info->quad3_info
-        )) {
+            self->quad3stage, cpypass, cameras[i]->mask, &vpmat, &info->quad3_info)) {
             return false;
         }
         if (!FG_ShadingStageCopy(
