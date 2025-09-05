@@ -88,7 +88,7 @@ typedef struct
     Uint8   padding0[4];
     FG_Vec3 color;
     Uint32  mask;
-} FG_AmbientLight;
+} FG_DirectLight;
 
 typedef struct
 {
@@ -100,12 +100,12 @@ typedef struct
 
 typedef struct
 {
-    const FG_AmbientLight *ambients;
-    Uint32                 ambient_count;
-    Uint8                  padding0[4];
-    const FG_OmniLight    *omnis;
-    Uint32                 omni_count;
-    Uint8                  padding1[4];
+    const FG_DirectLight *directs;
+    Uint32                direct_count;
+    Uint8                 padding0[4];
+    const FG_OmniLight   *omnis;
+    Uint32                omni_count;
+    Uint8                 padding1[4];
 } FG_ShadingStageDrawInfo;
 
 typedef struct

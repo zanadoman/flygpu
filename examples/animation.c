@@ -119,7 +119,7 @@ Sint32 main(Sint32 argc, char *argv[])
         .transform.scale = { .x = 1.0F, .y = 1.0F },
         .mask            = 1
     };
-    FG_AmbientLight      ambient  = {
+    FG_DirectLight ambient  = {
         .direction.z = -1.0F,
         .color       = { .x = 1.0F, .y = 1.0F, .z = 1.0F },
         .mask        = 1
@@ -132,8 +132,8 @@ Sint32 main(Sint32 argc, char *argv[])
             .count     = SDL_arraysize(quad3s)
         },
         .shading_info = {
-            .ambients      = &ambient,
-            .ambient_count = 1
+            .directs      = &ambient,
+            .direct_count = 1
         }
     };
     SDL_Event            event    = { 0 };

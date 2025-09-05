@@ -95,7 +95,7 @@ Sint32 main(Sint32 argc, char *argv[])
         .coords.br = { .x = 1.0F, .y = 1.0F },
         .mask      = 1
     };
-    FG_AmbientLight      ambient                                  = {
+    FG_DirectLight      ambient                                  = {
         .direction.z = -1.0F,
         .color       = { .x = 0.5F, .y = 0.5F, .z = 0.5F },
         .mask        = 1
@@ -114,8 +114,8 @@ Sint32 main(Sint32 argc, char *argv[])
             .count     = 1
         },
         .shading_info = {
-            .ambients      = &ambient,
-            .ambient_count = 1,
+            .directs      = &ambient,
+            .direct_count = 1,
             .omnis         = &omni,
             .omni_count    = 1,
         }

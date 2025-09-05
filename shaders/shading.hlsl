@@ -1,4 +1,4 @@
-struct AmbientLight
+struct DirectLight
 {
     float3 Direction;
     float3 Color;
@@ -20,13 +20,13 @@ SamplerState specularSampler : register(s2, space2);
 Texture2D    albedoTexture   : register(t3, space2);
 SamplerState albedoSampler   : register(s3, space2);
 
-StructuredBuffer<AmbientLight> ambientBuffer : register(t4, space2);
-StructuredBuffer<OmniLight>    omniBuffer    : register(t5, space2);
+StructuredBuffer<DirectLight> directBuffer : register(t4, space2);
+StructuredBuffer<OmniLight>   omniBuffer   : register(t5, space2);
 
 struct UBO
 {
     float3 Origo;
-    uint   AmbientCount;
+    uint   DirectCount;
     uint   OmniCount;
 };
 ConstantBuffer<UBO> ubo : register(b0, space3);
@@ -67,11 +67,11 @@ float4 fragMain(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
 
     attenuation = 1.0F;
 
-    for (uint i = 0; i != ubo.AmbientCount; ++i) {
-        lightDir = normalize(-ambientBuffer[i].Direction);
+    for (uint i = 0; i != ubo.DirectCount; ++i) {
+        lightDir = normalize(-directBuffer[i].Direction);
 
         NdotL = dot(normal, lightDir);
-        if (0.0F <= NdotL) accumulate(ambientBuffer[i].Color);
+        if (0.0F <= NdotL) accumulate(directBuffer[i].Color);
     }
 
     for (uint i = 0; i != ubo.OmniCount; ++i) {

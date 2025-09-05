@@ -166,7 +166,7 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
 
 bool FG_FilterAmbientLight(Uint32 mask, const void *light)
 {
-    return ((const FG_AmbientLight *)light)->mask & mask;
+    return ((const FG_DirectLight *)light)->mask & mask;
 }
 
 bool FG_FilterOmniLight(Uint32 mask, const void *light)
@@ -252,9 +252,9 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         self,
         cpypass,
         0,
-        info->ambients,
-        info->ambient_count,
-        sizeof(*info->ambients),
+        info->directs,
+        info->direct_count,
+        sizeof(*info->directs),
         mask,
         FG_FilterAmbientLight
     ) &&
