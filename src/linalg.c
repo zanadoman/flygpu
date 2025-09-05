@@ -21,7 +21,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../include/flygpu/linalg.h"
+#include "../include/flygpu/flygpu.h"
+#include "linalg.h"
 
 #include <SDL3/SDL_stdinc.h>
 
@@ -107,12 +108,11 @@ void FG_MulMat4s(const FG_Mat4 *restrict lhs,
     Uint8 j = 0;
     Uint8 k = 0;
 
-    for (i = 0; i != FG_DIMS_VEC4; ++i) {
-        for (j = 0; j != FG_DIMS_VEC4; ++j) {
-            out->m[j * FG_DIMS_VEC4 + i] = 0.0F;
-            for (k = 0; k != FG_DIMS_VEC4; ++k) {
-                out->m[j * FG_DIMS_VEC4 + i] += lhs->m[k * FG_DIMS_VEC4 + i]
-                                              * rhs->m[j * FG_DIMS_VEC4 + k];
+    for (i = 0; i != 4; ++i) {
+        for (j = 0; j != 4; ++j) {
+            out->m[j * 4 + i] = 0.0F;
+            for (k = 0; k != 4; ++k) {
+                out->m[j * 4 + i] += lhs->m[k * 4 + i] * rhs->m[j * 4 + k];
             }
         }
     }

@@ -24,7 +24,6 @@
 #include "shadingstage.h"
 
 #include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
 #include "shader.h"
 
 #include <SDL3/SDL_gpu.h>

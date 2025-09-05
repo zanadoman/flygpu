@@ -28,12 +28,37 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "linalg.h"
-
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_video.h>
 
 #include <stdbool.h>
+
+typedef struct
+{
+    float fov;
+    float near;
+    float far;
+} FG_Perspective;
+
+typedef struct
+{
+    float x;
+    float y;
+} FG_Vec2;
+
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} FG_Vec3;
+
+typedef struct
+{
+    FG_Vec3 translation;
+    float   rotation;
+    FG_Vec2 scale;
+} FG_Transform3;
 
 typedef struct
 {

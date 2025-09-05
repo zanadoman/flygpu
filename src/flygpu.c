@@ -23,8 +23,8 @@
 
 #include "../include/flygpu/flygpu.h"
 
-#include "../include/flygpu/linalg.h"
 #include "quad3stage.h"
+#include "linalg.h"
 #include "shader.h"
 #include "shadingstage.h"
 

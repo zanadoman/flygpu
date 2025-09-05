@@ -24,63 +24,17 @@
 #ifndef FLYGPU_LINALG_H
 #define FLYGPU_LINALG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include "../include/flygpu/flygpu.h"
 
 typedef struct
 {
-    float fov;
-    float near;
-    float far;
-} FG_Perspective;
-
-typedef struct
-{
-    float x;
-    float y;
-} FG_Vec2;
-
-typedef struct
-{
-    float x;
-    float y;
-    float z;
-} FG_Vec3;
-
-typedef struct
-{
-    float x;
-    float y;
-    float z;
-    float w;
-} FG_Vec4;
-
-typedef enum
-{
-    FG_DIMS_VEC2 = sizeof(FG_Vec2) / sizeof(float),
-    FG_DIMS_VEC3 = sizeof(FG_Vec3) / sizeof(float),
-    FG_DIMS_VEC4 = sizeof(FG_Vec4) / sizeof(float),
-    FG_DIMS_MAT3 = FG_DIMS_VEC3 * FG_DIMS_VEC3,
-    FG_DIMS_MAT4 = FG_DIMS_VEC4 * FG_DIMS_VEC4
-} FG_Dims;
-
-typedef struct
-{
-    float m[FG_DIMS_MAT3];
+    float m[3 * 3];
 } FG_Mat3;
 
 typedef struct
 {
-    float m[FG_DIMS_MAT4];
+    float m[4 * 4];
 } FG_Mat4;
-
-typedef struct
-{
-    FG_Vec3 translation;
-    float   rotation;
-    FG_Vec2 scale;
-} FG_Transform3;
 
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 
@@ -91,9 +45,5 @@ void FG_SetModelMat4(const FG_Transform3 *transform, FG_Mat4 *modelmat);
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 
 void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* FLYGPU_LINALG_H */

@@ -25,7 +25,7 @@
 #define FLYGPU_QUAD3STAGE_H
 
 #include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
+#include "linalg.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>

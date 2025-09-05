@@ -24,7 +24,7 @@
 #include "quad3stage.h"
 
 #include "../include/flygpu/flygpu.h"
-#include "../include/flygpu/linalg.h"
+#include "linalg.h"
 #include "shader.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -91,57 +91,57 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
         {
             .location = 0,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, modelmat.m[0 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, modelmat.m[0])
         },
         {
             .location = 1,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, modelmat.m[1 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, modelmat.m[4])
         },
         {
             .location = 2,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, modelmat.m[2 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, modelmat.m[8])
         },
         {
             .location = 3,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, modelmat.m[3 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, modelmat.m[12])
         },
         {
             .location = 4,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, mvpmat.m[0 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[0])
         },
         {
             .location = 5,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, mvpmat.m[1 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[4])
         },
         {
             .location = 6,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, mvpmat.m[2 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[8])
         },
         {
             .location = 7,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4,
-            .offset   = offsetof(FG_Quad3In, mvpmat.m[3 * FG_DIMS_VEC4])
+            .offset   = offsetof(FG_Quad3In, mvpmat.m[12])
         },
         {
             .location = 8,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
-            .offset   = offsetof(FG_Quad3In, tbnmat.m[0 * FG_DIMS_VEC3])
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[0])
         },
         {
             .location = 9,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
-            .offset   = offsetof(FG_Quad3In, tbnmat.m[1 * FG_DIMS_VEC3])
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[3])
         },
         {
             .location = 10,
             .format   = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
-            .offset   = offsetof(FG_Quad3In, tbnmat.m[2 * FG_DIMS_VEC3])
+            .offset   = offsetof(FG_Quad3In, tbnmat.m[6])
         },
         {
             .location = 11,
