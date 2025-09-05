@@ -110,11 +110,6 @@ Sint32 main(Sint32 argc, char *argv[])
             .mask      = 1
         }
     };
-    FG_DirectLight      ambient  = {
-        .direction.z = -1.0F,
-        .color       = { .x = 1.0F, .y = 1.0F, .z = 1.0F },
-        .mask        = 1
-    };
     FG_RendererDrawInfo  info     = {
         .cameras      = &camera,
         .camera_count = 1,
@@ -122,10 +117,7 @@ Sint32 main(Sint32 argc, char *argv[])
             .quad3s = quad3s,
             .count     = SDL_arraysize(quad3s)
         },
-        .shading_info = {
-            .directs      = &ambient,
-            .direct_count = 1
-        }
+        .shading_info.ambient = { 1.0F, 1.0F, 1.0F }
     };
     SDL_Event            event    = { 0 };
     bool                 running  = true;

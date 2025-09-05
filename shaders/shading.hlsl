@@ -25,8 +25,9 @@ StructuredBuffer<OmniLight>   omniBuffer   : register(t5, space2);
 
 struct UBO
 {
-    float3 Origo;
+    float3 Ambient;
     uint   DirectCount;
+    float3 Origo;
     uint   OmniCount;
 };
 ConstantBuffer<UBO> ubo : register(b0, space3);
@@ -57,13 +58,13 @@ float4 fragMain(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
     normal = normalTexture.Sample(normalSampler, TexCoord).xyz;
     if (all(normal == 0.0F.xxx)) discard;
 
-    output = 0.0F.xxx;
-
     const float3 position = positionTexture.Sample(positionSampler, TexCoord).xyz;
                  normal   = normalize(normal);
                  specular = specularTexture.Sample(specularSampler, TexCoord).rgb;
                  albedo   = albedoTexture.Sample(albedoSampler, TexCoord).rgb;
                  viewDir  = normalize(ubo.Origo - position);
+
+    output = albedo * ubo.Ambient;
 
     attenuation = 1.0F;
 

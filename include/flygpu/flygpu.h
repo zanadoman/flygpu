@@ -100,12 +100,14 @@ typedef struct
 
 typedef struct
 {
+    FG_Vec3               ambient;
+    Uint8                 padding0[4];
     const FG_DirectLight *directs;
     Uint32                direct_count;
-    Uint8                 padding0[4];
+    Uint8                 padding1[4];
     const FG_OmniLight   *omnis;
     Uint32                omni_count;
-    Uint8                 padding1[4];
+    Uint8                 padding2[4];
 } FG_ShadingStageDrawInfo;
 
 typedef struct
