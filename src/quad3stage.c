@@ -202,7 +202,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
     self->device = device;
 
     self->vertshdr = FG_LoadShader(
-        self->device, "quad3", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
+        self->device, "quad3.vert", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
     if (!self->vertshdr) {
         FG_DestroyQuad3Stage(self);
         return NULL;
@@ -210,7 +210,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
 
     self->fragshdr = FG_LoadShader(
         self->device,
-        "quad3",
+        "quad3.frag",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
         SDL_arraysize(self->sampler_binds),
         0,

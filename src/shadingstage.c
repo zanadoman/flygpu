@@ -90,7 +90,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
     self->device = device;
 
     self->vertshdr = FG_LoadShader(
-        self->device, "viewport", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
+        self->device, "viewport.vert", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
     if (!self->vertshdr) {
         FG_DestroyShadingStage(self);
         return NULL;
@@ -98,7 +98,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
 
     self->fragshdr = FG_LoadShader(
         self->device,
-        "shading",
+        "shading.frag",
         SDL_GPU_SHADERSTAGE_FRAGMENT,
         SDL_arraysize(self->sampler_binds),
         FG_LIGHT_VARIANTS,
