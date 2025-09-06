@@ -50,6 +50,7 @@ Sint32 main(Sint32 argc, char *argv[])
             .far  = 100.0F
         },
         .transform.scale = { .x = 1.0F, .y = 1.0F },
+        .ambient         = { .x = 1.0F, .y = 1.0F, .z = 1.0F },
         .mask            = 1
     };
     FG_Quad3             quad3s[] = {
@@ -116,8 +117,7 @@ Sint32 main(Sint32 argc, char *argv[])
         .quad3_info   = {
             .quad3s = quad3s,
             .count     = SDL_arraysize(quad3s)
-        },
-        .shading_info.ambient = { 1.0F, 1.0F, 1.0F }
+        }
     };
     SDL_Event            event    = { 0 };
     bool                 running  = true;

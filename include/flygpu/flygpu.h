@@ -71,6 +71,7 @@ typedef struct
     FG_Rect        viewport;
     FG_Perspective perspective;
     FG_Transform3  transform;
+    FG_Vec3        ambient;
     Sint32         priority;
     Uint32         mask;
 } FG_Camera;
@@ -125,8 +126,6 @@ typedef struct
 
 typedef struct
 {
-    FG_Vec3               ambient;
-    Uint8                 padding0[4];
     const FG_DirectLight *directs;
     Uint32                direct_count;
     Uint8                 padding1[4];

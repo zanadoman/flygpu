@@ -250,8 +250,6 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
                          Uint32                         mask,
                          const FG_ShadingStageDrawInfo *info)
 {
-    self->ubo.ambient = info->ambient;
-
     return FG_ShadingStageSubCopy(
         self,
         cpypass,
@@ -279,9 +277,11 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
 void FG_ShadingStageDraw(FG_ShadingStage      *self,
                          SDL_GPUCommandBuffer *cmdbuf,
                          SDL_GPURenderPass    *rndrpass,
+                         const FG_Vec3        *ambient,
                          const FG_Vec3        *origo)
 {
-    self->ubo.origo = *origo;
+    self->ubo.ambient = *ambient;
+    self->ubo.origo   = *origo;
 
     SDL_BindGPUFragmentSamplers(
         rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));

@@ -343,7 +343,13 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
                 .h = (Sint32)viewport.h
             }
         );
-        FG_ShadingStageDraw(self->shadingstage, cmdbuf, rndrpass, &cameras[i]->transform.translation);
+        FG_ShadingStageDraw(
+            self->shadingstage,
+            cmdbuf,
+            rndrpass,
+            &cameras[i]->ambient,
+            &cameras[i]->transform.translation
+        );
         SDL_EndGPURenderPass(rndrpass);
     }
 
