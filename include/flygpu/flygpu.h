@@ -70,11 +70,11 @@ typedef struct
 
 typedef struct
 {
+    Sint32         priority;
     FG_Rect        viewport;
     FG_Perspective perspective;
-    FG_Transform3  transform;
     FG_Vec3        ambient;
-    Sint32         priority;
+    FG_Transform3  transform;
     Uint32         mask;
 } FG_Camera;
 
@@ -113,9 +113,9 @@ typedef struct
 typedef struct
 {
     FG_Vec3 direction;
-    Uint32  mask;
-    FG_Vec3 color;
     Uint8   padding0[4];
+    FG_Vec3 color;
+    Uint32  mask;
 } FG_DirectLight;
 
 typedef struct

@@ -60,13 +60,11 @@ struct FG_Quad3Stage
     SDL_GPUShader                 *vertshdr;
     SDL_GPUShader                 *fragshdr;
     Uint32                         capacity;
-    Uint8                          padding0[4];
+    SDL_GPUBufferCreateInfo        vertbuf_info;
     const FG_Quad3               **quad3s;
     FG_Quad3Batch                 *batches_begin;
     const FG_Quad3Batch           *batches_end;
     FG_Quad3Batch                 *batches_head;
-    SDL_GPUBufferCreateInfo        vertbuf_info;
-    Uint8                          padding1[4];
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
     SDL_GPUTextureSamplerBinding   sampler_binds[4];
