@@ -113,9 +113,9 @@ typedef struct
 typedef struct
 {
     FG_Vec3 direction;
-    Uint8   padding0[4];
-    FG_Vec3 color;
     Uint32  mask;
+    FG_Vec3 color;
+    Uint8   padding0[4];
 } FG_DirectLight;
 
 typedef struct
