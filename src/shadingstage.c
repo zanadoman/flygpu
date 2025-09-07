@@ -39,10 +39,10 @@ struct FG_ShadingStage
     SDL_GPUDevice                 *device;
     SDL_GPUShader                 *vertshdr;
     SDL_GPUShader                 *fragshdr;
+    SDL_GPUTextureSamplerBinding   sampler_binds[FG_GBUF_COUNT];
     Uint32                         capacity;
     Uint8                          padding0[4];
     const void                   **lights;
-    SDL_GPUTextureSamplerBinding   sampler_binds[FG_GBUF_COUNT];
     SDL_GPUBufferCreateInfo        ssbo_infos[FG_LIGHT_VARIANTS];
     SDL_GPUBuffer                 *ssbos[FG_LIGHT_VARIANTS];
     SDL_GPUTransferBuffer         *transbufs[FG_LIGHT_VARIANTS];
@@ -301,10 +301,10 @@ void FG_DestroyShadingStage(FG_ShadingStage *self)
         SDL_ReleaseGPUTransferBuffer(self->device, self->transbufs[i]);
         SDL_ReleaseGPUBuffer(self->device, self->ssbos[i]);
     }
+    SDL_free(self->lights);
     for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
         SDL_ReleaseGPUSampler(self->device, self->sampler_binds[i].sampler);
     }
-    SDL_free(self->lights);
     SDL_ReleaseGPUShader(self->device, self->fragshdr);
     SDL_ReleaseGPUShader(self->device, self->vertshdr);
     SDL_free(self);
