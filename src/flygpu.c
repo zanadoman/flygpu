@@ -23,8 +23,8 @@
 
 #include "../include/flygpu/flygpu.h"
 
-#include "quad3stage.h"
 #include "linalg.h"
+#include "quad3stage.h"
 #include "shader.h"
 #include "shadingstage.h"
 
@@ -43,17 +43,15 @@ struct FG_Renderer
 {
     SDL_Window                      *window;
     SDL_GPUDevice                   *device;
-    FG_Material                      material;
     SDL_GPUTransferBufferCreateInfo  transbuf_info;
-    Uint8                            padding0[4];
-    SDL_GPUTransferBuffer           *transbuf;
     SDL_GPUTextureCreateInfo         targbuf_info;
-    Uint8                            padding1[4];
+    SDL_GPUTransferBuffer           *transbuf;
+    SDL_GPUFence                    *fence;
     SDL_GPUColorTargetInfo           gbuftarg_infos[FG_GBUF_COUNT];
     SDL_GPUDepthStencilTargetInfo    depthtarg_info;
-    FG_Quad3Stage                   *quad3stage;
     FG_ShadingStage                 *shadingstage;
-    SDL_GPUFence                    *fence;
+    FG_Quad3Stage                   *quad3stage;
+    FG_Material                      material;
 };
 
 static Sint32 FG_CompareCameras(const void *lhs, const void *rhs);
@@ -94,6 +92,32 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
         return NULL;
     }
 
+    self->targbuf_info.layer_count_or_depth = 1;
+    self->targbuf_info.num_levels           = 1;
+
+    for (i = 0; i != SDL_arraysize(self->gbuftarg_infos); ++i) {
+        self->gbuftarg_infos[i].load_op = SDL_GPU_LOADOP_CLEAR;
+    }
+
+    self->depthtarg_info.clear_depth      = 1.0F;
+    self->depthtarg_info.load_op          = SDL_GPU_LOADOP_CLEAR;
+    self->depthtarg_info.store_op         = SDL_GPU_STOREOP_DONT_CARE;
+    self->depthtarg_info.stencil_load_op  = SDL_GPU_LOADOP_DONT_CARE;
+    self->depthtarg_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+
+    self->shadingstage = FG_CreateShadingStage(
+        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
+    if (!self->shadingstage) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    self->quad3stage = FG_CreateQuad3Stage(self->device);
+    if (!self->quad3stage) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
     surface.pixels = &(Uint32){ 0xFFFFFFFF };
 
     FG_RendererCreateTexture(self, &surface, &self->material.albedo);
@@ -114,32 +138,6 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
 
     FG_RendererCreateTexture(self, &surface, &self->material.normal);
     if (!self->material.normal) {
-        FG_DestroyRenderer(self);
-        return NULL;
-    }
-
-    self->targbuf_info.layer_count_or_depth = 1;
-    self->targbuf_info.num_levels           = 1;
-
-    for (i = 0; i != SDL_arraysize(self->gbuftarg_infos); ++i) {
-        self->gbuftarg_infos[i].load_op = SDL_GPU_LOADOP_CLEAR;
-    }
-
-    self->depthtarg_info.clear_depth      = 1.0F;
-    self->depthtarg_info.load_op          = SDL_GPU_LOADOP_CLEAR;
-    self->depthtarg_info.store_op         = SDL_GPU_STOREOP_DONT_CARE;
-    self->depthtarg_info.stencil_load_op  = SDL_GPU_LOADOP_DONT_CARE;
-    self->depthtarg_info.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
-
-    self->quad3stage = FG_CreateQuad3Stage(self->device);
-    if (!self->quad3stage) {
-        FG_DestroyRenderer(self);
-        return NULL;
-    }
-
-    self->shadingstage = FG_CreateShadingStage(
-        self->device, SDL_GetGPUSwapchainTextureFormat(self->device, self->window));
-    if (!self->shadingstage) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -367,27 +365,23 @@ void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture)
     SDL_ReleaseGPUTexture(self->device, texture);
 }
 
-bool FG_DestroyRenderer(FG_Renderer *self)
+void FG_DestroyRenderer(FG_Renderer *self)
 {
     Uint8 i = 0;
 
-    if (!self) return true;
-    if (self->device) {
-        SDL_ReleaseGPUFence(self->device, self->fence);
-        FG_DestroyShadingStage(self->shadingstage);
-        FG_DestroyQuad3Stage(self->quad3stage);
-        SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-        for (i = 0; i != SDL_arraysize(self->gbuftarg_infos); ++i) {
-            SDL_ReleaseGPUTexture(self->device, self->gbuftarg_infos[i].texture);
-        }
-        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
-        SDL_ReleaseGPUTexture(self->device, self->material.normal);
-        SDL_ReleaseGPUTexture(self->device, self->material.specular);
-        SDL_ReleaseGPUTexture(self->device, self->material.albedo);
-        if (!SDL_WaitForGPUIdle(self->device)) return false;
-        SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
-        SDL_DestroyGPUDevice(self->device);
+    if (!self) return;
+    SDL_ReleaseGPUTexture(self->device, self->material.normal);
+    SDL_ReleaseGPUTexture(self->device, self->material.specular);
+    SDL_ReleaseGPUTexture(self->device, self->material.albedo);
+    FG_DestroyQuad3Stage(self->quad3stage);
+    FG_DestroyShadingStage(self->shadingstage);
+    SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
+    for (i = 0; i != SDL_arraysize(self->gbuftarg_infos); ++i) {
+        SDL_ReleaseGPUTexture(self->device, self->gbuftarg_infos[i].texture);
     }
+    SDL_ReleaseGPUFence(self->device, self->fence);
+    SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+    SDL_ReleaseWindowFromGPUDevice(self->device, self->window);
+    SDL_DestroyGPUDevice(self->device);
     SDL_free(self);
-    return true;
 }
