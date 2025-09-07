@@ -145,7 +145,7 @@ typedef struct
 
 typedef struct FG_Renderer FG_Renderer;
 
-FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync);
+FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug);
 
 bool FG_RendererCreateTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,

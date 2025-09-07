@@ -80,11 +80,11 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
     i = SDL_strlcat(path, base, SDL_arraysize(path));
     i = SDL_strlcat(path + i, FG_SHADER_DIR, SDL_arraysize(path) - i);
     i = SDL_strlcat(path + i, name, SDL_arraysize(path) - i);
-    if (format & SDL_GPU_SHADERFORMAT_SPIRV) {
+    if ((format & SDL_GPU_SHADERFORMAT_SPIRV) == SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_strlcat(path + i, FG_SHADER_SPIRV, SDL_arraysize(path) - i);
         info.format = SDL_GPU_SHADERFORMAT_SPIRV;
     }
-    else if (format & SDL_GPU_SHADERFORMAT_DXIL) {
+    else if ((format & SDL_GPU_SHADERFORMAT_DXIL) == SDL_GPU_SHADERFORMAT_DXIL) {
         SDL_strlcat(path + i, FG_SHADER_DXIL, SDL_arraysize(path) - i);
         info.format = SDL_GPU_SHADERFORMAT_DXIL;
     }

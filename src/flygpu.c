@@ -56,7 +56,7 @@ struct FG_Renderer
 
 static Sint32 FG_CompareCameras(const void *lhs, const void *rhs);
 
-FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
+FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
     FG_Renderer *self    = SDL_calloc(1, sizeof(*self));
     SDL_Surface  surface = {
@@ -71,7 +71,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync)
     self->window = window;
 
     self->device = SDL_CreateGPUDevice(
-        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, NULL);
+        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, debug, NULL);
     if (!self->device) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -165,8 +165,10 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
 
     *texture = NULL;
 
-    if (SDL_MUSTLOCK(surface)) {
-        SDL_SetError("FlyGPU: Invalid surface!");
+    if (SDL_MUSTLOCK(surface) &&
+        (surface->flags & SDL_SURFACE_LOCKED) == SDL_SURFACE_LOCKED
+    ) {
+        SDL_SetError("FlyGPU: This surface must be locked!");
         return true;
     }
 
@@ -239,14 +241,14 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     Uint32                  i                           = 0;
     const FG_Camera        *cameras[info->camera_count];
     SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
-    SDL_GPUColorTargetInfo  swapctarg_info              = { .texture = NULL };
+    SDL_GPUColorTargetInfo  swapctarg_info              = { 0 };
     Uint32                  width                       = 0;
     Uint32                  height                      = 0;
     SDL_GPURenderPass      *rndrpass                    = NULL;
     SDL_GPUViewport         viewport                    = { .max_depth = 1.0F };
-    FG_Mat4                 projmat                     = { { 0.0F } };
-    FG_Mat4                 viewmat                     = { { 0.0F } };
-    FG_Mat4                 vpmat                       = { { 0.0F } };
+    FG_Mat4                 projmat                     = { 0.0F };
+    FG_Mat4                 viewmat                     = { 0.0F };
+    FG_Mat4                 vpmat                       = { 0.0F };
     SDL_GPUCopyPass        *cpypass                     = NULL;
 
     for (i = 0; i != info->camera_count; ++i) cameras[i] = info->cameras + i;

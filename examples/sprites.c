@@ -111,7 +111,7 @@ Sint32 main(Sint32 argc, char *argv[])
         return 1;
     }
 
-    renderer = FG_CreateRenderer(window, 1 < argc && !SDL_strcmp(argv[1], "--vsync"));
+    renderer = FG_CreateRenderer(window, 1 < argc && !SDL_strcmp(argv[1], "--vsync"), true);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         return 1;
