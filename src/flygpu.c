@@ -166,7 +166,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     *texture = NULL;
 
     if (SDL_MUSTLOCK(surface) &&
-        (surface->flags & SDL_SURFACE_LOCKED) == SDL_SURFACE_LOCKED
+        (surface->flags & SDL_SURFACE_LOCKED) != SDL_SURFACE_LOCKED
     ) {
         SDL_SetError("FlyGPU: This surface must be locked!");
         return true;
