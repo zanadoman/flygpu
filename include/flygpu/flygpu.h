@@ -29,6 +29,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <stdbool.h>
@@ -94,8 +96,8 @@ typedef struct
 typedef struct
 {
     FG_Transform3      transform;
-    FG_QuadColor       color;
     const FG_Material *material;
+    FG_QuadColor       color;
     FG_Rect            coords;
     Uint32             mask;
     Uint8              padding0[4];
@@ -103,9 +105,9 @@ typedef struct
 
 typedef struct
 {
-    const FG_Quad3 *quad3s;
     Uint32          count;
     Uint8           padding0[4];
+    const FG_Quad3 *quad3s;
 } FG_Quad3StageDrawInfo;
 
 typedef struct
@@ -126,19 +128,17 @@ typedef struct
 
 typedef struct
 {
-    const FG_DirectLight *directs;
     Uint32                direct_count;
-    Uint8                 padding1[4];
-    const FG_OmniLight   *omnis;
     Uint32                omni_count;
-    Uint8                 padding2[4];
+    const FG_DirectLight *directs;
+    const FG_OmniLight   *omnis;
 } FG_ShadingStageDrawInfo;
 
 typedef struct
 {
-    const FG_Camera         *cameras;
     Uint32                   camera_count;
     Uint8                    padding0[4];
+    const FG_Camera         *cameras;
     FG_Quad3StageDrawInfo    quad3_info;
     FG_ShadingStageDrawInfo  shading_info;
 } FG_RendererDrawInfo;
