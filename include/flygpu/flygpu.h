@@ -37,16 +37,22 @@ extern "C" {
 
 typedef struct
 {
+    float x;
+    float y;
+} FG_Vec2;
+
+typedef struct
+{
+    FG_Vec2 tl;
+    FG_Vec2 br;
+} FG_Rect;
+
+typedef struct
+{
     float fov;
     float near;
     float far;
 } FG_Perspective;
-
-typedef struct
-{
-    float x;
-    float y;
-} FG_Vec2;
 
 typedef struct
 {
@@ -64,12 +70,6 @@ typedef struct
 
 typedef struct
 {
-    FG_Vec2 tl;
-    FG_Vec2 br;
-} FG_Rect;
-
-typedef struct
-{
     FG_Rect        viewport;
     FG_Perspective perspective;
     FG_Transform3  transform;
@@ -80,18 +80,18 @@ typedef struct
 
 typedef struct
 {
+    SDL_GPUTexture *albedo;
+    SDL_GPUTexture *specular;
+    SDL_GPUTexture *normal;
+} FG_Material;
+
+typedef struct
+{
     FG_Vec3 tl;
     FG_Vec3 bl;
     FG_Vec3 br;
     FG_Vec3 tr;
 } FG_QuadColor;
-
-typedef struct
-{
-    SDL_GPUTexture *albedo;
-    SDL_GPUTexture *specular;
-    SDL_GPUTexture *normal;
-} FG_Material;
 
 typedef struct
 {
