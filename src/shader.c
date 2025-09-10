@@ -52,7 +52,7 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
                              Uint32              ubos)
 {
     const char              *base                  = SDL_GetBasePath();
-    char                     path[SDL_strlen(base)
+    char                     path[(base ? SDL_strlen(base) : 0)
                                   + SDL_arraysize(FG_SHADER_DIR)
                                   + SDL_strlen(name)
                                   + FG_SHADER_EXT];
@@ -77,7 +77,7 @@ SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
         return NULL;
     }
 
-    i = SDL_strlcat(path, base, SDL_arraysize(path));
+    if (base) i = SDL_strlcat(path, base, SDL_arraysize(path));
     i = SDL_strlcat(path + i, FG_SHADER_DIR, SDL_arraysize(path) - i);
     i = SDL_strlcat(path + i, name, SDL_arraysize(path) - i);
     if ((format & SDL_GPU_SHADERFORMAT_SPIRV) == SDL_GPU_SHADERFORMAT_SPIRV) {
