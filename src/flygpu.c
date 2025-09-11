@@ -149,8 +149,10 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,
                               SDL_GPUTexture    **texture)
 {
-    Sint32                    size     = surface->w * surface->h * 4;
-    SDL_GPUTextureCreateInfo  info     = {
+    const SDL_PixelFormatDetails *details  = SDL_GetPixelFormatDetails(
+        surface->format);
+    Sint32                        size     = 0;
+    SDL_GPUTextureCreateInfo      info     = {
         .format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
         .usage                = SDL_GPU_TEXTUREUSAGE_SAMPLER
                               | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
@@ -159,19 +161,15 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         .layer_count_or_depth = 1,
         .num_levels           = 1
     };
-    void                     *transmem = NULL;
-    SDL_GPUCommandBuffer     *cmdbuf   = NULL;
-    SDL_GPUCopyPass          *cpypass  = NULL;
+    void                         *transmem = NULL;
+    SDL_GPUCommandBuffer         *cmdbuf   = NULL;
+    SDL_GPUCopyPass              *cpypass  = NULL;
 
     *texture = NULL;
 
-    if (SDL_MUSTLOCK(surface) &&
-        (surface->flags & SDL_SURFACE_LOCKED) != SDL_SURFACE_LOCKED
-    ) {
-        SDL_SetError("FlyGPU: This surface must be locked!");
-        return true;
-    }
+    if (!details) return false;
 
+    size = surface->w * surface->h * details->bytes_per_pixel;
     if (size <= 0) {
         SDL_SetError("FlyGPU: Invalid surface size!");
         return true;
@@ -179,6 +177,13 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
 
     if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
         SDL_SetError("FlyGPU: Surface format must be ABGR8888!");
+        return true;
+    }
+
+    if (SDL_MUSTLOCK(surface) &&
+        (surface->flags & SDL_SURFACE_LOCKED) != SDL_SURFACE_LOCKED
+    ) {
+        SDL_SetError("FlyGPU: This surface must be locked!");
         return true;
     }
 
