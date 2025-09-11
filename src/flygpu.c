@@ -176,7 +176,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     }
 
     if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
-        SDL_SetError("FlyGPU: Surface format must be ABGR8888!");
+        SDL_SetError("FlyGPU: Surface format must be SDL_PIXELFORMAT_ABGR8888!");
         return true;
     }
 
@@ -193,9 +193,10 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     if (!texture) return false;
 
     if (self->transbuf_info.size < (Uint32)size) {
-        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
         self->transbuf_info.size = (Uint32)size;
-        self->transbuf           = SDL_CreateGPUTransferBuffer(
+
+        SDL_ReleaseGPUTransferBuffer(self->device, self->transbuf);
+        self->transbuf = SDL_CreateGPUTransferBuffer(
             self->device, &self->transbuf_info);
         if (!self->transbuf) return false;
     }
