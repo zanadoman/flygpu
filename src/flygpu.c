@@ -201,13 +201,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         if (!self->transbuf) return false;
     }
 
-    if (self->fence) {
-        if (!SDL_WaitForGPUFences(self->device, true, &self->fence, 1)) return false;
-        SDL_ReleaseGPUFence(self->device, self->fence);
-        self->fence = NULL;
-    }
-
-    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, false);
+    transmem = SDL_MapGPUTransferBuffer(self->device, self->transbuf, true);
     if (!transmem) return false;
 
     SDL_memcpy(transmem, surface->pixels, (size_t)size);
@@ -232,6 +226,12 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     SDL_EndGPUCopyPass(cpypass);
 
     if (1 < info.num_levels) SDL_GenerateMipmapsForGPUTexture(cmdbuf, *texture);
+
+    if (self->fence) {
+        if (!SDL_WaitForGPUFences(self->device, true, &self->fence, 1)) return false;
+        SDL_ReleaseGPUFence(self->device, self->fence);
+        self->fence = NULL;
+    }
 
     self->fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmdbuf);
     return self->fence;
