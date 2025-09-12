@@ -24,6 +24,7 @@
 #include "quad3stage.h"
 
 #include "../include/flygpu/flygpu.h"
+#include "config.h"
 #include "linalg.h"
 #include "shader.h"
 
@@ -41,7 +42,7 @@ struct FG_Quad3Batch
     Uint32             capacity;
     Uint32             offset;
     Uint32             count;
-    Uint8              padding0[4];
+    Uint32             padding;
     FG_Quad3Batch     *next;
 };
 

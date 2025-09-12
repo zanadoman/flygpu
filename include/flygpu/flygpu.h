@@ -100,20 +100,20 @@ typedef struct
     FG_QuadColor       color;
     FG_Rect            coords;
     Uint32             mask;
-    Uint8              padding0[4];
+    Uint32             padding;
 } FG_Quad3;
 
 typedef struct
 {
     Uint32          count;
-    Uint8           padding0[4];
+    Uint32          padding;
     const FG_Quad3 *quad3s;
 } FG_Quad3StageDrawInfo;
 
 typedef struct
 {
     FG_Vec3 direction;
-    Uint8   padding0[4];
+    Uint32  padding;
     FG_Vec3 color;
     Uint32  mask;
 } FG_DirectLight;
@@ -137,7 +137,7 @@ typedef struct
 typedef struct
 {
     Uint32                   camera_count;
-    Uint8                    padding0[4];
+    Uint32                   padding;
     const FG_Camera         *cameras;
     FG_Quad3StageDrawInfo    quad3_info;
     FG_ShadingStageDrawInfo  shading_info;

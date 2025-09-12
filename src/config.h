@@ -21,17 +21,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_SHADER_H
-#define FLYGPU_SHADER_H
+#ifndef FLYGPU_CONFIG_H
+#define FLYGPU_CONFIG_H
 
-#include <SDL3/SDL_gpu.h>
-#include <SDL3/SDL_stdinc.h>
+#define FG_SURFACE_FORMAT SDL_PIXELFORMAT_ABGR8888
+#define FG_TEXTURE_FORMAT SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
-                             const char         *name,
-                             SDL_GPUShaderStage  stage,
-                             Uint32              samplers,
-                             Uint32              ssbos,
-                             Uint32              ubos);
+#define FG_GBUF_COUNT  4
+#define FG_GBUF_FORMAT SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT
 
-#endif /* FLYGPU_SHADER_H */
+#define FG_DEPTH_FORMAT SDL_GPU_TEXTUREFORMAT_D16_UNORM
+
+#endif /* FLYGPU_CONFIG_H */

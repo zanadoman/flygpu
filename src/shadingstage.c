@@ -24,6 +24,7 @@
 #include "shadingstage.h"
 
 #include "../include/flygpu/flygpu.h"
+#include "config.h"
 #include "shader.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -41,7 +42,7 @@ struct FG_ShadingStage
     SDL_GPUShader                 *fragshdr;
     SDL_GPUTextureSamplerBinding   sampler_binds[FG_GBUF_COUNT];
     Uint32                         capacity;
-    Uint8                          padding0[4];
+    Uint32                         padding;
     const void                   **lights;
     SDL_GPUBufferCreateInfo        ssbo_infos[FG_LIGHT_VARIANTS];
     SDL_GPUBuffer                 *ssbos[FG_LIGHT_VARIANTS];

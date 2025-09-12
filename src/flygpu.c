@@ -23,9 +23,9 @@
 
 #include "../include/flygpu/flygpu.h"
 
+#include "config.h"
 #include "linalg.h"
 #include "quad3stage.h"
-#include "shader.h"
 #include "shadingstage.h"
 
 #include <SDL3/SDL_error.h>
@@ -60,7 +60,7 @@ FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
     FG_Renderer *self    = SDL_calloc(1, sizeof(*self));
     SDL_Surface  surface = {
-        .format = SDL_PIXELFORMAT_ABGR8888,
+        .format = FG_SURFACE_FORMAT,
         .w      = 1,
         .h      = 1
     };
@@ -153,7 +153,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         surface->format);
     Sint32                        size     = 0;
     SDL_GPUTextureCreateInfo      info     = {
-        .format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+        .format               = FG_TEXTURE_FORMAT,
         .usage                = SDL_GPU_TEXTUREUSAGE_SAMPLER
                               | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
         .width                = (Uint32)surface->w,
@@ -175,8 +175,11 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         return true;
     }
 
-    if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
-        SDL_SetError("FlyGPU: Surface format must be SDL_PIXELFORMAT_ABGR8888!");
+    if (surface->format != FG_SURFACE_FORMAT) {
+        SDL_SetError(
+            "FlyGPU: Surface format must be %s!",
+            SDL_GetPixelFormatName(FG_SURFACE_FORMAT)
+        );
         return true;
     }
 
