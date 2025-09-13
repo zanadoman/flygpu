@@ -32,8 +32,7 @@ static const float4 POSITIONS[4] = {
     float4(0.5F, 0.5F, 0.0F, 1.0F)
 };
 
-[shader("vertex")]
-VSOutput vertMain(const VSInput input)
+VSOutput main(const VSInput input)
 {
     VSOutput   output;
     const uint i      = INDICES[input.VertexIndex];

@@ -16,8 +16,7 @@ static const float2 TEXCOORDS[3] = {
     float2(2.0F, 0.0F)
 };
 
-[shader("vertex")]
-VSOutput vertMain(const uint VertexIndex : SV_VertexID)
+VSOutput main(const uint VertexIndex : SV_VertexID)
 {
     VSOutput output;
 

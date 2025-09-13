@@ -22,17 +22,28 @@ file(MAKE_DIRECTORY ${SHADER_DIR}/)
 file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
 foreach(SOURCE ${SHADERS})
   get_filename_component(SHADER ${SOURCE} NAME_WLE)
+  string(FIND ${SHADER} .vert SHADER_STAGE)
+  if (-1 LESS ${SHADER_STAGE})
+    set(SHADER_MODEL vs_6_2)
+  else()
+    string(FIND ${SHADER} .frag SHADER_STAGE)
+    if (-1 LESS ${SHADER_STAGE})
+      set(SHADER_MODEL ps_6_2)
+    else()
+      message(FATAL_ERROR "Failed to detect shader stage of ${SOURCE}")
+    endif()
+  endif()
   set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND ${SHADER_COMPILER} -spirv -T lib_6_8 ${SOURCE} -Fo ${SPIRV}
+    COMMAND ${SHADER_COMPILER} -spirv -T ${SHADER_MODEL} ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
   set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${DXIL}
-    COMMAND ${SHADER_COMPILER} -T lib_6_8 ${SOURCE} -Fo ${DXIL}
+    COMMAND ${SHADER_COMPILER} -T ${SHADER_MODEL} -Vd ${SOURCE} -Fo ${DXIL}
     DEPENDS ${SOURCE}
     VERBATIM
   )

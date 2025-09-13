@@ -52,8 +52,7 @@ void accumulate(const float3 color)
             * attenuation;
 }
 
-[shader("pixel")]
-float4 fragMain(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
+float4 main(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
 {
     normal = normalTexture.Sample(normalSampler, TexCoord).xyz;
     if (all(normal == 0.0F.xxx)) discard;

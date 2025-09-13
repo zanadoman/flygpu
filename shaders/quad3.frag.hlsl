@@ -26,8 +26,7 @@ struct FSOutput
     float4 Albedo   : SV_Target3;
 };
 
-[shader("pixel")]
-FSOutput fragMain(const FSInput input)
+FSOutput main(const FSInput input)
 {
     FSOutput output;
 
