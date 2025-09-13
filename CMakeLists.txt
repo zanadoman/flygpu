@@ -43,7 +43,7 @@ foreach(SOURCE ${SHADERS})
   set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${DXIL}
-    COMMAND ${SHADER_COMPILER} -T ${SHADER_MODEL} -Vd ${SOURCE} -Fo ${DXIL}
+    COMMAND ${SHADER_COMPILER} -Zpr -T ${SHADER_MODEL} ${SOURCE} -Fo ${DXIL}
     DEPENDS ${SOURCE}
     VERBATIM
   )
@@ -51,8 +51,8 @@ foreach(SOURCE ${SHADERS})
   add_dependencies(${PROJECT_NAME} ${SHADER})
 endforeach()
 
-find_package(SDL3 OPTIONAL CONFIG COMPONENTS SDL3)
 find_package(SDL3_image OPTIONAL CONFIG)
+find_package(SDL3 OPTIONAL CONFIG COMPONENTS SDL3)
 if(TARGET SDL3_image::SDL3_image AND TARGET SDL3::SDL3)
   file(GLOB_RECURSE EXAMPLES ${CMAKE_SOURCE_DIR}/examples/*.c)
   foreach(SOURCE ${EXAMPLES})

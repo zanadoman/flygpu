@@ -1,6 +1,5 @@
 struct VSInput
 {
-    uint     VertexIndex : SV_VertexID;
     float4x4 MODEL       : TEXCOORD0;
     float4x4 MVP         : TEXCOORD4;
     float3x3 TBN         : TEXCOORD8;
@@ -9,11 +8,11 @@ struct VSInput
     float3   ColorBR     : TEXCOORD13;
     float3   ColorTR     : TEXCOORD14;
     float4   TexCoord    : TEXCOORD15;
+    uint     VertexIndex : SV_VertexID;
 };
 
 struct VSOutput
 {
-    float4   VertexPosition : SV_Position;
     float3x3 TBN            : TEXCOORD0;
     float3   Position       : TEXCOORD3;
     float3   ColorTL        : TEXCOORD4;
@@ -21,6 +20,7 @@ struct VSOutput
     float3   ColorBR        : TEXCOORD6;
     float3   ColorTR        : TEXCOORD7;
     float2   TexCoord       : TEXCOORD8;
+    float4   VertexPosition : SV_Position;
 };
 
 static const uint INDICES[6] = { 0, 1, 3, 1, 2, 3 };

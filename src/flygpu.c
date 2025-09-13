@@ -40,7 +40,6 @@
 #include <stddef.h>
 
 #define FG_SURFACE_FORMAT SDL_PIXELFORMAT_ABGR8888
-#define FG_TEXTURE_FORMAT SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
 
 struct FG_Renderer
 {
@@ -156,7 +155,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         surface->format);
     Sint32                        size     = 0;
     SDL_GPUTextureCreateInfo      info     = {
-        .format               = FG_TEXTURE_FORMAT,
+        .format               = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
         .usage                = SDL_GPU_TEXTUREUSAGE_SAMPLER
                               | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
         .width                = (Uint32)surface->w,

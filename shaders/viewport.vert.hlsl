@@ -1,7 +1,7 @@
 struct VSOutput
 {
-    float4 VertexPosition : SV_Position;
     float2 TexCoord       : TEXCOORD0;
+    float4 VertexPosition : SV_Position;
 };
 
 static const float4 POSITIONS[3] = {
