@@ -39,6 +39,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define FG_SURFACE_FORMAT SDL_PIXELFORMAT_ABGR8888
+#define FG_TEXTURE_FORMAT SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
+
 struct FG_Renderer
 {
     SDL_Window                      *window;

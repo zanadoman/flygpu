@@ -126,7 +126,7 @@ FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
 
     for (i = 0; i != FG_LIGHT_VARIANTS; ++i) {
         self->ssbo_infos[i].usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
-        self->ssbo_infos[i].size  = 1;
+        self->ssbo_infos[i].size  = sizeof(Uint32);
 
         self->ssbos[i] = SDL_CreateGPUBuffer(self->device, self->ssbo_infos + i);
         if (!self->ssbos[i]) {
