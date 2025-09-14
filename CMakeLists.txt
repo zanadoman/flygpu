@@ -24,11 +24,11 @@ foreach(SOURCE ${SHADERS})
   get_filename_component(SHADER ${SOURCE} NAME_WLE)
   string(FIND ${SHADER} .vert SHADER_STAGE)
   if (-1 LESS ${SHADER_STAGE})
-    set(SHADER_MODEL vs_6_2)
+    set(SHADER_MODEL vs_6_0)
   else()
     string(FIND ${SHADER} .frag SHADER_STAGE)
     if (-1 LESS ${SHADER_STAGE})
-      set(SHADER_MODEL ps_6_2)
+      set(SHADER_MODEL ps_6_0)
     else()
       message(FATAL_ERROR "Failed to detect shader stage of ${SOURCE}")
     endif()
@@ -36,7 +36,7 @@ foreach(SOURCE ${SHADERS})
   set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND ${SHADER_COMPILER} -spirv -T ${SHADER_MODEL} ${SOURCE} -Fo ${SPIRV}
+    COMMAND ${SHADER_COMPILER} -spirv -fvk-use-dx-layout -T ${SHADER_MODEL} ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )

@@ -25,7 +25,6 @@
 #define FLYGPU_CONFIG_H
 
 #include <SDL3/SDL_gpu.h>
-#include <SDL3/SDL_pixels.h>
 
 #define FG_GBUF_COUNT  4
 #define FG_GBUF_FORMAT SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT

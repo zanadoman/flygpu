@@ -1,7 +1,9 @@
 struct DirectLight
 {
     float3 Direction;
+    uint   padding0;
     float3 Color;
+    uint   padding1;
 };
 
 struct OmniLight
@@ -9,6 +11,7 @@ struct OmniLight
     float3 Position;
     float  Radius;
     float3 Color;
+    uint   padding0;
 };
 
 Texture2D    positionTexture : register(t0, space2);
