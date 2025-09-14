@@ -1,11 +1,11 @@
-Texture2D    albedoTexture   : register(t0, space2);
-SamplerState albedoSampler   : register(s0, space2);
-Texture2D    alphaTexture    : register(t1, space2);
-SamplerState alphaSampler    : register(s1, space2);
-Texture2D    specularTexture : register(t2, space2);
-SamplerState specularSampler : register(s2, space2);
-Texture2D    normalTexture   : register(t3, space2);
-SamplerState normalSampler   : register(s3, space2);
+Texture2D<float4> albedoTexture   : register(t0, space2);
+SamplerState      albedoSampler   : register(s0, space2);
+Texture2D<float4> alphaTexture    : register(t1, space2);
+SamplerState      alphaSampler    : register(s1, space2);
+Texture2D<float4> specularTexture : register(t2, space2);
+SamplerState      specularSampler : register(s2, space2);
+Texture2D<float4> normalTexture   : register(t3, space2);
+SamplerState      normalSampler   : register(s3, space2);
 
 struct FSInput
 {

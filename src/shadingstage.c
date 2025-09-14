@@ -50,9 +50,9 @@ struct FG_ShadingStage
     struct
     {
         FG_Vec3 ambient;
-        Uint32  direct_count;
+        Uint32  direct_size;
         FG_Vec3 origo;
-        Uint32  omni_count;
+        Uint32  omni_size;
     }                              ubo;
     SDL_GPUGraphicsPipeline       *pipeline;
 };
@@ -64,7 +64,7 @@ static bool FG_FilterOmniLight(Uint32 mask, const void *light);
 static bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
                                    SDL_GPUCopyPass  *cpypass,
                                    Uint8             dst,
-                                   Uint32           *dst_count,
+                                   Uint32           *dst_size,
                                    const void       *src,
                                    Uint32            src_count,
                                    Uint8             size,
@@ -180,18 +180,18 @@ bool FG_FilterOmniLight(Uint32 mask, const void *light)
 bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
                             SDL_GPUCopyPass  *cpypass,
                             Uint8             dst,
-                            Uint32           *dst_count,
+                            Uint32           *dst_size,
                             const void       *src,
                             Uint32            src_count,
                             Uint8             size,
                             Uint32            mask,
                             bool            (*filter)(Uint32, const void *))
 {
-    const Uint8 *it        = src;
-    const void  *end       = it + src_count * size;
-    Uint32       ssbo_size = 0;
-    Uint8       *transmem  = NULL;
-    Uint32       i         = 0;
+    const Uint8 *it       = src;
+    const void  *end      = it + src_count * size;
+    Uint32       count    = 0;
+    Uint8       *transmem = NULL;
+    Uint32       i        = 0;
 
     if (self->capacity < src_count) {
         self->capacity = src_count;
@@ -201,16 +201,16 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
         if (!self->lights) return false;
     }
 
-    for (it = src, *dst_count = 0; it != end; it += size) {
-        if (filter(mask, it)) self->lights[(*dst_count)++] = it;
+    for (it = src, count = 0; it != end; it += size) {
+        if (filter(mask, it)) self->lights[count++] = it;
     }
 
-    if (!*dst_count) return true;
+    if (!count) return true;
 
-    ssbo_size = *dst_count * size;
+    *dst_size = count * size;
 
-    if (self->ssbo_infos[dst].size < ssbo_size) {
-        self->ssbo_infos[dst].size = ssbo_size;
+    if (self->ssbo_infos[dst].size < *dst_size) {
+        self->ssbo_infos[dst].size = *dst_size;
 
         SDL_ReleaseGPUBuffer(self->device, self->ssbos[dst]);
         self->ssbos[dst] = SDL_CreateGPUBuffer(self->device, self->ssbo_infos + dst);
@@ -227,7 +227,7 @@ bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
     transmem = SDL_MapGPUTransferBuffer(self->device, self->transbufs[dst], true);
     if (!transmem) return false;
 
-    for (i = 0; i != *dst_count; ++i, transmem += size) {
+    for (i = 0; i != count; ++i, transmem += size) {
         SDL_memcpy(transmem, self->lights[i], size);
     }
 
@@ -255,7 +255,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         self,
         cpypass,
         0,
-        &self->ubo.direct_count,
+        &self->ubo.direct_size,
         info->directs,
         info->direct_count,
         sizeof(*info->directs),
@@ -266,7 +266,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         self,
         cpypass,
         1,
-        &self->ubo.omni_count,
+        &self->ubo.omni_size,
         info->omnis,
         info->omni_count,
         sizeof(*info->omnis),

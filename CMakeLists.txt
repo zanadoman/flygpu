@@ -36,14 +36,14 @@ foreach(SOURCE ${SHADERS})
   set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND ${SHADER_COMPILER} -spirv -fvk-use-dx-layout -T ${SHADER_MODEL} ${SOURCE} -Fo ${SPIRV}
+    COMMAND ${SHADER_COMPILER} -spirv -fvk-use-dx-layout -T ${SHADER_MODEL} -WX ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
   set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${DXIL}
-    COMMAND ${SHADER_COMPILER} -Zpr -T ${SHADER_MODEL} ${SOURCE} -Fo ${DXIL}
+    COMMAND ${SHADER_COMPILER} -Zpr -T ${SHADER_MODEL} -WX ${SOURCE} -Fo ${DXIL}
     DEPENDS ${SOURCE}
     VERBATIM
   )
