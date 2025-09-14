@@ -1,4 +1,4 @@
-struct VSInput
+struct Input
 {
     float4x4 MODEL       : TEXCOORD0;
     float4x4 MVP         : TEXCOORD4;
@@ -11,7 +11,7 @@ struct VSInput
     uint     VertexIndex : SV_VertexID;
 };
 
-struct VSOutput
+struct Output
 {
     float3x3 TBN            : TEXCOORD0;
     float3   Position       : TEXCOORD3;
@@ -23,8 +23,7 @@ struct VSOutput
     float4   VertexPosition : SV_Position;
 };
 
-static const uint INDICES[6] = { 0, 1, 3, 1, 2, 3 };
-
+static const uint   INDICES[6]   = { 0, 1, 3, 1, 2, 3 };
 static const float4 POSITIONS[4] = {
     float4(-0.5F, 0.5F, 0.0F, 1.0F),
     float4(-0.5F, -0.5F, 0.0F, 1.0F),
@@ -32,24 +31,25 @@ static const float4 POSITIONS[4] = {
     float4(0.5F, 0.5F, 0.0F, 1.0F)
 };
 
-VSOutput main(const VSInput input)
+Output main(const Input input)
 {
-    VSOutput   output;
-    const uint i      = INDICES[input.VertexIndex];
+    Output       output;
+    const uint   i        = INDICES[input.VertexIndex];
+    const float4 position = POSITIONS[i];
 
-    output.VertexPosition = mul(POSITIONS[i], input.MVP);
-    output.TBN            = input.TBN;
-    output.Position       = mul(POSITIONS[i], input.MODEL).xyz;
-    output.ColorTL        = input.ColorTL;
-    output.ColorBL        = input.ColorBL;
-    output.ColorBR        = input.ColorBR;
-    output.ColorTR        = input.ColorTR;
+    output.TBN      = input.TBN;
+    output.Position = mul(position, input.MODEL).xyz;
+    output.ColorTL  = input.ColorTL;
+    output.ColorBL  = input.ColorBL;
+    output.ColorBR  = input.ColorBR;
+    output.ColorTR  = input.ColorTR;
     switch (i) {
     case 0: output.TexCoord = input.TexCoord.xy; break;
     case 1: output.TexCoord = input.TexCoord.xw; break;
     case 2: output.TexCoord = input.TexCoord.zw; break;
     case 3: output.TexCoord = input.TexCoord.zy; break;
     }
+    output.VertexPosition = mul(position, input.MVP);
 
     return output;
 }
