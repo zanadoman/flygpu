@@ -50,9 +50,9 @@ struct FG_ShadingStage
     struct
     {
         FG_Vec3 ambient;
-        Uint32  direct_size;
+        Uint32  directs_size;
         FG_Vec3 origo;
-        Uint32  omni_size;
+        Uint32  omnis_size;
     }                              ubo;
     SDL_GPUGraphicsPipeline       *pipeline;
 };
@@ -168,7 +168,10 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
 
 bool FG_FilterAmbientLight(Uint32 mask, const void *light)
 {
-    return ((const FG_DirectLight *)light)->mask & mask;
+    return ((const FG_DirectLight *)light)->mask & mask &&
+           (((const FG_DirectLight *)light)->direction.x != 0.0F ||
+           ((const FG_DirectLight *)light)->direction.y != 0.0F ||
+           ((const FG_DirectLight *)light)->direction.z != 0.0F);
 }
 
 bool FG_FilterOmniLight(Uint32 mask, const void *light)
@@ -255,7 +258,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         self,
         cpypass,
         0,
-        &self->ubo.direct_size,
+        &self->ubo.directs_size,
         info->directs,
         info->direct_count,
         sizeof(*info->directs),
@@ -266,7 +269,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         self,
         cpypass,
         1,
-        &self->ubo.omni_size,
+        &self->ubo.omnis_size,
         info->omnis,
         info->omni_count,
         sizeof(*info->omnis),

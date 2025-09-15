@@ -1,13 +1,4 @@
-Texture2D<float4> albedoTexture   : register(t0, space2);
-SamplerState      albedoSampler   : register(s0, space2);
-Texture2D<float4> alphaTexture    : register(t1, space2);
-SamplerState      alphaSampler    : register(s1, space2);
-Texture2D<float4> specularTexture : register(t2, space2);
-SamplerState      specularSampler : register(s2, space2);
-Texture2D<float4> normalTexture   : register(t3, space2);
-SamplerState      normalSampler   : register(s3, space2);
-
-struct FSInput
+struct Input
 {
     nointerpolation float3x3 TBN      : TEXCOORD0;
     noperspective   float3   Position : TEXCOORD3;
@@ -18,7 +9,7 @@ struct FSInput
     noperspective   float2   TexCoord : TEXCOORD8;
 };
 
-struct FSOutput
+struct Output
 {
     float4 Position : SV_Target0;
     float4 Normal   : SV_Target1;
@@ -26,32 +17,36 @@ struct FSOutput
     float4 Albedo   : SV_Target3;
 };
 
-FSOutput main(const FSInput input)
+Texture2D<float4> tAlbedo   : register(t0, space2);
+SamplerState      sAlbedo   : register(s0, space2);
+Texture2D<float4> tAlpha    : register(t1, space2);
+SamplerState      sAlpha    : register(s1, space2);
+Texture2D<float4> tSpecular : register(t2, space2);
+SamplerState      sSpecular : register(s2, space2);
+Texture2D<float4> tNormal   : register(t3, space2);
+SamplerState      sNormal   : register(s3, space2);
+
+Output main(const Input input)
 {
-    FSOutput output;
+    if (tAlpha.Sample(sAlpha, input.TexCoord).a <= 0.0F) discard;
 
-    if (alphaTexture.Sample(alphaSampler, input.TexCoord).a <= 0.0F) discard;
-
-    output.Position = float4(input.Position, 0.0F);
-    output.Normal   = float4(
-        mul(
-            normalTexture.Sample(normalSampler, input.TexCoord).rgb * 2.0F - 1.0F,
-            input.TBN
-        ),
-        0.0F
-    );
-
-    float2 colorCoord = frac(input.TexCoord);
-    float3 color      = lerp(
+    Output       output;
+    const float2 colorCoord = frac(input.TexCoord);
+    const float3 color      = lerp(
         lerp(input.ColorTL, input.ColorTR, colorCoord.x),
         lerp(input.ColorBL, input.ColorBR, colorCoord.x),
         colorCoord.y
     );
 
+    output.Position = float4(input.Position, 0.0F);
+    output.Normal   = float4(
+        mul(tNormal.Sample(sNormal, input.TexCoord).rgb * 2.0F - 1.0F, input.TBN),
+        0.0F
+    );
     output.Specular = float4(
-        color * specularTexture.Sample(specularSampler, input.TexCoord).rgb, 0.0F);
+        color * tSpecular.Sample(sSpecular, input.TexCoord).rgb, 0.0F);
     output.Albedo   = float4(
-        color * albedoTexture.Sample(albedoSampler, input.TexCoord).rgb, 0.0F);
+        color * tAlbedo.Sample(sAlbedo, input.TexCoord).rgb, 0.0F);
 
     return output;
 }
