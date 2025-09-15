@@ -17,6 +17,7 @@ file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(${PROJECT_NAME} ${SOURCES})
 
 find_program(SHADER_COMPILER dxc REQUIRED)
+set(SHADER_FLAGS -all-resources-bound -ffinite-math-only -WX)
 set(SHADER_DIR ${CMAKE_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_DIR}/)
 file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
@@ -36,14 +37,16 @@ foreach(SOURCE ${SHADERS})
   set(SPIRV ${SHADER_DIR}/${SHADER}.spv)
   add_custom_command(
     OUTPUT ${SPIRV}
-    COMMAND ${SHADER_COMPILER} -spirv -fvk-use-dx-layout -T ${SHADER_MODEL} -WX ${SOURCE} -Fo ${SPIRV}
+    COMMAND ${SHADER_COMPILER} -spirv -fvk-use-dx-layout -T ${SHADER_MODEL}
+      ${SHADER_FLAGS} ${SOURCE} -Fo ${SPIRV}
     DEPENDS ${SOURCE}
     VERBATIM
   )
   set(DXIL ${SHADER_DIR}/${SHADER}.dxil)
   add_custom_command(
     OUTPUT ${DXIL}
-    COMMAND ${SHADER_COMPILER} -Zpr -T ${SHADER_MODEL} -WX ${SOURCE} -Fo ${DXIL}
+    COMMAND ${SHADER_COMPILER} -Zpr -T ${SHADER_MODEL}
+      ${SHADER_FLAGS} ${SOURCE} -Fo ${DXIL}
     DEPENDS ${SOURCE}
     VERBATIM
   )
