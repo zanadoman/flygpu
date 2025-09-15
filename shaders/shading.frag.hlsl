@@ -43,6 +43,8 @@ static float  Attenuation;
 static float3 LightDir;
 static float  NdotL;
 
+static void accumulate(const float3 color);
+
 void accumulate(const float3 color)
 {
     Output += (Albedo
@@ -59,11 +61,11 @@ float4 main(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
     Normal = tNormal.Sample(sNormal, TexCoord).xyz;
     if (all(Normal == 0.0F)) discard;
 
-    const float3 position = tPosition.Sample(sPosition, TexCoord).xyz;
                  Normal   = normalize(Normal);
                  Specular = tSpecular.Sample(sSpecular, TexCoord).rgb;
                  Albedo   = tAlbedo.Sample(sAlbedo, TexCoord).rgb;
                  Output   = Albedo * cUniform.Ambient;
+    const float3 position = tPosition.Sample(sPosition, TexCoord).xyz;
                  ViewDir  = normalize(cUniform.Origo - position);
 
     Attenuation = 1.0F;
@@ -83,7 +85,7 @@ float4 main(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
         LightDir = light.Position - position;
 
         const float distance = length(LightDir);
-        if (light.Radius <= distance || !distance) continue;
+        if (light.Radius <= distance || distance == 0.0F) continue;
 
         LightDir /= distance;
 

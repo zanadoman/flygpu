@@ -30,7 +30,14 @@ Output main(const Input input)
 {
     if (tAlpha.Sample(sAlpha, input.TexCoord).a <= 0.0F) discard;
 
-    Output       output;
+    Output output;
+
+    output.Position = float4(input.Position, 0.0F);
+    output.Normal   = float4(
+        mul(tNormal.Sample(sNormal, input.TexCoord).rgb * 2.0F - 1.0F, input.TBN),
+        0.0F
+    );
+
     const float2 colorCoord = frac(input.TexCoord);
     const float3 color      = lerp(
         lerp(input.ColorTL, input.ColorTR, colorCoord.x),
@@ -38,11 +45,6 @@ Output main(const Input input)
         colorCoord.y
     );
 
-    output.Position = float4(input.Position, 0.0F);
-    output.Normal   = float4(
-        mul(tNormal.Sample(sNormal, input.TexCoord).rgb * 2.0F - 1.0F, input.TBN),
-        0.0F
-    );
     output.Specular = float4(
         color * tSpecular.Sample(sSpecular, input.TexCoord).rgb, 0.0F);
     output.Albedo   = float4(

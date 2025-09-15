@@ -33,16 +33,18 @@ static const float4 POSITIONS[4] = {
 
 Output main(const Input input)
 {
-    Output       output;
+    Output output;
+
+    output.TBN     = input.TBN;
+    output.ColorTL = input.ColorTL;
+    output.ColorBL = input.ColorBL;
+    output.ColorBR = input.ColorBR;
+    output.ColorTR = input.ColorTR;
+
     const uint   i        = INDICES[input.VertexIndex];
     const float4 position = POSITIONS[i];
 
-    output.TBN      = input.TBN;
     output.Position = mul(position, input.MODEL).xyz;
-    output.ColorTL  = input.ColorTL;
-    output.ColorBL  = input.ColorBL;
-    output.ColorBR  = input.ColorBR;
-    output.ColorTR  = input.ColorTR;
     switch (i) {
     case 0: output.TexCoord = input.TexCoord.xy; break;
     case 1: output.TexCoord = input.TexCoord.xw; break;

@@ -17,7 +17,15 @@ file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(${PROJECT_NAME} ${SOURCES})
 
 find_program(SHADER_COMPILER dxc REQUIRED)
-set(SHADER_FLAGS -all-resources-bound -ffinite-math-only -WX)
+set(
+  SHADER_FLAGS
+    -all-resources-bound
+    -ffinite-math-only
+    -Werror
+    -Weverything
+    -Wno-missing-variable-declarations
+    -Wno-unused-macros
+)
 set(SHADER_DIR ${CMAKE_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_DIR}/)
 file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.hlsl)
