@@ -33,8 +33,8 @@
 
 typedef struct FG_ShadingStage FG_ShadingStage;
 
-FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
-                                       SDL_GPUTextureFormat  targbuf_fmt);
+FG_ShadingStage * FG_CreateShadingStage(SDL_GPUDevice        *device,
+                                        SDL_GPUTextureFormat  targbuf_fmt);
 
 void FG_ShadingStageUpdate(FG_ShadingStage        *self,
                            SDL_GPUColorTargetInfo *gbuftarg_infos);

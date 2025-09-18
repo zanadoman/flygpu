@@ -58,7 +58,7 @@ struct FG_Renderer
 
 static Sint32 SDLCALL FG_CompareCameras(const void *lhs, const void *rhs);
 
-FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
+FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
     FG_Renderer *self    = SDL_calloc(1, sizeof(*self));
     SDL_Surface  surface = {
@@ -297,9 +297,10 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             if (!self->gbuftarg_infos[i].texture) return false;
         }
 
+        self->targbuf_info.format = FG_DEPTH_FORMAT;
+        self->targbuf_info.usage  = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+
         SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
-        self->targbuf_info.format    = FG_DEPTH_FORMAT;
-        self->targbuf_info.usage     = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
         self->depthtarg_info.texture = SDL_CreateGPUTexture(
             self->device, &self->targbuf_info);
         if (!self->depthtarg_info.texture) return false;

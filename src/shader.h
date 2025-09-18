@@ -27,11 +27,11 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
-                             const char         *name,
-                             SDL_GPUShaderStage  stage,
-                             Uint32              samplers,
-                             Uint32              ssbos,
-                             Uint32              ubos);
+SDL_GPUShader * FG_LoadShader(SDL_GPUDevice      *device,
+                              const char         *name,
+                              SDL_GPUShaderStage  stage,
+                              Uint32              samplers,
+                              Uint32              ssbos,
+                              Uint32              ubos);
 
 #endif /* FLYGPU_SHADER_H */

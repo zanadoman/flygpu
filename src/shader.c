@@ -44,12 +44,12 @@
 #define FG_SHADER_EXT \
     SDL_max(SDL_arraysize(FG_SHADER_SPIRV), SDL_arraysize(FG_SHADER_DXIL))
 
-SDL_GPUShader *FG_LoadShader(SDL_GPUDevice      *device,
-                             const char         *name,
-                             SDL_GPUShaderStage  stage,
-                             Uint32              samplers,
-                             Uint32              ssbos,
-                             Uint32              ubos)
+SDL_GPUShader * FG_LoadShader(SDL_GPUDevice      *device,
+                              const char         *name,
+                              SDL_GPUShaderStage  stage,
+                              Uint32              samplers,
+                              Uint32              ssbos,
+                              Uint32              ubos)
 {
     const char              *base                  = SDL_GetBasePath();
     char                     path[(base ? SDL_strlen(base) : 0)

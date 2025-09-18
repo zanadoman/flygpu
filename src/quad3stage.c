@@ -72,10 +72,10 @@ typedef struct
     FG_Rect      coords;
 } FG_Quad3In;
 
-static FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage     *self,
-                                       const FG_Material *material);
+static FG_Quad3Batch * FG_GetQuad3Batch(FG_Quad3Stage     *self,
+                                        const FG_Material *material);
 
-FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
+FG_Quad3Stage * FG_CreateQuad3Stage(SDL_GPUDevice *device)
 {
     Uint8                              i                            = 0;
     SDL_GPUColorTargetDescription      targbuf_descs[FG_GBUF_COUNT] = { 0 };
@@ -263,7 +263,7 @@ FG_Quad3Stage *FG_CreateQuad3Stage(SDL_GPUDevice *device)
     return self;
 }
 
-FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage *self, const FG_Material *material)
+FG_Quad3Batch * FG_GetQuad3Batch(FG_Quad3Stage *self, const FG_Material *material)
 {
     Uint32         i     = 0;
     FG_Quad3Batch *batch = self->batches_begin + (Uint64)material % self->capacity;

@@ -73,8 +73,8 @@ static bool FG_ShadingStageSubCopy(FG_ShadingStage *self,
                                    Uint32           mask,
                                    FG_LightFilter   filter);
 
-FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
-                                       SDL_GPUTextureFormat  targbuf_fmt)
+FG_ShadingStage * FG_CreateShadingStage(SDL_GPUDevice        *device,
+                                        SDL_GPUTextureFormat  targbuf_fmt)
 {
     FG_ShadingStage                   *self = SDL_calloc(1, sizeof(*self));
     Uint8                              i    = 0;
