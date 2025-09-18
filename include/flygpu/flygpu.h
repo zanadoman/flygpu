@@ -24,16 +24,17 @@
 #ifndef FLYGPU_FLYGPU_H
 #define FLYGPU_FLYGPU_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <stdbool.h>
+
+#include <SDL3/SDL_begin_code.h>
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 typedef struct
 {
@@ -145,20 +146,25 @@ typedef struct
 
 typedef struct FG_Renderer FG_Renderer;
 
-FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug);
+SDL_DECLSPEC FG_Renderer * SDLCALL FG_CreateRenderer(SDL_Window *window,
+                                                     bool        vsync,
+                                                     bool        debug);
 
-bool FG_RendererCreateTexture(FG_Renderer        *self,
-                              const SDL_Surface  *surface,
-                              SDL_GPUTexture    **texture);
+SDL_DECLSPEC bool SDLCALL FG_RendererCreateTexture(FG_Renderer        *self,
+                                                   const SDL_Surface  *surface,
+                                                   SDL_GPUTexture    **texture);
 
-bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info);
+SDL_DECLSPEC bool SDLCALL FG_RendererDraw(FG_Renderer               *self,
+                                          const FG_RendererDrawInfo *info);
 
-void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture);
+SDL_DECLSPEC void SDLCALL FG_RendererDestroyTexture(FG_Renderer    *self,
+                                                    SDL_GPUTexture *texture);
 
-void FG_DestroyRenderer(FG_Renderer *self);
+SDL_DECLSPEC void SDLCALL FG_DestroyRenderer(FG_Renderer *self);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#include <SDL3/SDL_close_code.h>
 
 #endif /* FLYGPU_FLYGPU_H */

@@ -57,19 +57,21 @@ struct FG_ShadingStage
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
-static bool FG_FilterAmbientLight(Uint32 mask, const void *light);
+typedef bool (SDLCALL *FG_LightFilter)(Uint32 mask, const void *light);
 
-static bool FG_FilterOmniLight(Uint32 mask, const void *light);
+static bool SDLCALL FG_AmbientLightFilter(Uint32 mask, const void *light);
 
-static bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
-                                   SDL_GPUCopyPass  *cpypass,
-                                   Uint8             dst,
-                                   Uint32           *dst_size,
-                                   const void       *src,
-                                   Uint32            src_count,
-                                   Uint8             size,
-                                   Uint32            mask,
-                                   bool            (*filter)(Uint32, const void *));
+static bool SDLCALL FG_OmniLightFilter(Uint32 mask, const void *light);
+
+static bool FG_ShadingStageSubCopy(FG_ShadingStage *self,
+                                   SDL_GPUCopyPass *cpypass,
+                                   Uint8            dst,
+                                   Uint32          *dst_size,
+                                   const void      *src,
+                                   Uint32           src_count,
+                                   Uint8            size,
+                                   Uint32           mask,
+                                   FG_LightFilter   filter);
 
 FG_ShadingStage *FG_CreateShadingStage(SDL_GPUDevice        *device,
                                        SDL_GPUTextureFormat  targbuf_fmt)
@@ -166,7 +168,7 @@ void FG_ShadingStageUpdate(FG_ShadingStage        *self,
     }
 }
 
-bool FG_FilterAmbientLight(Uint32 mask, const void *light)
+bool FG_AmbientLightFilter(Uint32 mask, const void *light)
 {
     return ((const FG_DirectLight *)light)->mask & mask &&
            (((const FG_DirectLight *)light)->direction.x != 0.0F ||
@@ -174,21 +176,21 @@ bool FG_FilterAmbientLight(Uint32 mask, const void *light)
            ((const FG_DirectLight *)light)->direction.z != 0.0F);
 }
 
-bool FG_FilterOmniLight(Uint32 mask, const void *light)
+bool FG_OmniLightFilter(Uint32 mask, const void *light)
 {
     return ((const FG_OmniLight *)light)->mask & mask &&
            0.0F < ((const FG_OmniLight *)light)->radius;
 }
 
-bool FG_ShadingStageSubCopy(FG_ShadingStage  *self,
-                            SDL_GPUCopyPass  *cpypass,
-                            Uint8             dst,
-                            Uint32           *dst_size,
-                            const void       *src,
-                            Uint32            src_count,
-                            Uint8             size,
-                            Uint32            mask,
-                            bool            (*filter)(Uint32, const void *))
+bool FG_ShadingStageSubCopy(FG_ShadingStage *self,
+                            SDL_GPUCopyPass *cpypass,
+                            Uint8            dst,
+                            Uint32          *dst_size,
+                            const void      *src,
+                            Uint32           src_count,
+                            Uint8            size,
+                            Uint32           mask,
+                            FG_LightFilter   filter)
 {
     const Uint8 *it       = src;
     const void  *end      = it + src_count * size;
@@ -263,7 +265,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         info->direct_count,
         sizeof(*info->directs),
         mask,
-        FG_FilterAmbientLight
+        FG_AmbientLightFilter
     ) &&
     FG_ShadingStageSubCopy(
         self,
@@ -274,7 +276,7 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
         info->omni_count,
         sizeof(*info->omnis),
         mask,
-        FG_FilterOmniLight
+        FG_OmniLightFilter
     );
 }
 

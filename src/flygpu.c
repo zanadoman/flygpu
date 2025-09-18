@@ -56,7 +56,7 @@ struct FG_Renderer
     FG_Material                      material;
 };
 
-static Sint32 FG_CompareCameras(const void *lhs, const void *rhs);
+static Sint32 SDLCALL FG_CompareCameras(const void *lhs, const void *rhs);
 
 FG_Renderer *FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {

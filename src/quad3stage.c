@@ -46,15 +46,6 @@ struct FG_Quad3Batch
     FG_Quad3Batch     *next;
 };
 
-typedef struct
-{
-    FG_Mat4      modelmat;
-    FG_Mat4      mvpmat;
-    FG_Mat3      tbnmat;
-    FG_QuadColor color;
-    FG_Rect      coords;
-} FG_Quad3In;
-
 struct FG_Quad3Stage
 {
     SDL_GPUDevice                 *device;
@@ -71,6 +62,15 @@ struct FG_Quad3Stage
     SDL_GPUTextureSamplerBinding   sampler_binds[4];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
+
+typedef struct
+{
+    FG_Mat4      modelmat;
+    FG_Mat4      mvpmat;
+    FG_Mat3      tbnmat;
+    FG_QuadColor color;
+    FG_Rect      coords;
+} FG_Quad3In;
 
 static FG_Quad3Batch *FG_GetQuad3Batch(FG_Quad3Stage     *self,
                                        const FG_Material *material);
