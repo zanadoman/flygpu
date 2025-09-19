@@ -41,9 +41,6 @@
 #define FG_SHADER_SPIRV ".spv"
 #define FG_SHADER_DXIL  ".dxil"
 
-#define FG_SHADER_EXT \
-    SDL_max(SDL_arraysize(FG_SHADER_SPIRV), SDL_arraysize(FG_SHADER_DXIL))
-
 SDL_GPUShader * FG_LoadShader(SDL_GPUDevice      *device,
                               const char         *name,
                               SDL_GPUShaderStage  stage,
@@ -51,21 +48,24 @@ SDL_GPUShader * FG_LoadShader(SDL_GPUDevice      *device,
                               Uint32              ssbos,
                               Uint32              ubos)
 {
-    const char              *base                  = SDL_GetBasePath();
+    const char              *base      = SDL_GetBasePath();
     char                     path[(base ? SDL_strlen(base) : 0)
                                   + SDL_arraysize(FG_SHADER_DIR)
                                   + SDL_strlen(name)
-                                  + FG_SHADER_EXT];
-    SDL_GPUShaderCreateInfo  info                  = {
+                                  + SDL_max(
+                                        SDL_arraysize(FG_SHADER_SPIRV),
+                                        SDL_arraysize(FG_SHADER_DXIL)
+                                    )];
+    SDL_GPUShaderCreateInfo  info      = {
         .stage               = stage,
         .num_samplers        = samplers,
         .num_storage_buffers = ssbos,
         .num_uniform_buffers = ubos
     };
-    size_t                   i                     = 0;
-    SDL_GPUShaderFormat      format                = SDL_GetGPUShaderFormats(device);
-    void                    *code                  = NULL;
-    SDL_GPUShader           *shader                = NULL;
+    size_t                   i         = 0;
+    SDL_GPUShaderFormat      format    = SDL_GetGPUShaderFormats(device);
+    void                    *code      = NULL;
+    SDL_GPUShader           *shader    = NULL;
 
     *path = 0;
 
