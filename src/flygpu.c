@@ -56,7 +56,7 @@ struct FG_Renderer
     FG_Material                      material;
 };
 
-static Sint32 SDLCALL FG_CompareCameras(const void *lhs, const void *rhs);
+static Sint32 SDLCALL FG_CameraComparator(const void *lhs, const void *rhs);
 
 FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
@@ -242,7 +242,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     return self->fence;
 }
 
-Sint32 FG_CompareCameras(const void *lhs, const void *rhs)
+Sint32 FG_CameraComparator(const void *lhs, const void *rhs)
 {
     return (*(FG_Camera *const *)lhs)->priority - (*(FG_Camera *const *)rhs)->priority;
 }
@@ -263,7 +263,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     FG_Mat4                 vpmat                       = { 0.0F };
     SDL_GPUCopyPass        *cpypass                     = NULL;
 
-    for (i = 0; i != info->camera_count; ++i) cameras[i] = info->cameras + i;
+    for (i = 0; i != SDL_arraysize(cameras); ++i) cameras[i] = info->cameras + i;
 
     if (!cmdbuf) return false;
 
@@ -279,7 +279,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     rndrpass = SDL_BeginGPURenderPass(cmdbuf, &swapctarg_info, 1, NULL);
     SDL_EndGPURenderPass(rndrpass);
 
-    SDL_qsort(cameras, info->camera_count, sizeof(*cameras), FG_CompareCameras);
+    SDL_qsort(cameras, SDL_arraysize(cameras), sizeof(*cameras), FG_CameraComparator);
 
     if (self->targbuf_info.width != width || self->targbuf_info.height != height) {
         self->targbuf_info.width  = width;
@@ -309,13 +309,13 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     swapctarg_info.load_op = SDL_GPU_LOADOP_LOAD;
 
-    for (i = 0; i != info->camera_count; ++i) {
-        viewport.x = (float)width * cameras[i]->viewport.tl.x;
-        viewport.y = (float)height * cameras[i]->viewport.tl.y;
-        viewport.w = (float)width
-                   * (cameras[i]->viewport.br.x - cameras[i]->viewport.tl.x);
-        viewport.h = (float)height
-                   * (cameras[i]->viewport.br.y - cameras[i]->viewport.tl.y);
+    for (i = 0; i != SDL_arraysize(cameras); ++i) {
+        viewport.x = cameras[i]->viewport.tl.x * (float)width;
+        viewport.y = cameras[i]->viewport.tl.y * (float)height;
+        viewport.w = (cameras[i]->viewport.br.x - cameras[i]->viewport.tl.x)
+                   * (float)width;
+        viewport.h = (cameras[i]->viewport.br.y - cameras[i]->viewport.tl.y)
+                   * (float)height;
 
         FG_SetProjMat4(&cameras[i]->perspective, viewport.w / viewport.h, &projmat);
         FG_SetViewMat4(&cameras[i]->transform, &viewmat);

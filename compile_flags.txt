@@ -6,5 +6,8 @@
 -Werror
 -Weverything
 -Wno-covered-switch-default
+-Wno-implicit-int-enum-cast
+-Wno-implicit-void-ptr-cast
+-Wno-unknown-warning-option
 -Wno-unsafe-buffer-usage
 -Wno-vla
