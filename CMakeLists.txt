@@ -62,6 +62,13 @@ foreach(SOURCE ${SHADERS})
   add_dependencies(${PROJECT_NAME} ${SHADER})
 endforeach()
 
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME})
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
 find_package(SDL3_image OPTIONAL CONFIG)
 find_package(SDL3 OPTIONAL CONFIG COMPONENTS SDL3)
 if(TARGET SDL3_image::SDL3_image AND TARGET SDL3::SDL3)

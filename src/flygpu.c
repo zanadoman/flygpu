@@ -128,7 +128,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
         return NULL;
     }
 
-    surface.pixels = &(Uint32){ 0x000A0A0A };
+    surface.pixels = &(Uint32){ 0xFF0A0A0A };
 
     FG_RendererCreateTexture(self, &surface, &self->material.specular);
     if (!self->material.specular) {
@@ -136,7 +136,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
         return NULL;
     }
 
-    surface.pixels = &(Uint32){ 0x00FF8080 };
+    surface.pixels = &(Uint32){ 0xFFFF8080 };
 
     FG_RendererCreateTexture(self, &surface, &self->material.normal);
     if (!self->material.normal) {
@@ -251,7 +251,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 {
     Uint32                  i                           = 0;
     const FG_Camera        *cameras[info->camera_count];
-    SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(self->device);
+    SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(
+        self->device);
     SDL_GPUColorTargetInfo  swapctarg_info              = { 0 };
     Uint32                  width                       = 0;
     Uint32                  height                      = 0;
@@ -280,8 +281,6 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
     SDL_qsort(cameras, info->camera_count, sizeof(*cameras), FG_CompareCameras);
 
-    swapctarg_info.load_op = SDL_GPU_LOADOP_LOAD;
-
     if (self->targbuf_info.width != width || self->targbuf_info.height != height) {
         self->targbuf_info.width  = width;
         self->targbuf_info.height = height;
@@ -307,6 +306,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
         FG_ShadingStageUpdate(self->shadingstage, self->gbuftarg_infos);
     }
+
+    swapctarg_info.load_op = SDL_GPU_LOADOP_LOAD;
 
     for (i = 0; i != info->camera_count; ++i) {
         viewport.x = (float)width * cameras[i]->viewport.tl.x;
