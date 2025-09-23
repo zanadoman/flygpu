@@ -61,12 +61,12 @@ static Sint32 SDLCALL FG_CameraComparator(const void *lhs, const void *rhs);
 FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
     FG_Renderer *self    = SDL_calloc(1, sizeof(*self));
+    Uint8        i       = 0;
     SDL_Surface  surface = {
         .format = FG_SURFACE_FORMAT,
         .w      = 1,
         .h      = 1
     };
-    Uint8        i       = 0;
 
     if (!self) return NULL;
 
