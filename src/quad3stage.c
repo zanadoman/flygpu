@@ -389,7 +389,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
-    do {
+    for (batch = self->batches_head; batch; batch = batch->next) {
         if (batch->material) {
             if (batch->material->albedo) {
                 self->sampler_binds[0].texture = batch->material->albedo;
@@ -417,7 +417,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
         SDL_DrawGPUPrimitives(rndrpass, 6, batch->count, 0, batch->offset);
-    } while ((batch = batch->next));
+    }
 }
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self)
