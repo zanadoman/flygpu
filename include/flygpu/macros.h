@@ -35,7 +35,7 @@
 #define FG_DEF_CAMERA (FG_Camera){                          \
     .viewport.br     = { .x = 1.0F, .y = 1.0F },            \
     .perspective     = {                                    \
-        .fov  = FG_DegsToRads(90.0F),                       \
+        .fov  = 0.927295207977294921875F,                   \
         .near = 0.1F,                                       \
         .far  = 1000.0F                                     \
     },                                                      \
