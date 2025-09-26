@@ -5,7 +5,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_main.h> /* IWYU pragma: keep */
+#include <SDL3/SDL_main.h>   /* IWYU pragma: keep */
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define POSITION 0.2375F
-#define SIZE     0.425F
+#define SIZE     0.49F
+#define POSITION ((1 - SIZE * 2) / 6 + SIZE / 2)
 
 Sint32 main(Sint32 argc, char **argv)
 {
