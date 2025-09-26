@@ -58,56 +58,56 @@ Sint32 main(Sint32 argc, char **argv)
         .y = POSITION,
         .z = -1.0F
     };
-    quad3s[0].transform.scale = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[0].color.bl.x = 0.0F;
-    quad3s[0].color.bl.y = 0.0F;
-    quad3s[0].color.br.x = 0.0F;
-    quad3s[0].color.br.z = 0.0F;
-    quad3s[0].color.tr.y = 0.0F;
-    quad3s[0].color.tr.z = 0.0F;
+    quad3s[0].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[0].color.bl.x            = 0.0F;
+    quad3s[0].color.bl.y            = 0.0F;
+    quad3s[0].color.br.x            = 0.0F;
+    quad3s[0].color.br.z            = 0.0F;
+    quad3s[0].color.tr.y            = 0.0F;
+    quad3s[0].color.tr.z            = 0.0F;
 
     quad3s[1].transform.translation = (FG_Vec3){
         .x = -POSITION,
         .y = -POSITION,
         .z = -1.0F
     };
-    quad3s[1].transform.scale = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[1].color.tl.x = 0.0F;
-    quad3s[1].color.tl.y = 0.0F;
-    quad3s[1].color.bl.x = 0.0F;
-    quad3s[1].color.bl.z = 0.0F;
-    quad3s[1].color.br.x = 0.0F;
-    quad3s[1].color.br.y = 0.0F;
-    quad3s[1].color.tr.x = 0.0F;
-    quad3s[1].color.tr.z = 0.0F;
+    quad3s[1].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[1].color.tl.x            = 0.0F;
+    quad3s[1].color.tl.y            = 0.0F;
+    quad3s[1].color.bl.x            = 0.0F;
+    quad3s[1].color.bl.z            = 0.0F;
+    quad3s[1].color.br.x            = 0.0F;
+    quad3s[1].color.br.y            = 0.0F;
+    quad3s[1].color.tr.x            = 0.0F;
+    quad3s[1].color.tr.z            = 0.0F;
 
     quad3s[2].transform.translation = (FG_Vec3){
         .x = POSITION,
         .y = -POSITION,
         .z = -1.0F
     };
-    quad3s[2].transform.scale = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[2].color.tl.x = 0.0F;
-    quad3s[2].color.tl.z = 0.0F;
-    quad3s[2].color.bl.x = 0.0F;
-    quad3s[2].color.bl.y = 0.0F;
-    quad3s[2].color.br.x = 0.0F;
-    quad3s[2].color.br.z = 0.0F;
-    quad3s[2].color.tr.x = 0.0F;
-    quad3s[2].color.tr.y = 0.0F;
+    quad3s[2].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[2].color.tl.x            = 0.0F;
+    quad3s[2].color.tl.z            = 0.0F;
+    quad3s[2].color.bl.x            = 0.0F;
+    quad3s[2].color.bl.y            = 0.0F;
+    quad3s[2].color.br.x            = 0.0F;
+    quad3s[2].color.br.z            = 0.0F;
+    quad3s[2].color.tr.x            = 0.0F;
+    quad3s[2].color.tr.y            = 0.0F;
 
     quad3s[3].transform.translation = (FG_Vec3){
         .x = POSITION,
         .y = POSITION,
         .z = -1.0F
     };
-    quad3s[3].transform.scale = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[3].color.tl.y = 0.0F;
-    quad3s[3].color.tl.z = 0.0F;
-    quad3s[3].color.bl.x = 0.0F;
-    quad3s[3].color.bl.z = 0.0F;
-    quad3s[3].color.br.x = 0.0F;
-    quad3s[3].color.br.y = 0.0F;
+    quad3s[3].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[3].color.tl.y            = 0.0F;
+    quad3s[3].color.tl.z            = 0.0F;
+    quad3s[3].color.bl.x            = 0.0F;
+    quad3s[3].color.bl.z            = 0.0F;
+    quad3s[3].color.br.x            = 0.0F;
+    quad3s[3].color.br.y            = 0.0F;
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
         if (!FG_RendererDraw(renderer, &(FG_RendererDrawInfo){
