@@ -59,7 +59,8 @@ struct FG_Quad3Stage
     FG_Quad3Batch                 *batches_head;
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUTextureSamplerBinding   sampler_binds[3];
+    SDL_GPUTextureSamplerBinding   sampler_binds[SDL_arraysize(
+                                                     ((FG_Material *)NULL)->iter)];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
@@ -229,16 +230,13 @@ FG_Quad3Stage * FG_CreateQuad3Stage(SDL_GPUDevice *device)
         return NULL;
     }
 
-    self->sampler_binds[1].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
-    if (!self->sampler_binds[1].sampler) {
-        FG_DestroyQuad3Stage(self);
-        return NULL;
-    }
-
-    self->sampler_binds[2].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
-    if (!self->sampler_binds[2].sampler) {
-        FG_DestroyQuad3Stage(self);
-        return NULL;
+    for (i = 1; i != SDL_arraysize(self->sampler_binds); ++i) {
+        self->sampler_binds[i].sampler = SDL_CreateGPUSampler(
+            self->device, &sampler_info);
+        if (!self->sampler_binds[i].sampler) {
+            FG_DestroyQuad3Stage(self);
+            return NULL;
+        }
     }
 
     info.vertex_shader   = self->vertshdr;
@@ -374,6 +372,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
                        const FG_Material *fallback)
 {
     const FG_Quad3Batch *batch = self->batches_head;
+    Uint8                i     = 0;
 
     if (!batch) return;
 
@@ -381,23 +380,17 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     for (batch = self->batches_head; batch; batch = batch->next) {
         if (batch->material) {
-            if (batch->material->albedo) {
-                self->sampler_binds[0].texture = batch->material->albedo;
+            for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
+                if (batch->material->iter[i]) {
+                    self->sampler_binds[i].texture = batch->material->iter[i];
+                }
+                else self->sampler_binds[i].texture = fallback->iter[i];
             }
-            else self->sampler_binds[0].texture = fallback->albedo;
-            if (batch->material->specular) {
-                self->sampler_binds[1].texture = batch->material->specular;
-            }
-            else self->sampler_binds[1].texture = fallback->specular;
-            if (batch->material->normal) {
-                self->sampler_binds[2].texture = batch->material->normal;
-            }
-            else self->sampler_binds[2].texture = fallback->normal;
         }
         else {
-            self->sampler_binds[0].texture = fallback->albedo;
-            self->sampler_binds[1].texture = fallback->specular;
-            self->sampler_binds[2].texture = fallback->normal;
+            for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
+                self->sampler_binds[i].texture = fallback->iter[i];
+            }
         }
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));

@@ -79,11 +79,15 @@ typedef struct
     Uint32         mask;
 } FG_Camera;
 
-typedef struct
+typedef union
 {
-    SDL_GPUTexture *albedo;
-    SDL_GPUTexture *specular;
-    SDL_GPUTexture *normal;
+    struct
+    {
+        SDL_GPUTexture *albedo;
+        SDL_GPUTexture *specular;
+        SDL_GPUTexture *normal;
+    }               maps;
+    SDL_GPUTexture *iter[3];
 } FG_Material;
 
 typedef struct

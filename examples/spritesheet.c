@@ -90,8 +90,8 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    FG_RendererCreateTexture(renderer, surface, &material.albedo);
-    if (!material.albedo) {
+    FG_RendererCreateTexture(renderer, surface, &material.maps.albedo);
+    if (!material.maps.albedo) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();
     }
@@ -150,7 +150,7 @@ Sint32 main(Sint32 argc, char **argv)
         SDL_PumpEvents();
     }
 
-    FG_RendererDestroyTexture(renderer, material.albedo);
+    FG_RendererDestroyTexture(renderer, material.maps.albedo);
     FG_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

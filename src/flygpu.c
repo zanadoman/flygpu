@@ -122,24 +122,24 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     surface.pixels = &(Uint32){ 0xFFFFFFFF };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.albedo);
-    if (!self->material.albedo) {
+    FG_RendererCreateTexture(self, &surface, &self->material.maps.albedo);
+    if (!self->material.maps.albedo) {
         FG_DestroyRenderer(self);
         return NULL;
     }
 
     surface.pixels = &(Uint32){ 0xFF0A0A0A };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.specular);
-    if (!self->material.specular) {
+    FG_RendererCreateTexture(self, &surface, &self->material.maps.specular);
+    if (!self->material.maps.specular) {
         FG_DestroyRenderer(self);
         return NULL;
     }
 
     surface.pixels = &(Uint32){ 0xFFFF8080 };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.normal);
-    if (!self->material.normal) {
+    FG_RendererCreateTexture(self, &surface, &self->material.maps.normal);
+    if (!self->material.maps.normal) {
         FG_DestroyRenderer(self);
         return NULL;
     }
@@ -385,9 +385,9 @@ void FG_DestroyRenderer(FG_Renderer *self)
     Uint8 i = 0;
 
     if (!self) return;
-    SDL_ReleaseGPUTexture(self->device, self->material.normal);
-    SDL_ReleaseGPUTexture(self->device, self->material.specular);
-    SDL_ReleaseGPUTexture(self->device, self->material.albedo);
+    for (i = 0; i != SDL_arraysize(self->material.iter); ++i) {
+        SDL_ReleaseGPUTexture(self->device, self->material.iter[i]);
+    }
     FG_DestroyQuad3Stage(self->quad3stage);
     FG_DestroyShadingStage(self->shadingstage);
     SDL_ReleaseGPUTexture(self->device, self->depthtarg_info.texture);
