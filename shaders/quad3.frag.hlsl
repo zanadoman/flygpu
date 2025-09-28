@@ -40,18 +40,17 @@ struct Output
 
 Texture2D<float4> tAlbedo   : register(t0, space2);
 SamplerState      sAlbedo   : register(s0, space2);
-Texture2D<float4> tAlpha    : register(t1, space2);
-SamplerState      sAlpha    : register(s1, space2);
-Texture2D<float4> tSpecular : register(t2, space2);
-SamplerState      sSpecular : register(s2, space2);
-Texture2D<float4> tNormal   : register(t3, space2);
-SamplerState      sNormal   : register(s3, space2);
+Texture2D<float4> tSpecular : register(t1, space2);
+SamplerState      sSpecular : register(s1, space2);
+Texture2D<float4> tNormal   : register(t2, space2);
+SamplerState      sNormal   : register(s2, space2);
 
 Output main(const Input input)
 {
-    if (tAlpha.Sample(sAlpha, input.TexCoord).a <= 0.0F) discard;
-
     Output output;
+
+    output.Albedo = tAlbedo.Sample(sAlbedo, input.TexCoord);
+    if (output.Albedo.a <= 0.0F) discard;
 
     output.Position = float4(input.Position, 0.0F);
     output.Normal   = float4(
@@ -66,10 +65,9 @@ Output main(const Input input)
         colorCoord.y
     );
 
-    output.Specular = float4(
+    output.Specular    = float4(
         color * tSpecular.Sample(sSpecular, input.TexCoord).rgb, 0.0F);
-    output.Albedo   = float4(
-        color * tAlbedo.Sample(sAlbedo, input.TexCoord).rgb, 0.0F);
+    output.Albedo.rgb *= color;
 
     return output;
 }

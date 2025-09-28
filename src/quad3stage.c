@@ -59,7 +59,7 @@ struct FG_Quad3Stage
     FG_Quad3Batch                 *batches_head;
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUTextureSamplerBinding   sampler_binds[4];
+    SDL_GPUTextureSamplerBinding   sampler_binds[3];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 
@@ -222,31 +222,21 @@ FG_Quad3Stage * FG_CreateQuad3Stage(SDL_GPUDevice *device)
 
     self->vertbuf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    sampler_info.mip_lod_bias = -1.0F;
-
-    self->sampler_binds[0].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
+    self->sampler_binds[0].sampler = SDL_CreateGPUSampler(
+        self->device, &(SDL_GPUSamplerCreateInfo){ 0 });
     if (!self->sampler_binds[0].sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
-    self->sampler_binds[1].sampler = SDL_CreateGPUSampler(
-        self->device, &(SDL_GPUSamplerCreateInfo){ 0 });
+    self->sampler_binds[1].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
     if (!self->sampler_binds[1].sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
 
-    sampler_info.mip_lod_bias = 0.0F;
-
     self->sampler_binds[2].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
     if (!self->sampler_binds[2].sampler) {
-        FG_DestroyQuad3Stage(self);
-        return NULL;
-    }
-
-    self->sampler_binds[3].sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
-    if (!self->sampler_binds[3].sampler) {
         FG_DestroyQuad3Stage(self);
         return NULL;
     }
@@ -393,26 +383,21 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
         if (batch->material) {
             if (batch->material->albedo) {
                 self->sampler_binds[0].texture = batch->material->albedo;
-                self->sampler_binds[1].texture = batch->material->albedo;
             }
-            else {
-                self->sampler_binds[0].texture = fallback->albedo;
-                self->sampler_binds[1].texture = fallback->albedo;
-            }
+            else self->sampler_binds[0].texture = fallback->albedo;
             if (batch->material->specular) {
-                self->sampler_binds[2].texture = batch->material->specular;
+                self->sampler_binds[1].texture = batch->material->specular;
             }
-            else self->sampler_binds[2].texture = fallback->specular;
+            else self->sampler_binds[1].texture = fallback->specular;
             if (batch->material->normal) {
-                self->sampler_binds[3].texture = batch->material->normal;
+                self->sampler_binds[2].texture = batch->material->normal;
             }
-            else self->sampler_binds[3].texture = fallback->normal;
+            else self->sampler_binds[2].texture = fallback->normal;
         }
         else {
             self->sampler_binds[0].texture = fallback->albedo;
-            self->sampler_binds[1].texture = fallback->albedo;
-            self->sampler_binds[2].texture = fallback->specular;
-            self->sampler_binds[3].texture = fallback->normal;
+            self->sampler_binds[1].texture = fallback->specular;
+            self->sampler_binds[2].texture = fallback->normal;
         }
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
