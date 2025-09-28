@@ -122,7 +122,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     surface.pixels = &(Uint32){ 0xFFFFFFFF };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.maps.albedo);
+    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.albedo);
     if (!self->material.maps.albedo) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -130,7 +130,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     surface.pixels = &(Uint32){ 0xFF0A0A0A };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.maps.specular);
+    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.specular);
     if (!self->material.maps.specular) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -138,7 +138,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     surface.pixels = &(Uint32){ 0xFFFF8080 };
 
-    FG_RendererCreateTexture(self, &surface, &self->material.maps.normal);
+    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.normal);
     if (!self->material.maps.normal) {
         FG_DestroyRenderer(self);
         return NULL;
@@ -149,6 +149,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
 bool FG_RendererCreateTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,
+                              bool                mipmaps,
                               SDL_GPUTexture    **texture)
 {
     const SDL_PixelFormatDetails *details  = SDL_GetPixelFormatDetails(
@@ -192,7 +193,9 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         return true;
     }
 
-    info.num_levels += (Uint32)(SDL_logf((float)SDL_max(info.width, info.height)));
+    if (mipmaps) {
+        info.num_levels += (Uint32)(SDL_logf((float)SDL_max(info.width, info.height)));
+    }
 
     *texture = SDL_CreateGPUTexture(self->device, &info);
     if (!texture) return false;

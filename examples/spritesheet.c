@@ -90,7 +90,7 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    FG_RendererCreateTexture(renderer, surface, &material.maps.albedo);
+    FG_RendererCreateTexture(renderer, surface, false, &material.maps.albedo);
     if (!material.maps.albedo) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();

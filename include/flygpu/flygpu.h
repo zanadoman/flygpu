@@ -156,6 +156,7 @@ SDL_DECLSPEC FG_Renderer * SDLCALL FG_CreateRenderer(SDL_Window *window,
 
 SDL_DECLSPEC bool SDLCALL FG_RendererCreateTexture(FG_Renderer        *self,
                                                    const SDL_Surface  *surface,
+                                                   bool                mipmaps,
                                                    SDL_GPUTexture    **texture);
 
 SDL_DECLSPEC bool SDLCALL FG_RendererDraw(FG_Renderer               *self,
