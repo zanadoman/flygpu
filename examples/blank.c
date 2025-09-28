@@ -59,7 +59,7 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    renderer = FG_CreateRenderer(window, false, true);
+    renderer = FG_CreateRenderer(window, true, true);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();

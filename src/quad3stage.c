@@ -59,8 +59,9 @@ struct FG_Quad3Stage
     FG_Quad3Batch                 *batches_head;
     SDL_GPUBufferBinding           vertbuf_bind;
     SDL_GPUTransferBuffer         *transbuf;
-    SDL_GPUTextureSamplerBinding   sampler_binds[SDL_arraysize(
-                                                     ((FG_Material *)NULL)->iter)];
+    SDL_GPUTextureSamplerBinding   sampler_binds[
+        SDL_arraysize(((FG_Material *)0)->iter)
+    ];
     SDL_GPUGraphicsPipeline       *pipeline;
 };
 

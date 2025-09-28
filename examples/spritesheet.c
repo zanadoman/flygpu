@@ -78,7 +78,7 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    renderer = FG_CreateRenderer(window, false, true);
+    renderer = FG_CreateRenderer(window, true, true);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();
@@ -132,8 +132,9 @@ Sint32 main(Sint32 argc, char **argv)
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
         for (i = 0; i != SDL_arraysize(quad3s); ++i) {
-            quad3s[i].coords.tl.x = (float)((SDL_GetTicks() + FRAMES * DURATION
-                                  / SDL_arraysize(quad3s) * i) / DURATION % FRAMES)
+            quad3s[i].coords.tl.x = (float)((SDL_GetTicks()
+                                  + FRAMES * DURATION / SDL_arraysize(quad3s) * i)
+                                  / DURATION % FRAMES)
                                   / FRAMES;
             quad3s[i].coords.br.x = quad3s[i].coords.tl.x + 1.0F / FRAMES;
         }
