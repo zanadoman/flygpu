@@ -345,9 +345,9 @@ bool FG_Quad3StageCopy(FG_Quad3Stage               *self,
     for (i = 0; i != count; ++i) {
         batch = FG_GetQuad3Batch(self, self->quad3s[i]->material);
         j     = batch->offset + batch->count++;
-        FG_SetModelMat4(&self->quad3s[i]->transform, &transmem[j].modelmat);
+        FG_SetModelMat4(&self->quad3s[i]->transf, &transmem[j].modelmat);
         FG_MulMat4s(vpmat, &transmem[j].modelmat, &transmem[j].mvpmat);
-        FG_SetTBNMat3(self->quad3s[i]->transform.rotation, &transmem[j].tbnmat);
+        FG_SetTBNMat3(self->quad3s[i]->transf.rotation, &transmem[j].tbnmat);
         transmem[j].color  = self->quad3s[i]->color;
         transmem[j].coords = self->quad3s[i]->coords;
     }

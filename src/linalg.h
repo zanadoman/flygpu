@@ -38,9 +38,9 @@ typedef struct
 
 void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *projmat);
 
-void FG_SetViewMat4(const FG_Transform3 *transform, FG_Mat4 *viewmat);
+void FG_SetViewMat4(const FG_Transform3 *transf, FG_Mat4 *viewmat);
 
-void FG_SetModelMat4(const FG_Transform3 *transform, FG_Mat4 *modelmat);
+void FG_SetModelMat4(const FG_Transform3 *transf, FG_Mat4 *modelmat);
 
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 

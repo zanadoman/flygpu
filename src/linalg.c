@@ -43,42 +43,41 @@ void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *pr
     };
 }
 
-void FG_SetViewMat4(const FG_Transform3 *restrict transform, FG_Mat4 *restrict viewmat)
+void FG_SetViewMat4(const FG_Transform3 *restrict transf, FG_Mat4 *restrict viewmat)
 {
-    float cos = SDL_cosf(transform->rotation);
-    float sin = SDL_sinf(transform->rotation);
+    float cos = SDL_cosf(transf->rotation);
+    float sin = SDL_sinf(transf->rotation);
 
     *viewmat = (FG_Mat4){
         .m = {
-            [0]  = cos * transform->scale.x,
-            [1]  = -sin * transform->scale.x,
-            [4]  = sin * transform->scale.y,
-            [5]  = cos * transform->scale.y,
+            [0]  = cos * transf->scale.x,
+            [1]  = -sin * transf->scale.x,
+            [4]  = sin * transf->scale.y,
+            [5]  = cos * transf->scale.y,
             [10] = 1.0F,
-            [12] = transform->translation.x * -cos - transform->translation.y * sin,
-            [13] = transform->translation.x * sin - transform->translation.y * cos,
-            [14] = -transform->translation.z,
+            [12] = transf->transl.x * -cos - transf->transl.y * sin,
+            [13] = transf->transl.x * sin - transf->transl.y * cos,
+            [14] = -transf->transl.z,
             [15] = 1.0F
         }
     };
 }
 
-void FG_SetModelMat4(const FG_Transform3 *restrict transform,
-                     FG_Mat4             *restrict modelmat)
+void FG_SetModelMat4(const FG_Transform3 *restrict transf, FG_Mat4 *restrict modelmat)
 {
-    float cos = SDL_cosf(transform->rotation);
-    float sin = SDL_sinf(transform->rotation);
+    float cos = SDL_cosf(transf->rotation);
+    float sin = SDL_sinf(transf->rotation);
 
     *modelmat = (FG_Mat4){
         .m = {
-            [0]  = cos * transform->scale.x,
-            [1]  = sin * transform->scale.x,
-            [4]  = -sin * transform->scale.y,
-            [5]  = cos * transform->scale.y,
+            [0]  = cos * transf->scale.x,
+            [1]  = sin * transf->scale.x,
+            [4]  = -sin * transf->scale.y,
+            [5]  = cos * transf->scale.y,
             [10] = 1.0F,
-            [12] = transform->translation.x,
-            [13] = transform->translation.y,
-            [14] = transform->translation.z,
+            [12] = transf->transl.x,
+            [13] = transf->transl.y,
+            [14] = transf->transl.z,
             [15] = 1.0F
         }
     };

@@ -64,7 +64,7 @@ typedef struct
 
 typedef struct
 {
-    FG_Vec3 translation;
+    FG_Vec3 transl;
     float   rotation;
     FG_Vec2 scale;
 } FG_Transform3;
@@ -75,7 +75,7 @@ typedef struct
     FG_Rect        viewport;
     FG_Perspective perspective;
     FG_Vec3        ambient;
-    FG_Transform3  transform;
+    FG_Transform3  transf;
     Uint32         mask;
 } FG_Camera;
 
@@ -100,7 +100,7 @@ typedef struct
 
 typedef struct
 {
-    FG_Transform3      transform;
+    FG_Transform3      transf;
     const FG_Material *material;
     FG_QuadColor       color;
     FG_Rect            coords;
@@ -125,7 +125,7 @@ typedef struct
 
 typedef struct
 {
-    FG_Vec3 translation;
+    FG_Vec3 transl;
     float   radius;
     FG_Vec3 color;
     Uint32  mask;

@@ -72,7 +72,7 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    window = SDL_CreateWindow(__FILE__, 1280, 720, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow(__FILE__, 720, 720, SDL_WINDOW_RESIZABLE);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();
@@ -98,37 +98,37 @@ Sint32 main(Sint32 argc, char **argv)
 
     SDL_DestroySurface(surface);
 
-    quad3s[0].transform.translation = (FG_Vec3){
+    quad3s[0].transf.transl = (FG_Vec3){
         .x = -POSITION,
         .y = POSITION,
         .z = -1.0F
     };
-    quad3s[0].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[0].material              = &material;
+    quad3s[0].transf.scale  = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[0].material      = &material;
 
-    quad3s[1].transform.translation = (FG_Vec3){
+    quad3s[1].transf.transl = (FG_Vec3){
         .x = -POSITION,
         .y = -POSITION,
         .z = -1.0F
     };
-    quad3s[1].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[1].material              = &material;
+    quad3s[1].transf.scale  = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[1].material      = &material;
 
-    quad3s[2].transform.translation = (FG_Vec3){
+    quad3s[2].transf.transl = (FG_Vec3){
         .x = POSITION,
         .y = -POSITION,
         .z = -1.0F
     };
-    quad3s[2].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[2].material              = &material;
+    quad3s[2].transf.scale  = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[2].material      = &material;
 
-    quad3s[3].transform.translation = (FG_Vec3){
+    quad3s[3].transf.transl = (FG_Vec3){
         .x = POSITION,
         .y = POSITION,
         .z = -1.0F
     };
-    quad3s[3].transform.scale       = (FG_Vec2){ .x = SIZE, .y = SIZE };
-    quad3s[3].material              = &material;
+    quad3s[3].transf.scale  = (FG_Vec2){ .x = SIZE, .y = SIZE };
+    quad3s[3].material      = &material;
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
         for (i = 0; i != SDL_arraysize(quad3s); ++i) {

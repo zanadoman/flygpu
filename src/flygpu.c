@@ -318,7 +318,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
                    * (float)height;
 
         FG_SetProjMat4(&cameras[i]->perspective, viewport.w / viewport.h, &projmat);
-        FG_SetViewMat4(&cameras[i]->transform, &viewmat);
+        FG_SetViewMat4(&cameras[i]->transf, &viewmat);
         FG_MulMat4s(&projmat, &viewmat, &vpmat);
 
         cpypass = SDL_BeginGPUCopyPass(cmdbuf);
@@ -361,7 +361,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             cmdbuf,
             rndrpass,
             &cameras[i]->ambient,
-            &cameras[i]->transform.translation
+            &cameras[i]->transf.transl
         );
         SDL_EndGPURenderPass(rndrpass);
     }
