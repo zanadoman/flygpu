@@ -50,10 +50,10 @@ SDL_GPUShader * FG_LoadShader(SDL_GPUDevice      *device,
 {
     const char              *base   = SDL_GetBasePath();
     char                     path[
-        (base ? SDL_strlen(base) : 0)
-        + SDL_arraysize(FG_SHADER_DIR)
-        + SDL_strlen(name)
+        SDL_arraysize(FG_SHADER_DIR)
         + SDL_max(SDL_arraysize(FG_SHADER_SPIRV), SDL_arraysize(FG_SHADER_DXIL))
+        + (base ? SDL_strlen(base) : 0)
+        + SDL_strlen(name)
     ];
     SDL_GPUShaderCreateInfo  info   = {
         .stage               = stage,
