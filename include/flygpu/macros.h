@@ -32,15 +32,16 @@
 
 #define FG_RadsToDegs(r) ((r) * 180.0F / FG_PI)
 
-#define FG_DEF_ENVIRONMENT (FG_Environment){       \
-    .color = {                                     \
-        .tl = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
-        .bl = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
-        .br = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
-        .tr = { .x = 1.0F, .y = 1.0F, .z = 1.0F }  \
-    },                                             \
-    .light = { .x = 1.0F, .y = 1.0F, .z = 1.0F },  \
-    .shine = 32.0F                                 \
+#define FG_DEF_ENVIRONMENT (FG_Environment){          \
+    .color     = {                                    \
+        .tl = { .x = 1.0F, .y = 1.0F, .z = 1.0F },    \
+        .bl = { .x = 1.0F, .y = 1.0F, .z = 1.0F },    \
+        .br = { .x = 1.0F, .y = 1.0F, .z = 1.0F },    \
+        .tr = { .x = 1.0F, .y = 1.0F, .z = 1.0F }     \
+    },                                                \
+    .coords.br = { .x = 1.0F, .y = 1.0F },            \
+    .light     = { .x = 1.0F, .y = 1.0F, .z = 1.0F }, \
+    .shine     = 32.0F                                \
 }
 
 #define FG_DEF_CAMERA (FG_Camera){                       \

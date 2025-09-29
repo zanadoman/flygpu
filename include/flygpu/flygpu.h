@@ -74,6 +74,7 @@ typedef struct
 {
     SDL_GPUTexture *texture;
     FG_QuadColor    color;
+    FG_AABB         coords;
     FG_Vec3         light;
     float           shine;
 } FG_Environment;
