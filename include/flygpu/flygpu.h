@@ -46,7 +46,7 @@ typedef struct
 {
     FG_Vec2 tl;
     FG_Vec2 br;
-} FG_Rect;
+} FG_AABB;
 
 typedef struct
 {
@@ -72,7 +72,7 @@ typedef struct
 typedef struct
 {
     Sint32         priority;
-    FG_Rect        viewport;
+    FG_AABB        viewport;
     FG_Perspective perspective;
     FG_Vec3        ambient;
     FG_Transform3  transf;
@@ -103,7 +103,7 @@ typedef struct
     FG_Transform3      transf;
     const FG_Material *material;
     FG_QuadColor       color;
-    FG_Rect            coords;
+    FG_AABB            coords;
     Uint32             mask;
     Uint32             padding;
 } FG_Quad3;
