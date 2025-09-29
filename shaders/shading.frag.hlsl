@@ -37,10 +37,12 @@ struct OmniLight
 
 struct UniformBuffer
 {
-    float3 Ambient;
-    uint   DirectsSize;
     float3 Origo;
+    uint   DirectsSize;
+    float3 Ambient;
     uint   OmnisSize;
+    float3 Padding0;
+    float  Shine;
 };
 
 Texture2D<float4>             tPosition : register(t0, space2);
@@ -72,7 +74,10 @@ void accumulate(const float3 color)
             * NdotL
             * color
             + Specular
-            * pow(max(dot(Normal, normalize(LightDir + ViewDir)), 0.0F), 32.0F)
+            * pow(
+                  max(dot(Normal, normalize(LightDir + ViewDir)), 0.0F),
+                  cUniform.Shine
+              )
             * color)
             * Attenuation;
 }

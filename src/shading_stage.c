@@ -49,10 +49,12 @@ struct FG_ShadingStage
     SDL_GPUTransferBuffer         *transbufs[FG_LIGHT_VARIANTS];
     struct
     {
-        FG_Vec3 ambient;
-        Uint32  directs_size;
         FG_Vec3 origo;
+        Uint32  directs_size;
+        FG_Vec3 ambient;
         Uint32  omnis_size;
+        Uint32  padding[3];
+        float   shine;
     }                              ubo;
     SDL_GPUGraphicsPipeline       *pipeline;
 };
@@ -283,11 +285,13 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
 void FG_ShadingStageDraw(FG_ShadingStage      *self,
                          SDL_GPUCommandBuffer *cmdbuf,
                          SDL_GPURenderPass    *rndrpass,
+                         const FG_Vec3        *origo,
                          const FG_Vec3        *ambient,
-                         const FG_Vec3        *origo)
+                         float                 shine)
 {
-    self->ubo.ambient = *ambient;
     self->ubo.origo   = *origo;
+    self->ubo.ambient = *ambient;
+    self->ubo.shine   = shine;
 
     SDL_BindGPUFragmentSamplers(
         rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));

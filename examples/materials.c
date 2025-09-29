@@ -28,7 +28,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_main.h>   /* IWYU pragma: keep */
+#include <SDL3/SDL_main.h>        /* IWYU pragma: keep */
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
@@ -61,6 +61,7 @@ Sint32 main(Sint32 argc, char **argv)
 {
     SDL_Window     *window                              = NULL;
     FG_Renderer    *renderer                            = NULL;
+    FG_Environment  env                                 = FG_DEF_ENVIRONMENT;
     FG_Camera       camera                              = FG_DEF_CAMERA;
     Uint8           i                                   = 0;
     Uint8           j                                   = 0;
@@ -101,7 +102,9 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    camera.ambient = (FG_Vec3){ .x = 0.0F, .y = 0.0F, .z = 0.0F };
+    env.light = (FG_Vec3){ .x = 0.0F, .y = 0.0F, .z = 0.0F };
+
+    camera.env = &env;
 
     for (i = 0; i != SDL_arraysize(MATERIALS); ++i) {
         for (j = 0; j != SDL_arraysize(MATERIALS[i]); ++j) {

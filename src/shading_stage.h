@@ -47,8 +47,9 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
 void FG_ShadingStageDraw(FG_ShadingStage      *self,
                          SDL_GPUCommandBuffer *cmdbuf,
                          SDL_GPURenderPass    *rndrpass,
+                         const FG_Vec3        *origo,
                          const FG_Vec3        *ambient,
-                         const FG_Vec3        *origo);
+                         float                 shine);
 
 void FG_DestroyShadingStage(FG_ShadingStage *self);
 

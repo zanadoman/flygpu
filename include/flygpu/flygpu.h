@@ -64,6 +64,22 @@ typedef struct
 
 typedef struct
 {
+    FG_Vec3 tl;
+    FG_Vec3 bl;
+    FG_Vec3 br;
+    FG_Vec3 tr;
+} FG_QuadColor;
+
+typedef struct
+{
+    SDL_GPUTexture *texture;
+    FG_QuadColor    color;
+    FG_Vec3         light;
+    float           shine;
+} FG_Environment;
+
+typedef struct
+{
     FG_Vec3 transl;
     float   rotation;
     FG_Vec2 scale;
@@ -71,12 +87,13 @@ typedef struct
 
 typedef struct
 {
-    Sint32         priority;
-    FG_AABB        viewport;
-    FG_Perspective perspective;
-    FG_Vec3        ambient;
-    FG_Transform3  transf;
-    Uint32         mask;
+    Sint32          priority;
+    FG_AABB         viewport;
+    FG_Perspective  perspective;
+    FG_Environment *env;
+    FG_Transform3   transf;
+    Uint32          mask;
+    Uint32          padding;
 } FG_Camera;
 
 typedef union
@@ -89,14 +106,6 @@ typedef union
     }               maps;
     SDL_GPUTexture *iter[3];
 } FG_Material;
-
-typedef struct
-{
-    FG_Vec3 tl;
-    FG_Vec3 bl;
-    FG_Vec3 br;
-    FG_Vec3 tr;
-} FG_QuadColor;
 
 typedef struct
 {
