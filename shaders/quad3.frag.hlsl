@@ -52,10 +52,10 @@ Output main(const Input input)
     output.Albedo = tAlbedo.Sample(sAlbedo, input.TexCoord);
     if (output.Albedo.a <= 0.0F) discard;
 
-    output.Position = float4(input.Position, 0.0F);
+    output.Position = float4(input.Position, 1.0F);
     output.Normal   = float4(
         mul(tNormal.Sample(sNormal, input.TexCoord).rgb * 2.0F - 1.0F, input.TBN),
-        0.0F
+        1.0F
     );
 
     const float2 colorCoord = frac(input.TexCoord);
@@ -66,7 +66,7 @@ Output main(const Input input)
     );
 
     output.Specular    = float4(
-        color * tSpecular.Sample(sSpecular, input.TexCoord).rgb, 0.0F);
+        color * tSpecular.Sample(sSpecular, input.TexCoord).rgb, 1.0F);
     output.Albedo.rgb *= color;
 
     return output;

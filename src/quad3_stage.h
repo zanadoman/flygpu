@@ -21,8 +21,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_QUAD3STAGE_H
-#define FLYGPU_QUAD3STAGE_H
+#ifndef FLYGPU_QUAD3_STAGE_H
+#define FLYGPU_QUAD3_STAGE_H
 
 #include "../include/flygpu/flygpu.h"
 #include "linalg.h"
@@ -48,4 +48,4 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
 
 void FG_DestroyQuad3Stage(FG_Quad3Stage *self);
 
-#endif /* FLYGPU_QUAD3STAGE_H */
+#endif /* FLYGPU_QUAD3_STAGE_H */

@@ -21,8 +21,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_SHADINGSTAGE_H
-#define FLYGPU_SHADINGSTAGE_H
+#ifndef FLYGPU_SHADING_STAGE_H
+#define FLYGPU_SHADING_STAGE_H
 
 #include "../include/flygpu/flygpu.h"
 
@@ -53,4 +53,4 @@ void FG_ShadingStageDraw(FG_ShadingStage      *self,
 
 void FG_DestroyShadingStage(FG_ShadingStage *self);
 
-#endif /* FLYGPU_SHADINGSTAGE_H */
+#endif /* FLYGPU_SHADING_STAGE_H */

@@ -124,5 +124,5 @@ float4 main(const noperspective float2 TexCoord : TEXCOORD0) : SV_Target0
         accumulate(light.Color);
     }
 
-    return float4(Output, 0.0F);
+    return float4(Output, 1.0F);
 }
