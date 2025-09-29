@@ -21,7 +21,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "quad3stage.h"
+#include "quad3_stage.h"
 
 #include "../include/flygpu/flygpu.h"
 #include "config.h"

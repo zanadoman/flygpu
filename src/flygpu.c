@@ -25,8 +25,8 @@
 
 #include "config.h"
 #include "linalg.h"
-#include "quad3stage.h"
-#include "shadingstage.h"
+#include "quad3_stage.h"
+#include "shading_stage.h"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gpu.h>
