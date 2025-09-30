@@ -285,13 +285,17 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
 void FG_ShadingStageDraw(FG_ShadingStage      *self,
                          SDL_GPUCommandBuffer *cmdbuf,
                          SDL_GPURenderPass    *rndrpass,
-                         const FG_Vec3        *origo,
-                         const FG_Vec3        *ambient,
-                         float                 shine)
+                         const FG_Camera      *camera)
 {
-    self->ubo.origo   = *origo;
-    self->ubo.ambient = *ambient;
-    self->ubo.shine   = shine;
+    self->ubo.origo = camera->transf.transl;
+    if (camera->env) {
+        self->ubo.ambient = camera->env->light;
+        self->ubo.shine   = camera->env->shine;
+    }
+    else {
+        self->ubo.ambient = (FG_Vec3){ .x = 1.0F, .y = 1.0F, .z = 1.0F };
+        self->ubo.shine   = 32.0F;
+    }
 
     SDL_BindGPUFragmentSamplers(
         rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));

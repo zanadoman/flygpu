@@ -63,6 +63,24 @@ void FG_SetViewMat4(const FG_Transform3 *restrict transf, FG_Mat4 *restrict view
     };
 }
 
+void FG_MulMat4s(const FG_Mat4 *restrict lhs,
+                 const FG_Mat4 *restrict rhs,
+                 FG_Mat4       *restrict out)
+{
+    Uint8 i = 0;
+    Uint8 j = 0;
+    Uint8 k = 0;
+
+    for (i = 0; i != 4; ++i) {
+        for (j = 0; j != 4; ++j) {
+            out->m[j * 4 + i] = 0.0F;
+            for (k = 0; k != 4; ++k) {
+                out->m[j * 4 + i] += lhs->m[k * 4 + i] * rhs->m[j * 4 + k];
+            }
+        }
+    }
+}
+
 void FG_SetModelMat4(const FG_Transform3 *restrict transf, FG_Mat4 *restrict modelmat)
 {
     float cos = SDL_cosf(transf->rotation);
@@ -99,20 +117,19 @@ void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
     };
 }
 
-void FG_MulMat4s(const FG_Mat4 *restrict lhs,
-                 const FG_Mat4 *restrict rhs,
-                 FG_Mat4       *restrict out)
+void FG_SetEnvMat4(const FG_Vec2 *scale, float rotation, FG_Mat4 *envmat)
 {
-    Uint8 i = 0;
-    Uint8 j = 0;
-    Uint8 k = 0;
+    float cos = SDL_cosf(rotation);
+    float sin = SDL_sinf(rotation);
 
-    for (i = 0; i != 4; ++i) {
-        for (j = 0; j != 4; ++j) {
-            out->m[j * 4 + i] = 0.0F;
-            for (k = 0; k != 4; ++k) {
-                out->m[j * 4 + i] += lhs->m[k * 4 + i] * rhs->m[j * 4 + k];
-            }
+    *envmat = (FG_Mat4){
+        .m = {
+            [0]  = cos * scale->x,
+            [1]  = sin * scale->x,
+            [4]  = -sin * scale->y,
+            [5]  = cos * scale->y,
+            [10] = 1.0F,
+            [15] = 1.0F
         }
-    }
+    };
 }

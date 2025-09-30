@@ -23,6 +23,8 @@
 
 #include "environment_stage.h"
 
+#include "../include/flygpu/flygpu.h"
+#include "linalg.h"
 #include "shader.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -37,6 +39,11 @@ struct FG_EnvironmentStage
     SDL_GPUShader           *fragshdr;
     SDL_GPUGraphicsPipeline *pipeline;
 };
+
+typedef struct
+{
+    FG_Mat4 envmat;
+} FG_EnvironmentStageUBO;
 
 FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
                                                 SDL_GPUTextureFormat  targbuf_fmt)
@@ -56,7 +63,7 @@ FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
     self->device = device;
 
     self->vertshdr = FG_LoadShader(
-        device, "environment.vert", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 0);
+        device, "environment.vert", SDL_GPU_SHADERSTAGE_VERTEX, 0, 0, 1);
     if (!self->vertshdr) {
         FG_DestroyEnvironmentStage(self);
         return NULL;
@@ -81,8 +88,24 @@ FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
     return self;
 }
 
-void FG_EnvironmentStageDraw(FG_EnvironmentStage *self, SDL_GPURenderPass *rndrpass)
+void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
+                             SDL_GPUCommandBuffer *cmdbuf,
+                             SDL_GPURenderPass    *rndrpass,
+                             float                 width,
+                             float                 height)
 {
+    FG_EnvironmentStageUBO ubo = { 0.0F };
+
+    if (width < height) {
+        FG_SetEnvMat4(&(FG_Vec2){ .x = height / width, .y = 1.0F }, 0.0F, &ubo.envmat);
+    }
+    else if (height < width) {
+        FG_SetEnvMat4(&(FG_Vec2){ .x = 1.0F, .y = width / height }, 0.0F, &ubo.envmat);
+    }
+    else {
+        FG_SetEnvMat4(&(FG_Vec2){ .x = 1.0F, .y = 1.0F }, 0.0F, &ubo.envmat);
+    }
+    SDL_PushGPUVertexUniformData(cmdbuf, 0, &ubo, sizeof(ubo));
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, 0);
 }

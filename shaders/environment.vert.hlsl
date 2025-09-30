@@ -19,15 +19,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+struct UniformBuffer
+{
+    float4x4 ENV;
+};
+
+ConstantBuffer<UniformBuffer> cUniform : register(b0, space1);
+
 static const uint   INDICES[6]   = { 0, 1, 3, 1, 2, 3 };
 static const float4 POSITIONS[4] = {
-    float4(-0.5F, 0.5F, 0.0F, 1.0F),
-    float4(-0.5F, -0.5F, 0.0F, 1.0F),
-    float4(0.5F, -0.5F, 0.0F, 1.0F),
-    float4(0.5F, 0.5F, 0.0F, 1.0F)
+    float4(-1.41421353816986083984375F, 1.41421353816986083984375F, 0.0F, 1.0F),
+    float4(-1.41421353816986083984375F, -1.41421353816986083984375F, 0.0F, 1.0F),
+    float4(1.41421353816986083984375F, -1.41421353816986083984375F, 0.0F, 1.0F),
+    float4(1.41421353816986083984375F, 1.41421353816986083984375F, 0.0F, 1.0F)
 };
 
 float4 main(const uint VertexIndex : SV_VertexID) : SV_Position
 {
-    return POSITIONS[INDICES[VertexIndex]];
+    return mul(POSITIONS[INDICES[VertexIndex]], cUniform.ENV);
 }

@@ -31,7 +31,11 @@ typedef struct FG_EnvironmentStage FG_EnvironmentStage;
 FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
                                                 SDL_GPUTextureFormat  targbuf_fmt);
 
-void FG_EnvironmentStageDraw(FG_EnvironmentStage *self, SDL_GPURenderPass *rndrpass);
+void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
+                             SDL_GPUCommandBuffer *cmdbuf,
+                             SDL_GPURenderPass    *rndrpass,
+                             float                 width,
+                             float                 height);
 
 void FG_DestroyEnvironmentStage(FG_EnvironmentStage *self);
 

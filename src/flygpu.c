@@ -361,7 +361,13 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
 
         rndrpass = SDL_BeginGPURenderPass(cmdbuf, &swapctarg_info, 1, NULL);
         SDL_SetGPUViewport(rndrpass, &viewport);
-        FG_EnvironmentStageDraw(self->environment_stage, rndrpass);
+        FG_EnvironmentStageDraw(
+            self->environment_stage,
+            cmdbuf,
+            rndrpass,
+            viewport.w,
+            viewport.h
+        );
         viewport.x = 0.0F;
         viewport.y = 0.0F;
         viewport.w = (float)width;
@@ -376,26 +382,7 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
                 .h = (Sint32)viewport.h
             }
         );
-        if (cameras[i]->env) {
-            FG_ShadingStageDraw(
-                self->shading_stage,
-                cmdbuf,
-                rndrpass,
-                &cameras[i]->transf.transl,
-                &cameras[i]->env->light,
-                cameras[i]->env->shine
-            );
-        }
-        else {
-            FG_ShadingStageDraw(
-                self->shading_stage,
-                cmdbuf,
-                rndrpass,
-                &cameras[i]->transf.transl,
-                &(FG_Vec3){ .x = 1.0F, .y = 1.0F, .z = 1.0F },
-                32.0F
-            );
-        }
+        FG_ShadingStageDraw(self->shading_stage, cmdbuf, rndrpass, cameras[i]);
         SDL_EndGPURenderPass(rndrpass);
     }
 

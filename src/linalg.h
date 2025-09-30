@@ -40,10 +40,12 @@ void FG_SetProjMat4(const FG_Perspective *perspective, float aspect, FG_Mat4 *pr
 
 void FG_SetViewMat4(const FG_Transform3 *transf, FG_Mat4 *viewmat);
 
+void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
+
 void FG_SetModelMat4(const FG_Transform3 *transf, FG_Mat4 *modelmat);
 
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
 
-void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
+void FG_SetEnvMat4(const FG_Vec2 *scale, float rotation, FG_Mat4 *envmat);
 
 #endif /* FLYGPU_LINALG_H */
