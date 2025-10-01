@@ -379,6 +379,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
 
     SDL_BindGPUVertexBuffers(rndrpass, 0, &self->vertbuf_bind, 1);
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
+
     for (batch = self->batches_head; batch; batch = batch->next) {
         if (batch->material) {
             for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
@@ -393,6 +394,7 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
                 self->sampler_binds[i].texture = fallback->iter[i];
             }
         }
+
         SDL_BindGPUFragmentSamplers(
             rndrpass, 0, self->sampler_binds, SDL_arraysize(self->sampler_binds));
         SDL_DrawGPUPrimitives(rndrpass, 6, batch->count, 0, batch->offset);

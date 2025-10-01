@@ -21,7 +21,26 @@
 
 struct UniformBuffer
 {
-    float4x4 ENV;
+    float4x4 MATRIX;
+    float3   ColorTL;
+    uint     Padding0;
+    float3   ColorBL;
+    uint     Padding1;
+    float3   ColorBR;
+    uint     Padding2;
+    float3   ColorTR;
+    uint     Padding3;
+    float4   TexCoord;
+};
+
+struct Output
+{
+    float3 ColorTL        : TEXCOORD0;
+    float3 ColorBL        : TEXCOORD1;
+    float3 ColorBR        : TEXCOORD2;
+    float3 ColorTR        : TEXCOORD3;
+    float2 TexCoord       : TEXCOORD4;
+    float4 VertexPosition : SV_Position;
 };
 
 ConstantBuffer<UniformBuffer> cUniform : register(b0, space1);
@@ -34,7 +53,24 @@ static const float4 POSITIONS[4] = {
     float4(1.41421353816986083984375F, 1.41421353816986083984375F, 0.0F, 1.0F)
 };
 
-float4 main(const uint VertexIndex : SV_VertexID) : SV_Position
+Output main(const uint VertexIndex : SV_VertexID)
 {
-    return mul(POSITIONS[INDICES[VertexIndex]], cUniform.ENV);
+    Output output;
+
+    output.ColorTL = cUniform.ColorTL;
+    output.ColorBL = cUniform.ColorBL;
+    output.ColorBR = cUniform.ColorBR;
+    output.ColorTR = cUniform.ColorTR;
+
+    const uint i = INDICES[VertexIndex];
+
+    switch (i) {
+    case 0: output.TexCoord = cUniform.TexCoord.xy; break;
+    case 1: output.TexCoord = cUniform.TexCoord.xw; break;
+    case 2: output.TexCoord = cUniform.TexCoord.zw; break;
+    case 3: output.TexCoord = cUniform.TexCoord.zy; break;
+    }
+    output.VertexPosition = mul(POSITIONS[i], cUniform.MATRIX);
+
+    return output;
 }

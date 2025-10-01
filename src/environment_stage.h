@@ -24,6 +24,8 @@
 #ifndef FLYGPU_ENVIRONMENT_STAGE_H
 #define FLYGPU_ENVIRONMENT_STAGE_H
 
+#include "../include/flygpu/flygpu.h"
+
 #include <SDL3/SDL_gpu.h>
 
 typedef struct FG_EnvironmentStage FG_EnvironmentStage;
@@ -35,7 +37,8 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              SDL_GPUCommandBuffer *cmdbuf,
                              SDL_GPURenderPass    *rndrpass,
                              float                 width,
-                             float                 height);
+                             float                 height,
+                             const FG_Camera      *camera);
 
 void FG_DestroyEnvironmentStage(FG_EnvironmentStage *self);
 

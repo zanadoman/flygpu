@@ -19,7 +19,24 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-float4 main(void) : SV_Target0
+struct Input
 {
-    return 1.0F.xxxx;
+    nointerpolation float3 ColorTL  : TEXCOORD0;
+    nointerpolation float3 ColorBL  : TEXCOORD1;
+    nointerpolation float3 ColorBR  : TEXCOORD2;
+    nointerpolation float3 ColorTR  : TEXCOORD3;
+    noperspective   float2 TexCoord : TEXCOORD4;
+};
+
+float4 main(const Input input) : SV_Target0
+{
+    const float2 colorCoord = frac(input.TexCoord);
+    return float4(
+        lerp(
+            lerp(input.ColorTL, input.ColorTR, colorCoord.x),
+            lerp(input.ColorBL, input.ColorBR, colorCoord.x),
+            colorCoord.y
+        ),
+        1.0F
+    );
 }

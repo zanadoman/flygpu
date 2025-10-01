@@ -42,7 +42,16 @@ struct FG_EnvironmentStage
 
 typedef struct
 {
-    FG_Mat4 envmat;
+    FG_Mat4 matrix;
+    FG_Vec3 color_tl;
+    Uint32  padding0;
+    FG_Vec3 color_bl;
+    Uint32  padding1;
+    FG_Vec3 color_br;
+    Uint32  padding2;
+    FG_Vec3 color_tr;
+    Uint32  padding3;
+    FG_AABB coords;
 } FG_EnvironmentStageUBO;
 
 FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
@@ -92,19 +101,37 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              SDL_GPUCommandBuffer *cmdbuf,
                              SDL_GPURenderPass    *rndrpass,
                              float                 width,
-                             float                 height)
+                             float                 height,
+                             const FG_Camera      *camera)
 {
-    FG_EnvironmentStageUBO ubo = { 0.0F };
+    FG_EnvironmentStageUBO ubo = { 0 };
 
     if (width < height) {
-        FG_SetEnvMat4(&(FG_Vec2){ .x = height / width, .y = 1.0F }, 0.0F, &ubo.envmat);
+        FG_SetEnvMat4(
+            &(FG_Vec2){ .x = height / width, .y = 1.0F },
+            camera->transf.rotation,
+            &ubo.matrix
+        );
     }
     else if (height < width) {
-        FG_SetEnvMat4(&(FG_Vec2){ .x = 1.0F, .y = width / height }, 0.0F, &ubo.envmat);
+        FG_SetEnvMat4(
+            &(FG_Vec2){ .x = 1.0F, .y = width / height },
+            camera->transf.rotation,
+            &ubo.matrix
+        );
     }
     else {
-        FG_SetEnvMat4(&(FG_Vec2){ .x = 1.0F, .y = 1.0F }, 0.0F, &ubo.envmat);
+        FG_SetEnvMat4(
+            &(FG_Vec2){ .x = 1.0F, .y = 1.0F }, camera->transf.rotation, &ubo.matrix);
     }
+    if (camera->env) {
+        ubo.color_tl = camera->env->color.tl;
+        ubo.color_bl = camera->env->color.bl;
+        ubo.color_br = camera->env->color.br;
+        ubo.color_tr = camera->env->color.tr;
+        ubo.coords   = camera->env->coords;
+    }
+
     SDL_PushGPUVertexUniformData(cmdbuf, 0, &ubo, sizeof(ubo));
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, 0);

@@ -366,7 +366,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             cmdbuf,
             rndrpass,
             viewport.w,
-            viewport.h
+            viewport.h,
+            cameras[i]
         );
         viewport.x = 0.0F;
         viewport.y = 0.0F;
