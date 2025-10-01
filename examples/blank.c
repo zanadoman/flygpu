@@ -66,7 +66,16 @@ Sint32 main(Sint32 argc, char **argv)
     }
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
-        if (!FG_RendererDraw(renderer, &(FG_RendererDrawInfo){ 0 })) {
+        if (!FG_RendererDraw(
+            renderer,
+            &(FG_RendererDrawInfo){
+                .color = {
+                    .x = 100.0F / 255.0F,
+                    .y = 149.0F / 255.0F,
+                    .z = 237.0F / 255.0F
+                }
+            })
+        ) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }

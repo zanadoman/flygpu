@@ -168,17 +168,20 @@ Sint32 main(Sint32 argc, char **argv)
             direct.direction.y = y;
         }
 
-        if (!FG_RendererDraw(renderer, &(FG_RendererDrawInfo){
-            .camera_count = 1,
-            .cameras      = &camera,
-            .quad3_info   = { .count = 1, .quad3s = &quad3 },
-            .shading_info = {
-                .direct_count = 1,
-                .omni_count   = 1,
-                .directs      = &direct,
-                .omnis        = &omni
-            }
-        })) {
+        if (!FG_RendererDraw(
+            renderer,
+            &(FG_RendererDrawInfo){
+                .camera_count = 1,
+                .cameras      = &camera,
+                .quad3_info   = { .count = 1, .quad3s = &quad3 },
+                .shading_info = {
+                    .direct_count = 1,
+                    .omni_count   = 1,
+                    .directs      = &direct,
+                    .omnis        = &omni
+                }
+            })
+        ) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }

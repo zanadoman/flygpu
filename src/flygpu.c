@@ -266,7 +266,14 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     const FG_Camera        *cameras[info->camera_count];
     SDL_GPUCommandBuffer   *cmdbuf                      = SDL_AcquireGPUCommandBuffer(
         self->device);
-    SDL_GPUColorTargetInfo  swapctarg_info              = { 0 };
+    SDL_GPUColorTargetInfo  swapctarg_info              = {
+        .clear_color = {
+            .r = info->color.x,
+            .g = info->color.y,
+            .b = info->color.z,
+            .a = 1.0F
+        }
+    };
     Uint32                  width                       = 0;
     Uint32                  height                      = 0;
     SDL_GPURenderPass      *rndrpass                    = NULL;

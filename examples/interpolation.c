@@ -133,11 +133,14 @@ Sint32 main(Sint32 argc, char **argv)
     quad3s[3].color.br.y    = 0.0F;
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
-        if (!FG_RendererDraw(renderer, &(FG_RendererDrawInfo){
-            .camera_count = 1,
-            .cameras      = &camera,
-            .quad3_info   = { .count = SDL_arraysize(quad3s), .quad3s = quad3s }
-        })) {
+        if (!FG_RendererDraw(
+            renderer,
+            &(FG_RendererDrawInfo){
+                .camera_count = 1,
+                .cameras      = &camera,
+                .quad3_info   = { .count = SDL_arraysize(quad3s), .quad3s = quad3s }
+            })
+        ) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }

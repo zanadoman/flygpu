@@ -151,8 +151,8 @@ typedef struct
 
 typedef struct
 {
+    FG_Vec3                  color;
     Uint32                   camera_count;
-    Uint32                   padding;
     const FG_Camera         *cameras;
     FG_Quad3StageDrawInfo    quad3_info;
     FG_ShadingStageDrawInfo  shading_info;

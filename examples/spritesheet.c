@@ -139,11 +139,14 @@ Sint32 main(Sint32 argc, char **argv)
             quad3s[i].coords.br.x = quad3s[i].coords.tl.x + 1.0F / FRAMES;
         }
 
-        if (!FG_RendererDraw(renderer, &(FG_RendererDrawInfo){
-            .camera_count = 1,
-            .cameras      = &camera,
-            .quad3_info   = { .count = SDL_arraysize(quad3s), .quad3s = quad3s }
-        })) {
+        if (!FG_RendererDraw(
+            renderer,
+            &(FG_RendererDrawInfo){
+                .camera_count = 1,
+                .cameras      = &camera,
+                .quad3_info   = { .count = SDL_arraysize(quad3s), .quad3s = quad3s }
+            })
+        ) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }
