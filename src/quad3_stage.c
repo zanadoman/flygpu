@@ -383,10 +383,9 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
     for (batch = self->batches_head; batch; batch = batch->next) {
         if (batch->material) {
             for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
-                if (batch->material->iter[i]) {
-                    self->sampler_binds[i].texture = batch->material->iter[i];
-                }
-                else self->sampler_binds[i].texture = fallback->iter[i];
+                self->sampler_binds[i].texture = batch->material->iter[i]
+                    ? batch->material->iter[i]
+                    : fallback->iter[i];
             }
         }
         else {

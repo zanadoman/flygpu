@@ -28,15 +28,20 @@ struct Input
     noperspective   float2 TexCoord : TEXCOORD4;
 };
 
+Texture2D<float4> tTexture : register(t0, space2);
+SamplerState      sTexture : register(s0, space2);
+
 float4 main(const Input input) : SV_Target0
 {
-    const float2 colorCoord = frac(input.TexCoord);
-    return float4(
-        lerp(
-            lerp(input.ColorTL, input.ColorTR, colorCoord.x),
-            lerp(input.ColorBL, input.ColorBR, colorCoord.x),
-            colorCoord.y
-        ),
-        1.0F
+    float4 output = tTexture.Sample(sTexture, input.TexCoord);
+    if (output.a <= 0.0F) discard;
+
+    const float2 colorCoord  = frac(input.TexCoord);
+    output.rgb              *= lerp(
+        lerp(input.ColorTL, input.ColorTR, colorCoord.x),
+        lerp(input.ColorBL, input.ColorBR, colorCoord.x),
+        colorCoord.y
     );
+
+    return output;
 }

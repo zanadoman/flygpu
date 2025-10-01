@@ -374,7 +374,8 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
             rndrpass,
             viewport.w,
             viewport.h,
-            cameras[i]
+            cameras[i],
+            self->material.maps.albedo
         );
         viewport.x = 0.0F;
         viewport.y = 0.0F;

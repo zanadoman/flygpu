@@ -38,7 +38,8 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              SDL_GPURenderPass    *rndrpass,
                              float                 width,
                              float                 height,
-                             const FG_Camera      *camera);
+                             const FG_Camera      *camera,
+                             SDL_GPUTexture       *fallback);
 
 void FG_DestroyEnvironmentStage(FG_EnvironmentStage *self);
 

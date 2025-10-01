@@ -34,10 +34,11 @@
 
 struct FG_EnvironmentStage
 {
-    SDL_GPUDevice           *device;
-    SDL_GPUShader           *vertshdr;
-    SDL_GPUShader           *fragshdr;
-    SDL_GPUGraphicsPipeline *pipeline;
+    SDL_GPUDevice                *device;
+    SDL_GPUShader                *vertshdr;
+    SDL_GPUShader                *fragshdr;
+    SDL_GPUTextureSamplerBinding  sampler_bind;
+    SDL_GPUGraphicsPipeline      *pipeline;
 };
 
 typedef struct
@@ -57,8 +58,11 @@ typedef struct
 FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
                                                 SDL_GPUTextureFormat  targbuf_fmt)
 {
-    FG_EnvironmentStage               *self = SDL_calloc(1, sizeof(*self));
-    SDL_GPUGraphicsPipelineCreateInfo  info = {
+    FG_EnvironmentStage               *self         = SDL_calloc(1, sizeof(*self));
+    SDL_GPUSamplerCreateInfo           sampler_info = {
+        .min_filter = SDL_GPU_FILTER_LINEAR
+    };
+    SDL_GPUGraphicsPipelineCreateInfo  info         = {
         .target_info = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
                 .format = targbuf_fmt
@@ -79,8 +83,14 @@ FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
     }
 
     self->fragshdr = FG_LoadShader(
-        device, "environment.frag", SDL_GPU_SHADERSTAGE_FRAGMENT, 0, 0, 0);
+        device, "environment.frag", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0, 0);
     if (!self->fragshdr) {
+        FG_DestroyEnvironmentStage(self);
+        return NULL;
+    }
+
+    self->sampler_bind.sampler = SDL_CreateGPUSampler(self->device, &sampler_info);
+    if (!self->sampler_bind.sampler) {
         FG_DestroyEnvironmentStage(self);
         return NULL;
     }
@@ -102,7 +112,8 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              SDL_GPURenderPass    *rndrpass,
                              float                 width,
                              float                 height,
-                             const FG_Camera      *camera)
+                             const FG_Camera      *camera,
+                             SDL_GPUTexture       *fallback)
 {
     FG_EnvironmentStageUBO ubo = { 0 };
 
@@ -130,9 +141,14 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
         ubo.color_br = camera->env->color.br;
         ubo.color_tr = camera->env->color.tr;
         ubo.coords   = camera->env->coords;
+
+        self->sampler_bind.texture = camera->env->texture ? camera->env->texture
+                                                          : fallback;
     }
+    else self->sampler_bind.texture = fallback;
 
     SDL_PushGPUVertexUniformData(cmdbuf, 0, &ubo, sizeof(ubo));
+    SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->sampler_bind, 1);
     SDL_BindGPUGraphicsPipeline(rndrpass, self->pipeline);
     SDL_DrawGPUPrimitives(rndrpass, 6, 1, 0, 0);
 }
@@ -141,6 +157,7 @@ void FG_DestroyEnvironmentStage(FG_EnvironmentStage *self)
 {
     if (!self) return;
     SDL_ReleaseGPUGraphicsPipeline(self->device, self->pipeline);
+    SDL_ReleaseGPUSampler(self->device, self->sampler_bind.sampler);
     SDL_ReleaseGPUShader(self->device, self->fragshdr);
     SDL_ReleaseGPUShader(self->device, self->vertshdr);
     SDL_free(self);
