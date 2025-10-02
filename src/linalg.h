@@ -26,6 +26,8 @@
 
 #include "../include/flygpu/flygpu.h"
 
+#define FG_SQRT2F 1.41421353816986083984375F
+
 typedef struct
 {
     float m[3 * 3];
@@ -45,6 +47,8 @@ void FG_MulMat4s(const FG_Mat4 *lhs, const FG_Mat4 *rhs, FG_Mat4 *out);
 void FG_SetModelMat4(const FG_Transform3 *transf, FG_Mat4 *modelmat);
 
 void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat);
+
+float FG_hypot1f(float y);
 
 void FG_SetEnvMat4(const FG_Vec2 *scale, float rotation, FG_Mat4 *envmat);
 

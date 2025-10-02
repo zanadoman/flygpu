@@ -115,26 +115,20 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              const FG_Camera      *camera,
                              SDL_GPUTexture       *fallback)
 {
-    FG_EnvironmentStageUBO ubo = { 0 };
+    FG_Vec2                scale = { .x = FG_SQRT2F, .y = FG_SQRT2F };
+    FG_EnvironmentStageUBO ubo   = { 0 };
 
     if (width < height) {
-        FG_SetEnvMat4(
-            &(FG_Vec2){ .x = height / width, .y = 1.0F },
-            camera->transf.rotation,
-            &ubo.matrix
-        );
+        scale.y = FG_hypot1f(width / height);
+        scale.x = scale.y * height / width;
+        FG_SetEnvMat4(&scale, camera->transf.rotation, &ubo.matrix);
     }
     else if (height < width) {
-        FG_SetEnvMat4(
-            &(FG_Vec2){ .x = 1.0F, .y = width / height },
-            camera->transf.rotation,
-            &ubo.matrix
-        );
+        scale.x = FG_hypot1f(height / width);
+        scale.y = scale.x * width / height;
+        FG_SetEnvMat4(&scale, camera->transf.rotation, &ubo.matrix);
     }
-    else {
-        FG_SetEnvMat4(
-            &(FG_Vec2){ .x = 1.0F, .y = 1.0F }, camera->transf.rotation, &ubo.matrix);
-    }
+    else FG_SetEnvMat4(&scale, camera->transf.rotation, &ubo.matrix);
     if (camera->env) {
         ubo.color_tl = camera->env->color.tl;
         ubo.color_bl = camera->env->color.bl;

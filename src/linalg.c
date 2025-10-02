@@ -117,6 +117,11 @@ void FG_SetTBNMat3(float rotation, FG_Mat3 *tbnmat)
     };
 }
 
+float FG_hypot1f(float y)
+{
+    return SDL_sqrtf(1.0F + y * y);
+}
+
 void FG_SetEnvMat4(const FG_Vec2 *scale, float rotation, FG_Mat4 *envmat)
 {
     float cos = SDL_cosf(rotation);

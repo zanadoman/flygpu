@@ -47,10 +47,10 @@ ConstantBuffer<UniformBuffer> cUniform : register(b0, space1);
 
 static const uint   INDICES[6]   = { 0, 1, 3, 1, 2, 3 };
 static const float4 POSITIONS[4] = {
-    float4(-1.41421353816986083984375F, 1.41421353816986083984375F, 0.0F, 1.0F),
-    float4(-1.41421353816986083984375F, -1.41421353816986083984375F, 0.0F, 1.0F),
-    float4(1.41421353816986083984375F, -1.41421353816986083984375F, 0.0F, 1.0F),
-    float4(1.41421353816986083984375F, 1.41421353816986083984375F, 0.0F, 1.0F)
+    float4(-1.0F, 1.0F, 0.0F, 1.0F),
+    float4(-1.0F, -1.0F, 0.0F, 1.0F),
+    float4(1.0F, -1.0F, 0.0F, 1.0F),
+    float4(1.0F, 1.0F, 0.0F, 1.0F)
 };
 
 Output main(const uint VertexIndex : SV_VertexID)
