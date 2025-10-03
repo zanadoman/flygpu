@@ -114,8 +114,10 @@ Sint32 main(Sint32 argc, char **argv)
                 abort();
             }
 
-            FG_RendererCreateTexture(renderer, surface, i != 0, materials[i].iter + j);
-            if (!materials[i].iter[j]) {
+            if (!FG_RendererCreateTexture(
+                renderer, surface, i != 0, materials[i].iter + j) ||
+                !materials[i].iter[j]
+            ) {
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
                 abort();
             }

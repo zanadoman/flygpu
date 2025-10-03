@@ -259,27 +259,27 @@ bool FG_ShadingStageCopy(FG_ShadingStage               *self,
                          const FG_ShadingStageDrawInfo *info)
 {
     return FG_ShadingStageSubCopy(
-        self,
-        cpypass,
-        0,
-        &self->ubo.directs_size,
-        info->directs,
-        info->direct_count,
-        sizeof(*info->directs),
-        mask,
-        FG_AmbientLightFilter
-    ) &&
-    FG_ShadingStageSubCopy(
-        self,
-        cpypass,
-        1,
-        &self->ubo.omnis_size,
-        info->omnis,
-        info->omni_count,
-        sizeof(*info->omnis),
-        mask,
-        FG_OmniLightFilter
-    );
+               self,
+               cpypass,
+               0,
+               &self->ubo.directs_size,
+               info->directs,
+               info->direct_count,
+               sizeof(*info->directs),
+               mask,
+               FG_AmbientLightFilter
+           ) &&
+           FG_ShadingStageSubCopy(
+               self,
+               cpypass,
+               1,
+               &self->ubo.omnis_size,
+               info->omnis,
+               info->omni_count,
+               sizeof(*info->omnis),
+               mask,
+               FG_OmniLightFilter
+           );
 }
 
 void FG_ShadingStageDraw(FG_ShadingStage      *self,

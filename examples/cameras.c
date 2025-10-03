@@ -99,8 +99,9 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    FG_RendererCreateTexture(renderer, surface, false, &env.texture);
-    if (!env.texture) {
+    if (!FG_RendererCreateTexture(renderer, surface, false, &env.texture) ||
+        !env.texture
+    ) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();
     }
@@ -130,8 +131,10 @@ Sint32 main(Sint32 argc, char **argv)
             .y = (float)surface->h * 0.01F
         };
 
-        FG_RendererCreateTexture(renderer, surface, false, &materials[i].maps.albedo);
-        if (!materials[i].maps.albedo) {
+        if (!FG_RendererCreateTexture(
+            renderer, surface, false, &materials[i].maps.albedo) ||
+            !materials[i].maps.albedo
+        ) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }

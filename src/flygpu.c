@@ -132,24 +132,30 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     surface.pixels = &(Uint32){ 0xFFFFFFFF };
 
-    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.albedo);
-    if (!self->material.maps.albedo) {
+    if (!FG_RendererCreateTexture(
+        self, &surface, false, &self->material.maps.albedo) ||
+        !self->material.maps.albedo
+    ) {
         FG_DestroyRenderer(self);
         return NULL;
     }
 
     surface.pixels = &(Uint32){ 0xFF0A0A0A };
 
-    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.specular);
-    if (!self->material.maps.specular) {
+    if (!FG_RendererCreateTexture(
+        self, &surface, false, &self->material.maps.specular) ||
+        !self->material.maps.specular
+    ) {
         FG_DestroyRenderer(self);
         return NULL;
     }
 
     surface.pixels = &(Uint32){ 0xFFFF8080 };
 
-    FG_RendererCreateTexture(self, &surface, false, &self->material.maps.normal);
-    if (!self->material.maps.normal) {
+    if (!FG_RendererCreateTexture(
+        self, &surface, false, &self->material.maps.normal) ||
+        !self->material.maps.normal
+    ) {
         FG_DestroyRenderer(self);
         return NULL;
     }
