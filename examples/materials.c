@@ -72,10 +72,10 @@ Sint32 main(Sint32 argc, char **argv)
     FG_OmniLight    omni                                = FG_DEF_OMNI_LIGHT;
     SDL_Event       event                               = { 0 };
     Uint32          buttons                             = 0;
-    float           x                                   = 0.0F;
-    float           y                                   = 0.0F;
     Sint32          width                               = 0;
     Sint32          height                              = 0;
+    float           x                                   = 0.0F;
+    float           y                                   = 0.0F;
 
     (void)argc;
     (void)argv;
@@ -102,7 +102,8 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    env.light = (FG_Vec3){ .x = 0.0F, .y = 0.0F, .z = 0.0F };
+    env.color = (FG_QuadColor){ 0 };
+    env.light = (FG_Vec3){ 0 };
 
     camera.env = &env;
 
@@ -141,7 +142,7 @@ Sint32 main(Sint32 argc, char **argv)
             if (event.type == SDL_EVENT_MOUSE_WHEEL) {
                 quad3.material += (Sint32)event.wheel.y;
                 if (quad3.material < materials) {
-                    quad3.material = SDL_arraysize(materials) - 1 + materials;
+                    quad3.material = materials + SDL_arraysize(materials) - 1;
                 }
                 else if (materials + SDL_arraysize(materials) <= quad3.material) {
                     quad3.material = materials;
@@ -152,13 +153,13 @@ Sint32 main(Sint32 argc, char **argv)
 
         buttons = SDL_GetMouseState(&x, &y);
 
-        x = (x / (float)width - 0.5F) * ((float)width / (float)height);
-        y = -y / (float)height + 0.5F;
-
         if (!SDL_GetWindowSizeInPixels(window, &width, &height)) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
         }
+
+        x = (x / (float)width - 0.5F) * ((float)width / (float)height);
+        y = -y / (float)height + 0.5F;
 
         if ((buttons & SDL_BUTTON_LMASK) == SDL_BUTTON_LMASK) {
             omni.transl.x = x;
