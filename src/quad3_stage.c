@@ -27,6 +27,7 @@
 #include "config.h"
 #include "linalg.h"
 #include "shader.h"
+#include "texture.h"                  /* IWYU pragma: keep */
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
@@ -384,13 +385,13 @@ void FG_Quad3StageDraw(FG_Quad3Stage     *self,
         if (batch->material) {
             for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
                 self->sampler_binds[i].texture = batch->material->iter[i]
-                    ? batch->material->iter[i]
-                    : fallback->iter[i];
+                    ? batch->material->iter[i]->texture
+                    : fallback->iter[i]->texture;
             }
         }
         else {
             for (i = 0; i != SDL_arraysize(self->sampler_binds); ++i) {
-                self->sampler_binds[i].texture = fallback->iter[i];
+                self->sampler_binds[i].texture = fallback->iter[i]->texture;
             }
         }
 

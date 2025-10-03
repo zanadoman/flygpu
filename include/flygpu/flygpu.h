@@ -24,7 +24,6 @@
 #ifndef FLYGPU_FLYGPU_H
 #define FLYGPU_FLYGPU_H
 
-#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
@@ -70,13 +69,15 @@ typedef struct
     FG_Vec3 tr;
 } FG_QuadColor;
 
+typedef struct FG_Texture FG_Texture;
+
 typedef struct
 {
-    SDL_GPUTexture *texture;
-    FG_QuadColor    color;
-    FG_AABB         coords;
-    FG_Vec3         light;
-    float           shine;
+    FG_Texture   *texture;
+    FG_QuadColor  color;
+    FG_AABB       coords;
+    FG_Vec3       light;
+    float         shine;
 } FG_Environment;
 
 typedef struct
@@ -101,11 +102,11 @@ typedef union
 {
     struct
     {
-        SDL_GPUTexture *albedo;
-        SDL_GPUTexture *specular;
-        SDL_GPUTexture *normal;
-    }               maps;
-    SDL_GPUTexture *iter[3];
+        FG_Texture *albedo;
+        FG_Texture *specular;
+        FG_Texture *normal;
+    }           maps;
+    FG_Texture *iter[3];
 } FG_Material;
 
 typedef struct
@@ -167,13 +168,13 @@ SDL_DECLSPEC FG_Renderer * SDLCALL FG_CreateRenderer(SDL_Window *window,
 SDL_DECLSPEC bool SDLCALL FG_RendererCreateTexture(FG_Renderer        *self,
                                                    const SDL_Surface  *surface,
                                                    bool                mipmaps,
-                                                   SDL_GPUTexture    **texture);
+                                                   FG_Texture        **texture);
 
 SDL_DECLSPEC bool SDLCALL FG_RendererDraw(FG_Renderer               *self,
                                           const FG_RendererDrawInfo *info);
 
-SDL_DECLSPEC void SDLCALL FG_RendererDestroyTexture(FG_Renderer    *self,
-                                                    SDL_GPUTexture *texture);
+SDL_DECLSPEC void SDLCALL FG_RendererDestroyTexture(FG_Renderer *self,
+                                                    FG_Texture  *texture);
 
 SDL_DECLSPEC void SDLCALL FG_DestroyRenderer(FG_Renderer *self);
 

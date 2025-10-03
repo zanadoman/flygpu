@@ -26,6 +26,7 @@
 #include "../include/flygpu/flygpu.h"
 #include "linalg.h"
 #include "shader.h"
+#include "texture.h"                  /* IWYU pragma: keep */
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
@@ -113,7 +114,7 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
                              float                 width,
                              float                 height,
                              const FG_Camera      *camera,
-                             SDL_GPUTexture       *fallback)
+                             FG_Texture           *fallback)
 {
     FG_Vec2                scale = { .x = FG_SQRT2F, .y = FG_SQRT2F };
     FG_EnvironmentStageUBO ubo   = { 0 };
@@ -136,10 +137,11 @@ void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
         ubo.color_tr = camera->env->color.tr;
         ubo.coords   = camera->env->coords;
 
-        self->sampler_bind.texture = camera->env->texture ? camera->env->texture
-                                                          : fallback;
+        self->sampler_bind.texture = camera->env->texture
+            ? camera->env->texture->texture
+            : fallback->texture;
     }
-    else self->sampler_bind.texture = fallback;
+    else self->sampler_bind.texture = fallback->texture;
 
     SDL_PushGPUVertexUniformData(cmdbuf, 0, &ubo, sizeof(ubo));
     SDL_BindGPUFragmentSamplers(rndrpass, 0, &self->sampler_bind, 1);

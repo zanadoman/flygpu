@@ -21,26 +21,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef FLYGPU_ENVIRONMENT_STAGE_H
-#define FLYGPU_ENVIRONMENT_STAGE_H
-
-#include "../include/flygpu/flygpu.h"
+#ifndef FLYGPU_TEXTURE_H
+#define FLYGPU_TEXTURE_H
 
 #include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_stdinc.h>
 
-typedef struct FG_EnvironmentStage FG_EnvironmentStage;
+typedef struct FG_TargBufs FG_TargBufs;
 
-FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
-                                                SDL_GPUTextureFormat  targbuf_fmt);
+struct FG_Texture
+{
+    SDL_GPUTexture *texture;
+    Uint32          width;
+    Uint32          height;
+    Uint32          levels;
+    Uint32          padding;
+    FG_TargBufs    *targbufs;
+};
 
-void FG_EnvironmentStageDraw(FG_EnvironmentStage  *self,
-                             SDL_GPUCommandBuffer *cmdbuf,
-                             SDL_GPURenderPass    *rndrpass,
-                             float                 width,
-                             float                 height,
-                             const FG_Camera      *camera,
-                             FG_Texture           *fallback);
-
-void FG_DestroyEnvironmentStage(FG_EnvironmentStage *self);
-
-#endif /* FLYGPU_ENVIRONMENT_STAGE_H */
+#endif /* FLYGPU_TEXTURE_H */

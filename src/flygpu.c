@@ -28,6 +28,7 @@
 #include "linalg.h"
 #include "quad3_stage.h"
 #include "shading_stage.h"
+#include "texture.h"           /* IWYU pragma: keep */
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gpu.h>
@@ -166,7 +167,7 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 bool FG_RendererCreateTexture(FG_Renderer        *self,
                               const SDL_Surface  *surface,
                               bool                mipmaps,
-                              SDL_GPUTexture    **texture)
+                              FG_Texture        **texture)
 {
     const SDL_PixelFormatDetails *details  = SDL_GetPixelFormatDetails(
         surface->format);
@@ -209,11 +210,14 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         return true;
     }
 
+    *texture = SDL_calloc(1, sizeof(**texture));
+    if (!*texture) return true;
+
     if (mipmaps) {
         info.num_levels += (Uint32)(SDL_logf((float)SDL_max(info.width, info.height)));
     }
 
-    *texture = SDL_CreateGPUTexture(self->device, &info);
+    (*texture)->texture = SDL_CreateGPUTexture(self->device, &info);
     if (!texture) return false;
 
     if (self->transbuf_info.size < (Uint32)size) {
@@ -240,7 +244,7 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
         cpypass,
         &(SDL_GPUTextureTransferInfo){ .transfer_buffer = self->transbuf },
         &(SDL_GPUTextureRegion){
-            .texture = *texture,
+            .texture = (*texture)->texture,
             .w       = info.width,
             .h       = info.height,
             .d       = 1
@@ -249,7 +253,9 @@ bool FG_RendererCreateTexture(FG_Renderer        *self,
     );
     SDL_EndGPUCopyPass(cpypass);
 
-    if (1 < info.num_levels) SDL_GenerateMipmapsForGPUTexture(cmdbuf, *texture);
+    if (1 < info.num_levels) {
+        SDL_GenerateMipmapsForGPUTexture(cmdbuf, (*texture)->texture);
+    }
 
     if (self->fence) {
         if (!SDL_WaitForGPUFences(self->device, true, &self->fence, 1)) return false;
@@ -410,9 +416,12 @@ bool FG_RendererDraw(FG_Renderer *self, const FG_RendererDrawInfo *info)
     return SDL_SubmitGPUCommandBuffer(cmdbuf);
 }
 
-void FG_RendererDestroyTexture(FG_Renderer *self, SDL_GPUTexture *texture)
+void FG_RendererDestroyTexture(FG_Renderer *self, FG_Texture *texture)
 {
-    SDL_ReleaseGPUTexture(self->device, texture);
+    if (!texture) return;
+    SDL_free(texture->targbufs);
+    SDL_ReleaseGPUTexture(self->device, texture->texture);
+    SDL_free(texture);
 }
 
 void FG_DestroyRenderer(FG_Renderer *self)
@@ -421,7 +430,7 @@ void FG_DestroyRenderer(FG_Renderer *self)
 
     if (!self) return;
     for (i = 0; i != SDL_arraysize(self->material.iter); ++i) {
-        SDL_ReleaseGPUTexture(self->device, self->material.iter[i]);
+        FG_RendererDestroyTexture(self, self->material.iter[i]);
     }
     FG_DestroyEnvironmentStage(self->environment_stage);
     FG_DestroyQuad3Stage(self->quad3_stage);
