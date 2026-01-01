@@ -2,7 +2,7 @@
 
 /*
   FlyGPU
-  Copyright (C) 2025 Domán Zana
+  Copyright (C) 2025-2026 Domán Zana
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
