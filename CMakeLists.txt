@@ -69,15 +69,13 @@ install(
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-find_package(SDL3_image OPTIONAL CONFIG)
 find_package(SDL3 OPTIONAL CONFIG COMPONENTS SDL3)
-if(TARGET SDL3_image::SDL3_image AND TARGET SDL3::SDL3)
+if(TARGET SDL3::SDL3)
   file(GLOB_RECURSE EXAMPLES ${CMAKE_SOURCE_DIR}/examples/*.c)
   foreach(SOURCE ${EXAMPLES})
     get_filename_component(EXAMPLE ${SOURCE} NAME_WLE)
     add_executable(${EXAMPLE} WIN32 ${SOURCE})
-    target_link_libraries(
-      ${EXAMPLE} PRIVATE SDL3_image::SDL3_image SDL3::SDL3 ${PROJECT_NAME})
+    target_link_libraries(${EXAMPLE} PRIVATE SDL3::SDL3 ${PROJECT_NAME})
     add_custom_command(
       TARGET ${EXAMPLE} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy -t

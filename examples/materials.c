@@ -33,7 +33,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3_image/SDL_image.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -109,7 +108,7 @@ Sint32 main(Sint32 argc, char **argv)
 
     for (i = 0; i != SDL_arraysize(MATERIALS); ++i) {
         for (j = 0; j != SDL_arraysize(MATERIALS[i]); ++j) {
-            surface = IMG_Load(MATERIALS[i][j]);
+            surface = SDL_LoadPNG(MATERIALS[i][j]);
             if (!surface) {
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
                 abort();

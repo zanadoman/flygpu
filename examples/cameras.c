@@ -35,7 +35,6 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
-#include <SDL3_image/SDL_image.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -93,7 +92,7 @@ Sint32 main(Sint32 argc, char **argv)
         abort();
     }
 
-    surface = IMG_Load("./assets/texture.png");
+    surface = SDL_LoadPNG("./assets/texture.png");
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
         abort();
@@ -120,7 +119,7 @@ Sint32 main(Sint32 argc, char **argv)
         quad3s[i]                 = FG_DEF_QUAD3;
         quad3s[i].transf.transl.z = (float)(i + 1) * -5.0F;
 
-        surface = IMG_Load(ALBEDOS[i]);
+        surface = SDL_LoadPNG(ALBEDOS[i]);
         if (!surface) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s\n", SDL_GetError());
             abort();
