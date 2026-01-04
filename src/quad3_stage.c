@@ -180,7 +180,10 @@ FG_Quad3Stage * FG_CreateQuad3Stage(SDL_GPUDevice *device)
             .vertex_attributes          = vertattrs,
             .num_vertex_attributes      = SDL_arraysize(vertattrs)
         },
-        .rasterizer_state    = { .cull_mode = SDL_GPU_CULLMODE_BACK },
+        .rasterizer_state    = {
+            .cull_mode         = SDL_GPU_CULLMODE_BACK,
+            .enable_depth_clip = true
+        },
         .depth_stencil_state = {
             .compare_op         = SDL_GPU_COMPAREOP_LESS,
             .enable_depth_test  = true,

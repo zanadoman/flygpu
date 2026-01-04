@@ -28,8 +28,9 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_main.h>        /* IWYU pragma: keep */
+#include <SDL3/SDL_main.h>     /* IWYU pragma: keep */
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
@@ -138,8 +139,9 @@ Sint32 main(Sint32 argc, char **argv)
 
     while (!SDL_HasEvent(SDL_EVENT_QUIT)) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_MOUSE_WHEEL) {
-                quad3.material += (Sint32)event.wheel.y;
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+                if (event.key.scancode == SDL_SCANCODE_LEFT)  --quad3.material;
+                if (event.key.scancode == SDL_SCANCODE_RIGHT) ++quad3.material;
                 if (quad3.material < materials) {
                     quad3.material = materials + SDL_arraysize(materials) - 1;
                 }

@@ -32,6 +32,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
@@ -63,6 +64,7 @@ static Sint32 SDLCALL FG_CameraComparator(const void *lhs, const void *rhs);
 FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 {
     FG_Renderer          *self        = SDL_calloc(1, sizeof(*self));
+    SDL_PropertiesID      props       = 0;
     Uint8                 i           = 0;
     SDL_GPUTextureFormat  targbuf_fmt = SDL_GPU_TEXTUREFORMAT_INVALID;
     SDL_Surface           surface     = {
@@ -75,8 +77,83 @@ FG_Renderer * FG_CreateRenderer(SDL_Window *window, bool vsync, bool debug)
 
     self->window = window;
 
-    self->device = SDL_CreateGPUDevice(
-        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, debug, NULL);
+    props = SDL_CreateProperties();
+    if (!props) {
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN,
+        debug
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN,
+        true
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN,
+        true
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN,
+        false
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN,
+        false
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(props,
+        SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN,
+        false
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    if (!SDL_SetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN,
+        false
+    )) {
+        SDL_DestroyProperties(props);
+        FG_DestroyRenderer(self);
+        return NULL;
+    }
+
+    self->device = SDL_CreateGPUDeviceWithProperties(props);
+    SDL_DestroyProperties(props);
     if (!self->device) {
         FG_DestroyRenderer(self);
         return NULL;

@@ -63,7 +63,8 @@ FG_EnvironmentStage * FG_CreateEnvironmentStage(SDL_GPUDevice        *device,
         .min_filter = SDL_GPU_FILTER_LINEAR
     };
     SDL_GPUGraphicsPipelineCreateInfo  info         = {
-        .target_info = {
+        .rasterizer_state.enable_depth_clip = true,
+        .target_info                        = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
                 .format = targbuf_fmt
             },

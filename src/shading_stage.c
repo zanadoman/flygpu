@@ -81,7 +81,8 @@ FG_ShadingStage * FG_CreateShadingStage(SDL_GPUDevice        *device,
     FG_ShadingStage                   *self = SDL_calloc(1, sizeof(*self));
     Uint8                              i    = 0;
     SDL_GPUGraphicsPipelineCreateInfo  info = {
-        .target_info = {
+        .rasterizer_state.enable_depth_clip = true,
+        .target_info                        = {
             .color_target_descriptions = &(SDL_GPUColorTargetDescription){
                 .format = targbuf_fmt
             },
